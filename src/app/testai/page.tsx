@@ -15,7 +15,7 @@ interface Question {
 }
 
 // Sample test data (replace with your actual data)
-const testData: Question[] = [
+/*const testData: Question[] = [
   {
     id: 1,
     text: "What is the capital of France?",
@@ -200,7 +200,7 @@ const TestPage = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
+
       <aside className="w-64 border-r border-gray-200 bg-white px-3 py-6">
         <div className="mb-8 text-lg font-semibold text-gray-700">
           Test Navigation
@@ -240,7 +240,7 @@ const TestPage = () => {
         </div>
       </aside>
 
-      {/* Main Content */}
+
       <main className="flex-1 p-8">
         <div className="rounded-lg bg-white p-6 shadow-md">
           <h1 className="mb-4 text-2xl font-semibold text-gray-800">Test</h1>
@@ -277,4 +277,4 @@ const TestPage = () => {
   );
 };
 
-export default TestPage;
+export default TestPage;*/
