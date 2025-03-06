@@ -5,6 +5,7 @@ import { type Metadata } from "next";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { Header } from "./_components/header";
+import Footer from "./_components/footer";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -12,16 +13,21 @@ export const metadata: Metadata = {
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
       <body>
         <Header />
-        <div className="pt-[60px]">
+        <div className="min-h-screen pt-[60px]">
           <TRPCReactProvider>{children}</TRPCReactProvider>
         </div>
+        <Footer
+          companyName="Your Company Name"
+          year={new Date().getFullYear()}
+          contactEmail="contact@example.com"
+        />
       </body>
     </html>
   );

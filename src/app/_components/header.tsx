@@ -1,4 +1,12 @@
 "use client";
+import {
+  ClerkProvider,
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  UserButton,
+} from "@clerk/nextjs";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export function Header() {
@@ -22,9 +30,18 @@ export function Header() {
         <button className="w-32 rounded-md border-2 border-gray-200 hover:bg-gray-100">
           Button 3
         </button>
-        <button className="w-32 rounded-md border-2 border-gray-200 hover:bg-gray-100">
-          Button 4
-        </button>
+        <ClerkProvider>
+          <SignedOut>
+            <SignInButton>
+              <button className="w-32 rounded-md border-2 border-gray-200 hover:bg-gray-100">
+                Prisijungti
+              </button>
+            </SignInButton>
+          </SignedOut>
+          <SignedIn>
+            <UserButton />
+          </SignedIn>
+        </ClerkProvider>
       </div>
     </div>
   );
