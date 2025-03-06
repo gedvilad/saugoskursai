@@ -7,6 +7,14 @@ import { db } from "~/server/db"; // Your database connection setup
 import { users } from "~/server/db/schema"; // Your Drizzle schema
 import { eq } from "drizzle-orm"; // Drizzle ORM comparison operator
 
+interface UserJSON {
+  type: "user";
+  id: string;
+  email_addresses: string[];
+  first_name: string;
+  last_name: string;
+}
+
 export async function POST(req: Request) {
   const SIGNING_SECRET = process.env.SIGNING_SECRET;
 
@@ -52,9 +60,17 @@ export async function POST(req: Request) {
     });
   }
 
-  // Extract necessary data from the webhook event
-  const { id, email_addresses, first_name, last_name } = evt.data;
-  const email = email_addresses?.[0]?.email_address || "";
+  // Assuming each item in email_addresses is an object with an `email_address` property
+  const { id, email_addresses, first_name, last_name } =
+    evt.data as unknown as {
+      email_addresses: { email_address: string }[];
+      id: string;
+      first_name: string;
+      last_name: string;
+    };
+
+  // Safely access the first email address
+  const email = email_addresses?.[0]?.email_address ?? "";
 
   // Check if the user already exists in the Neon database
   const existingUser = await db.query.users.findFirst();
