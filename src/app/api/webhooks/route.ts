@@ -6,7 +6,7 @@ import { WebhookEvent } from "@clerk/nextjs/server";
 import { db } from "~/server/db"; // Your database connection setup
 import { users } from "~/server/db/schema"; // Your Drizzle schema
 import { eq } from "drizzle-orm"; // Drizzle ORM comparison operator
-import { getUserByClerkId } from "~/server/db/user-queries";
+import { getUserByClerkId } from "~/server/user-queries";
 
 interface UserJSON {
   type: "user";
