@@ -6,6 +6,7 @@ import { WebhookEvent } from "@clerk/nextjs/server";
 import { db } from "~/server/db"; // Your database connection setup
 import { users } from "~/server/db/schema"; // Your Drizzle schema
 import { eq } from "drizzle-orm"; // Drizzle ORM comparison operator
+import { getUserByClerkId } from "~/server/db/user-queries";
 
 interface UserJSON {
   type: "user";
@@ -73,11 +74,11 @@ export async function POST(req: Request) {
   const email = email_addresses?.[0]?.email_address ?? "";
 
   // Check if the user already exists in the Neon database
-  const existingUser = await db.query.users.findFirst();
+  const existingUser = await getUserByClerkId(id);
 
   if (!existingUser) {
     await db.insert(users).values({
-      clerkId: id,
+      clerk_id: id,
       email,
       first_name,
       last_name,

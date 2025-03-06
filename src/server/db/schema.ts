@@ -14,7 +14,7 @@ export const users = createTable(
   "users",
   {
     id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-    clerkId: varchar("clerk_id", { length: 256 }).notNull().unique(), // Adjusted the column name to match
+    clerk_id: varchar("clerk_id", { length: 256 }).notNull().unique(), // Adjusted the column name to match
     email: varchar("email", { length: 256 }).notNull(),
     first_name: varchar("first_name", { length: 256 }).notNull(),
     last_name: varchar("last_name", { length: 256 }).notNull(),
@@ -26,6 +26,6 @@ export const users = createTable(
     ),
   },
   (example) => ({
-    userIndex: index("user_idx").on(example.clerkId),
+    userIndex: index("user_idx").on(example.clerk_id),
   }),
 );
