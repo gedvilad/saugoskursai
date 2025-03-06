@@ -11,10 +11,13 @@ export function Header() {
           className="w-32 hover:text-xl"
           onClick={() => router.push("/teorija")}
         >
-          Button 1
+          Teorija
         </button>
-        <button className="w-32 rounded-md border-2 border-gray-200 hover:bg-gray-100">
-          Button 2
+        <button
+          className="w-32 rounded-md border-2 border-gray-200 hover:bg-gray-100"
+          onClick={() => router.push("/testai")}
+        >
+          Testai
         </button>
         <button className="w-32 rounded-md border-2 border-gray-200 hover:bg-gray-100">
           Button 3
