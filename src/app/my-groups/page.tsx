@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import Message from "../_components/message";
 interface Group {
   id: number;
   name: string;
@@ -14,12 +15,19 @@ interface User {
   email: string;
   first_name: string;
   last_name: string;
+  clerk_id: string;
 }
 interface ApiResponse {
   groups: { id: number; name: string; createdAt: string; role: string }[];
 }
 interface ApiResponseUsers {
-  users: { id: number; email: string; first_name: string; last_name: string }[];
+  users: {
+    id: number;
+    email: string;
+    first_name: string;
+    last_name: string;
+    clerk_id: string;
+  }[];
 }
 
 export default function Home() {
@@ -34,6 +42,11 @@ export default function Home() {
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showUserList, setShowUserList] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [message, setMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   useEffect(() => {
     const fetchGroups = async () => {
@@ -118,8 +131,25 @@ export default function Home() {
     }
   };
   const handleAddUser = async () => {
-    console.log("handleAddUser");
+    // Adding the user to the group
+    await fetch(`/api/groups/addUser`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        clerkId: selectedUser?.clerk_id,
+        groupId: selectedGroup?.id,
+      }),
+    });
+
+    await fetchUsers(selectedGroup!.id);
+    setSelectedUser(null);
+    setSearchTerm("");
+    setMessage({
+      type: "error",
+      text: "Vartotojas jau yra grupėje.",
+    });
   };
+
   const filteredUsers = allUsers.filter((user) =>
     `${user.first_name} ${user.last_name}`
       .toLowerCase()
@@ -129,11 +159,20 @@ export default function Home() {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
     setShowUserList(e.target.value.length > 0);
+    setSelectedUser(null); // Clear selected user when search changes
+  };
+
+  const handleSelectUser = (user: User) => {
+    setSearchTerm(`${user.first_name} ${user.last_name}`); // Set the search term to the user's name
+    setSelectedUser(user); // Store the selected user
+    setShowUserList(false); // Hide the dropdown
   };
 
   return (
     <div className="flex h-screen">
+      {message && <Message type={message.type} message={message.text} />}
       {/* Sidebar */}
+
       <aside className="w-1/4 border-r bg-gray-100 p-4">
         <h2 className="mb-4 text-lg font-semibold">Jūsų grupės</h2>
         <div className="space-y-2">
@@ -242,7 +281,12 @@ export default function Home() {
               {/* Add User Button */}
               <button
                 onClick={handleAddUser}
-                className="rounded-md bg-blue-500 px-3 py-1 text-xs text-white transition duration-200 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={!selectedUser}
+                className={`rounded-md px-3 py-1 text-xs text-white transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  selectedUser
+                    ? "bg-blue-500 hover:bg-blue-600"
+                    : "cursor-not-allowed bg-gray-400"
+                }`}
               >
                 Pridėti
               </button>
@@ -256,6 +300,7 @@ export default function Home() {
                       <li
                         key={user.id}
                         className="cursor-pointer px-4 py-2 hover:bg-gray-100"
+                        onClick={() => handleSelectUser(user)}
                       >
                         {user.first_name} {user.last_name} ({user.email})
                       </li>

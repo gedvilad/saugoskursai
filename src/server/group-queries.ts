@@ -1,9 +1,7 @@
 import "server-only";
 import { db } from "~/server/db";
 import { groups, userGroups, users } from "./db/schema";
-import { eq } from "drizzle-orm";
-import { group } from "console";
-
+import { and, eq } from "drizzle-orm";
 export async function createGroup(name: string, ownerId: string) {
   // Step 1: Insert into `groups` and get the new group ID
   const [newGroup] = await db
@@ -21,7 +19,7 @@ export async function createGroup(name: string, ownerId: string) {
   await db.insert(userGroups).values({
     groupId: newGroup.id,
     userId: ownerId,
-    role: "owner",
+    role: "Administratorius",
     createdAt: new Date(),
   });
 
@@ -59,4 +57,31 @@ export async function getGroupAllUsers(groupId: number) {
     .where(eq(userGroups.groupId, groupId));
 
   return userGroupData;
+}
+export async function addUserToGroup(groupId: number, userId: string) {
+  // Check if the group exists
+  const group = await db.query.groups.findFirst({
+    where: eq(groups.id, groupId),
+  });
+
+  if (!group) {
+    throw new Error("Group not found");
+  }
+
+  // Check if the user is already in the group
+  const existingUserGroup = await db.query.userGroups.findFirst({
+    where: and(eq(userGroups.userId, userId), eq(userGroups.groupId, groupId)),
+  });
+
+  if (existingUserGroup) {
+    throw new Error("User is already in this group");
+  }
+
+  // If the user isn't already in the group, add them
+  await db.insert(userGroups).values({
+    userId: userId,
+    groupId: groupId,
+    role: "Narys", // Default role for the user
+    createdAt: new Date(),
+  });
 }
