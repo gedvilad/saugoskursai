@@ -76,18 +76,40 @@ export async function POST(req: Request) {
   // Check if the user already exists in the Neon database
   const existingUser = await getUserByClerkId(id);
 
-  if (!existingUser) {
-    await db.insert(users).values({
-      clerk_id: id,
-      email,
-      first_name,
-      last_name,
-      createdAt: new Date(),
-    });
+  if (evt.type === "user.created") {
+    // Handle user creation
+    if (!existingUser) {
+      await db.insert(users).values({
+        clerk_id: id,
+        email,
+        first_name,
+        last_name,
+        createdAt: new Date(),
+      });
 
-    console.log(`User with ID ${id} created successfully.`);
-  } else {
-    console.log(`User with ID ${id} already exists.`);
+      console.log(`User with ID ${id} created successfully.`);
+    } else {
+      console.log(`User with ID ${id} already exists.`);
+    }
+  } else if (evt.type === "user.updated") {
+    // Handle user update
+    if (existingUser) {
+      await db
+        .update(users)
+        .set({
+          email,
+          first_name,
+          last_name,
+        })
+        .where(eq(users.clerk_id, id));
+
+      console.log(`User with ID ${id} updated successfully.`);
+    } else {
+      console.log(`User with ID ${id} not found for update.`);
+    }
+  } else if (evt.type === "user.deleted") {
+    await db.delete(users).where(eq(users.clerk_id, id));
+    console.log(`User with ID ${id} deleted.`);
   }
 
   return new Response("Webhook received and user processed", { status: 200 });
