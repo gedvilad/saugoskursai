@@ -6,7 +6,7 @@ interface MessageProps {
 }
 
 const Message: React.FC<MessageProps> = ({ type, message }) => {
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(() => {
