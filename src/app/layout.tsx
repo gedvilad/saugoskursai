@@ -6,6 +6,7 @@ import { type Metadata } from "next";
 import { TRPCReactProvider } from "~/trpc/react";
 import { Header } from "./_components/header";
 import Footer from "./_components/footer";
+import { ClerkProvider } from "@clerk/nextjs";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -17,18 +18,20 @@ export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${GeistSans.variable}`}>
-      <body>
-        <Header />
-        <div className="min-h-screen pt-[60px]">
-          <TRPCReactProvider>{children}</TRPCReactProvider>
-        </div>
-        <Footer
-          companyName="Your Company Name"
-          year={new Date().getFullYear()}
-          contactEmail="contact@example.com"
-        />
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" className={`${GeistSans.variable}`}>
+        <body>
+          <Header />
+          <div className="min-h-screen pt-[60px]">
+            <TRPCReactProvider>{children}</TRPCReactProvider>
+          </div>
+          <Footer
+            companyName="Your Company Name"
+            year={new Date().getFullYear()}
+            contactEmail="contact@example.com"
+          />
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
