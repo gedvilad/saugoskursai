@@ -1,44 +1,88 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
+import { createGroup } from "~/server/group-queries";
+import { useRouter } from "next/navigation";
+import { int } from "drizzle-orm/mysql-core";
+export const dynamic = "force-dynamic";
+interface Group {
+  id: number;
+  name: string;
+  createdAt: string;
+  role: string;
+}
+interface User {
+  id: number;
+  email: string;
+  first_name: string;
+  last_name: string;
+}
+interface ApiResponse {
+  groups: { id: number; name: string; createdAt: string; role: string }[];
+}
+interface ApiResponseUsers {
+  users: { id: number; email: string; first_name: string; last_name: string }[];
+}
 
-const groups = [
+/*const groups = [
   { id: "1", name: "Developers" },
   { id: "2", name: "Designers" },
   { id: "3", name: "Managers" },
-];
+];*/
 
 export default function Home() {
+  const router = useRouter();
   const { userId } = useAuth();
-  console.log(userId);
-  const [selectedGroup, setSelectedGroup] = useState(groups[0]);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [activeTab, setActiveTab] = useState("users");
   const [newGroupName, setNewGroupName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const [users, setUsers] = useState<User[]>([]); // New state for users
+  const [searchTerm, setSearchTerm] = useState("");
+  const [newUserEmail, setNewUserEmail] = useState("");
+
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const res = await fetch(`/api/groups?userId=${userId}`);
+        const data = (await res.json()) as ApiResponse;
+        if (data.groups && data.groups.length > 0) {
+          setGroups(data.groups);
+          setSelectedGroup(data.groups[0]!);
+          await fetchUsers(data.groups[0]!.id);
+        }
+      } catch (error) {
+        console.error("Request failed:", error);
+      }
+    };
+
+    fetchGroups().catch((error) =>
+      console.error("Error fetching groups:", error),
+    );
+  }, [userId]);
 
   const handleCreateGroup = () => {
     setIsCreating(true);
   };
 
-  const handleSaveGroup = () => {
-    // Here you would typically make an API call to create the new group
-    // and then update the `groups` state.  For this example, we'll just
-    // simulate adding a new group locally.
-
-    // Basic validation (you'd want more robust validation in a real app)
+  const handleSaveGroup = async () => {
     if (newGroupName.trim() === "") {
       alert("Group name cannot be empty.");
       return;
     }
 
-    const newGroup = {
-      id: String(Date.now()), // Generate a unique ID
-      name: newGroupName,
-    };
+    await fetch("/api/groups", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newGroupName, ownerId: userId }),
+    });
+    const res = await fetch(`/api/groups?userId=${userId}`);
+    const data = (await res.json()) as ApiResponse;
 
-    // Update the groups array (in a real app, you'd fetch updated groups)
-    // setGroups([...groups, newGroup]); // Assuming you had a groups state
-
+    setGroups(data.groups);
+    setSelectedGroup(data.groups[0]!);
     setIsCreating(false);
     setNewGroupName("");
   };
@@ -47,6 +91,61 @@ export default function Home() {
     setIsCreating(false);
     setNewGroupName("");
   };
+  const fetchUsers = async (groupId: number) => {
+    try {
+      const res = await fetch(`/api/groups?groupId=${groupId}`);
+      if (!res.ok) throw new Error("Failed to fetch users");
+
+      const data = (await res.json()) as ApiResponseUsers;
+      setUsers(data.users);
+      console.log(data.users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
+  const handleGroupSelect = async (group: Group) => {
+    setSelectedGroup(group);
+    try {
+      await fetchUsers(group.id); // Await fetchUsers to handle the async promise properly
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
+  const handleAddUser = async () => {
+    /*if (!newUserEmail.trim()) {
+      alert("Please provide a valid email.");
+      return;
+    }
+
+    try {
+      // Replace with actual logic for adding a user (e.g., API call)
+      const res = await fetch(`/api/add-user`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          groupId: selectedGroup.id,
+          email: newUserEmail,
+        }),
+      });
+
+      if (res.ok) {
+        alert("User added successfully");
+        // Optionally refresh users
+        fetchUsers(selectedGroup.id);
+        setNewUserEmail("");
+      } else {
+        alert("Failed to add user");
+      }
+    } catch (error) {
+      console.error("Error adding user:", error);
+    }*/
+  };
+
+  const filteredUsers = users.filter((user) =>
+    `${user.first_name} ${user.last_name}`
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase()),
+  );
 
   return (
     <div className="flex h-screen">
@@ -57,14 +156,15 @@ export default function Home() {
           {groups.map((group) => (
             <button
               key={group.id}
-              className={`w-full rounded-md p-2 text-left ${
-                selectedGroup.id === group.id
+              className={`flex w-full items-center justify-between rounded-md p-2 text-left ${
+                selectedGroup?.id === group.id
                   ? "bg-blue-500 text-white"
                   : "border bg-white"
               }`}
-              onClick={() => setSelectedGroup(group)}
+              onClick={() => handleGroupSelect(group)}
             >
-              {group.name}
+              <span className="font-semibold">{group.name}</span>
+              <span className="text-sm text-gray-300">{group.role}</span>
             </button>
           ))}
           {isCreating ? (
@@ -119,7 +219,7 @@ export default function Home() {
       {/* Main Panel */}
       <main className="flex-1 p-6">
         <h1 className="mb-4 text-xl font-bold">
-          Managing: {selectedGroup.name}
+          Managing: {selectedGroup?.name}
         </h1>
 
         {/* Tabs */}
@@ -144,11 +244,45 @@ export default function Home() {
         </div>
 
         {/* Tab Content */}
-        <div className="rounded-md border bg-white p-4">
-          {activeTab === "users" && <div>List of users goes here...</div>}
-          {activeTab === "settings" && <div>Settings panel...</div>}
-          {activeTab === "analytics" && <div>Analytics dashboard...</div>}
-        </div>
+        {/* Users List */}
+        {activeTab === "users" && (
+          <div>
+            <div className="mb-4 flex gap-2">
+              {/* Input */}
+              <input
+                type="text"
+                placeholder="Ieškoti vartotojų..."
+                className="w-1/4 rounded-md border border-gray-300 p-1 text-xs shadow-sm transition duration-200 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+
+              {/* Add User Button */}
+              <button
+                onClick={handleAddUser}
+                className="rounded-md bg-blue-500 px-3 py-1 text-xs text-white transition duration-200 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                Pridėti
+              </button>
+            </div>
+            <div className="rounded-md border bg-white p-4">
+              <h2 className="mb-4 text-lg font-semibold">Grupės nariai:</h2>
+              {users.length > 0 ? (
+                <ul className="space-y-2">
+                  {users.map((user) => (
+                    <li key={user.id} className="border-b p-2">
+                      {user.first_name} {user.last_name} ({user.email})
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>Loading ...</p>
+              )}
+            </div>
+          </div>
+        )}
+        {activeTab === "settings" && <div>Settings panel...</div>}
+        {activeTab === "analytics" && <div>Analytics dashboard...</div>}
       </main>
     </div>
   );
