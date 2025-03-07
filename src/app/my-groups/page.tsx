@@ -165,13 +165,13 @@ export default function Home() {
                   className="rounded-md bg-green-500 p-2 text-white"
                   onClick={handleSaveGroup}
                 >
-                  Save
+                  Sukurti
                 </button>
                 <button
                   className="rounded-md bg-gray-300 p-2"
                   onClick={handleCancelCreate}
                 >
-                  Cancel
+                  Atšaukti
                 </button>
               </div>
             </div>
@@ -194,7 +194,7 @@ export default function Home() {
                   d="M12 4.5v15m7.5-7.5h-15"
                 />
               </svg>
-              Add Group
+              Sukurti naują grupę
             </button>
           )}
         </div>
@@ -202,16 +202,14 @@ export default function Home() {
 
       {/* Main Panel */}
       <main className="flex-1 p-6">
-        <h1 className="mb-4 text-xl font-bold">
-          Managing: {selectedGroup?.name}
-        </h1>
+        <h1 className="mb-4 text-xl font-bold">Grupė: {selectedGroup?.name}</h1>
 
         {/* Tabs */}
         <div className="mb-4 flex space-x-4 border-b">
           {[
-            { key: "users", label: "Users" },
-            { key: "settings", label: "Settings" },
-            { key: "analytics", label: "Analytics" },
+            { key: "users", label: "Grupės nariai" },
+            { key: "settings", label: "Nustatymai" },
+            { key: "analytics", label: "Statistika" },
           ].map((tab) => (
             <button
               key={tab.key}
