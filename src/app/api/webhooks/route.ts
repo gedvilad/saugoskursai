@@ -66,7 +66,6 @@ export async function POST(req: Request) {
     });
   }
 
-  // Assuming each item in email_addresses is an object with an `email_address` property
   const { id, email_addresses, first_name, last_name } =
     evt.data as unknown as {
       email_addresses: { email_address: string }[];
@@ -75,10 +74,8 @@ export async function POST(req: Request) {
       last_name: string;
     };
 
-  // Safely access the first email address
   const email = email_addresses?.[0]?.email_address ?? "";
 
-  // Check if the user already exists in the Neon database
   const existingUser = await getUserByClerkId(id);
 
   if (evt.type === "user.created") {
