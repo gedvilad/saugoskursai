@@ -27,8 +27,11 @@ export function Header() {
         >
           Testai
         </button>
-        <button className="w-32 rounded-md border-2 border-gray-200 hover:bg-gray-100">
-          Button 3
+        <button
+          className="w-32 rounded-md border-2 border-gray-200 hover:bg-gray-100"
+          onClick={() => router.push("/my-groups")}
+        >
+          Mano grupės
         </button>
         <ClerkProvider>
           <SignedOut>
