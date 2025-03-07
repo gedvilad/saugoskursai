@@ -44,3 +44,7 @@ export async function updateUser(
 export async function deleteUser(id: string) {
   await db.delete(users).where(eq(users.clerk_id, id));
 }
+export async function getAllUsers() {
+  const allUsers = await db.query.users.findMany();
+  return allUsers;
+}

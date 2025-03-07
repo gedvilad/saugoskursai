@@ -2,10 +2,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
-import { createGroup } from "~/server/group-queries";
 import { useRouter } from "next/navigation";
-import { int } from "drizzle-orm/mysql-core";
-export const dynamic = "force-dynamic";
 interface Group {
   id: number;
   name: string;
@@ -25,12 +22,6 @@ interface ApiResponseUsers {
   users: { id: number; email: string; first_name: string; last_name: string }[];
 }
 
-/*const groups = [
-  { id: "1", name: "Developers" },
-  { id: "2", name: "Designers" },
-  { id: "3", name: "Managers" },
-];*/
-
 export default function Home() {
   const router = useRouter();
   const { userId } = useAuth();
@@ -39,9 +30,10 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("users");
   const [newGroupName, setNewGroupName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
-  const [users, setUsers] = useState<User[]>([]); // New state for users
+  const [users, setUsers] = useState<User[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [newUserEmail, setNewUserEmail] = useState("");
+  const [showUserList, setShowUserList] = useState(false);
 
   useEffect(() => {
     const fetchGroups = async () => {
@@ -57,9 +49,24 @@ export default function Home() {
         console.error("Request failed:", error);
       }
     };
+    const fetchAllUsers = async () => {
+      try {
+        const res = await fetch("/api/users");
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        const data = (await res.json()) as ApiResponseUsers;
+        setAllUsers(data.users);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
 
     fetchGroups().catch((error) =>
       console.error("Error fetching groups:", error),
+    );
+    fetchAllUsers().catch((error) =>
+      console.error("Error fetching all users:", error),
     );
   }, [userId]);
 
@@ -98,7 +105,6 @@ export default function Home() {
 
       const data = (await res.json()) as ApiResponseUsers;
       setUsers(data.users);
-      console.log(data.users);
     } catch (error) {
       console.error("Error fetching users:", error);
     }
@@ -106,46 +112,24 @@ export default function Home() {
   const handleGroupSelect = async (group: Group) => {
     setSelectedGroup(group);
     try {
-      await fetchUsers(group.id); // Await fetchUsers to handle the async promise properly
+      await fetchUsers(group.id);
     } catch (error) {
       console.error("Error fetching users:", error);
     }
   };
   const handleAddUser = async () => {
-    /*if (!newUserEmail.trim()) {
-      alert("Please provide a valid email.");
-      return;
-    }
-
-    try {
-      // Replace with actual logic for adding a user (e.g., API call)
-      const res = await fetch(`/api/add-user`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          groupId: selectedGroup.id,
-          email: newUserEmail,
-        }),
-      });
-
-      if (res.ok) {
-        alert("User added successfully");
-        // Optionally refresh users
-        fetchUsers(selectedGroup.id);
-        setNewUserEmail("");
-      } else {
-        alert("Failed to add user");
-      }
-    } catch (error) {
-      console.error("Error adding user:", error);
-    }*/
+    console.log("handleAddUser");
   };
-
-  const filteredUsers = users.filter((user) =>
+  const filteredUsers = allUsers.filter((user) =>
     `${user.first_name} ${user.last_name}`
       .toLowerCase()
       .includes(searchTerm.toLowerCase()),
   );
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setShowUserList(e.target.value.length > 0);
+  };
 
   return (
     <div className="flex h-screen">
@@ -254,7 +238,7 @@ export default function Home() {
                 placeholder="Ieškoti vartotojų..."
                 className="w-1/4 rounded-md border border-gray-300 p-1 text-xs shadow-sm transition duration-200 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={handleSearchChange}
               />
 
               {/* Add User Button */}
@@ -265,6 +249,28 @@ export default function Home() {
                 Pridėti
               </button>
             </div>
+            {/* Dropdown List */}
+            {showUserList && (
+              <div className="absolute w-1/4 rounded-md border bg-white shadow-lg">
+                {filteredUsers.length > 0 ? (
+                  <ul className="max-h-48 overflow-y-auto py-1 text-sm">
+                    {filteredUsers.map((user) => (
+                      <li
+                        key={user.id}
+                        className="cursor-pointer px-4 py-2 hover:bg-gray-100"
+                      >
+                        {user.first_name} {user.last_name} ({user.email})
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="px-4 py-2 text-sm text-gray-500">
+                    Nerasta jokių vartotojų.
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="rounded-md border bg-white p-4">
               <h2 className="mb-4 text-lg font-semibold">Grupės nariai:</h2>
               {users.length > 0 ? (
