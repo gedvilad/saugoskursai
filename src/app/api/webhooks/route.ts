@@ -6,7 +6,12 @@ import { WebhookEvent } from "@clerk/nextjs/server";
 import { db } from "~/server/db"; // Your database connection setup
 import { users } from "~/server/db/schema"; // Your Drizzle schema
 import { eq } from "drizzle-orm"; // Drizzle ORM comparison operator
-import { getUserByClerkId } from "~/server/user-queries";
+import {
+  createUser,
+  deleteUser,
+  getUserByClerkId,
+  updateUser,
+} from "~/server/user-queries";
 
 interface UserJSON {
   type: "user";
@@ -77,39 +82,15 @@ export async function POST(req: Request) {
   const existingUser = await getUserByClerkId(id);
 
   if (evt.type === "user.created") {
-    // Handle user creation
     if (!existingUser) {
-      await db.insert(users).values({
-        clerk_id: id,
-        email,
-        first_name,
-        last_name,
-        createdAt: new Date(),
-      });
-
-      console.log(`User with ID ${id} created successfully.`);
-    } else {
-      console.log(`User with ID ${id} already exists.`);
+      await createUser(email, first_name, last_name, id);
     }
   } else if (evt.type === "user.updated") {
-    // Handle user update
     if (existingUser) {
-      await db
-        .update(users)
-        .set({
-          email,
-          first_name,
-          last_name,
-        })
-        .where(eq(users.clerk_id, id));
-
-      console.log(`User with ID ${id} updated successfully.`);
-    } else {
-      console.log(`User with ID ${id} not found for update.`);
+      await updateUser(id, email, first_name, last_name);
     }
   } else if (evt.type === "user.deleted") {
-    await db.delete(users).where(eq(users.clerk_id, id));
-    console.log(`User with ID ${id} deleted.`);
+    await deleteUser(id);
   }
 
   return new Response("Webhook received and user processed", { status: 200 });
