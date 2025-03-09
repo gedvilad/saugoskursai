@@ -6,9 +6,8 @@ import { users } from "./db/schema";
 import { eq } from "drizzle-orm";
 export async function getUserByClerkId(id: string) {
   const user = await db.query.users.findFirst({
-    where: (usersTable, { eq }) => eq(usersTable.clerk_id, id),
+    where: (users, { eq }) => eq(users.clerk_id, id),
   });
-
   return user;
 }
 export async function createUser(

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Message from "../_components/message";
+import toast from "react-hot-toast";
 interface Group {
   id: number;
   name: string;
@@ -131,23 +132,38 @@ export default function Home() {
     }
   };
   const handleAddUser = async () => {
-    // Adding the user to the group
-    await fetch(`/api/groups/addUser`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        clerkId: selectedUser?.clerk_id,
-        groupId: selectedGroup?.id,
-      }),
-    });
+    try {
+      const response = await fetch(`/api/groups/addUser`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clerkId: selectedUser!.clerk_id,
+          groupId: selectedGroup!.id,
+        }),
+      });
 
-    await fetchUsers(selectedGroup!.id);
-    setSelectedUser(null);
-    setSearchTerm("");
-    setMessage({
-      type: "error",
-      text: "Vartotojas jau yra grupėje.",
-    });
+      if (!response.ok) {
+        if (response.status === 409) {
+          toast.error("User is already in this group.");
+        } else if (response.status === 404) {
+          toast.error("Group not found.");
+        } else if (response.status === 400) {
+          toast.error("Missing required fields.");
+        } else {
+          toast.error(result.message || "An unexpected error occurred.");
+        }
+        return; // Stop execution if there's an error
+      }
+
+      toast.success("User added successfully!");
+
+      // Refresh users after successful addition
+      await fetchUsers(selectedGroup!.id);
+      setSelectedUser(null);
+      setSearchTerm("");
+    } catch (error) {
+      toast.error(error.message || "An error occurred while adding the user.");
+    }
   };
 
   const filteredUsers = allUsers.filter((user) =>
