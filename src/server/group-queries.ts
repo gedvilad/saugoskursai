@@ -38,6 +38,7 @@ export async function getUserGroups(userId: string) {
       name: groups.name,
       createdAt: groups.createdAt,
       role: userGroups.role,
+      ownerId: groups.ownerId,
     })
     .from(userGroups)
     .innerJoin(groups, eq(userGroups.groupId, groups.id)) // Join groups table
@@ -53,6 +54,7 @@ export async function getGroupAllUsers(groupId: number) {
       first_name: users.first_name,
       last_name: users.last_name,
       role: userGroups.role,
+      clerk_id: users.clerk_id,
     })
     .from(userGroups)
     .innerJoin(users, eq(userGroups.userId, users.clerk_id)) // Join users table

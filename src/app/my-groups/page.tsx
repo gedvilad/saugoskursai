@@ -11,6 +11,7 @@ interface Group {
   name: string;
   createdAt: string;
   role: string;
+  ownerId: string;
 }
 interface User {
   id: number;
@@ -21,7 +22,13 @@ interface User {
   role: string;
 }
 interface ApiResponse {
-  groups: { id: number; name: string; createdAt: string; role: string }[];
+  groups: {
+    id: number;
+    name: string;
+    createdAt: string;
+    role: string;
+    ownerId: string;
+  }[];
 }
 interface ApiResponseUsers {
   users: {
@@ -51,6 +58,7 @@ export default function Home() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [isLoadingGroups, setIsLoadingGroups] = useState(true);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     const fetchGroups = async () => {
@@ -146,10 +154,11 @@ export default function Home() {
     }
   };
   const handleAddUser = async () => {
-    const response = await fetch(`/api/groups/addUser`, {
+    const response = await fetch(`/api/groups/groupUser`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        action: "addUser",
         clerkId: selectedUser!.clerk_id,
         groupId: selectedGroup!.id,
       }),
@@ -184,7 +193,36 @@ export default function Home() {
     setSelectedUser(user); // Store the selected user
     setShowUserList(false); // Hide the dropdown
   };
+  const handleRemoveUser = async (userIdToRemove: string) => {
+    if (!selectedGroup) return;
+
+    if (userIdToRemove === userId) {
+      toast.error("Negalite pašalinti savęs iš grupės.");
+      return;
+    }
+
+    const response = await fetch(`/api/groups/groupUser`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "removeUser",
+        clerkId: userIdToRemove,
+        groupId: selectedGroup.id,
+      }),
+    });
+
+    const errorData = (await response.json()) as ErrorResponse;
+    if (!response.ok) {
+      toast.error(errorData.message);
+      return;
+    }
+
+    toast.success(errorData.message);
+    await fetchUsers(selectedGroup.id);
+  };
+
   const handleGroupDelete = async () => {
+    setShowDeleteConfirm(false);
     const response = await fetch("/api/groups", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -216,8 +254,6 @@ export default function Home() {
 
   return (
     <div className="flex h-screen">
-      {/* Sidebar */}
-
       <aside className="w-1/4 border-r bg-gray-100 p-4">
         <h2 className="mb-4 text-lg font-semibold">Jūsų grupės</h2>
         <div className="space-y-2">
@@ -383,16 +419,42 @@ export default function Home() {
                 </ul>
               ) : users.length > 0 ? (
                 // Render Users
-                <ul className="space-y-2">
+                <ul className="w-full">
                   {users.map((user) => (
                     <li
                       key={user.id}
-                      className="flex justify-between border-b p-2"
+                      className="grid grid-cols-3 items-center border-b-2 p-2 shadow-sm"
                     >
-                      <div>
+                      <div className="col-span-1">
                         {user.first_name} {user.last_name} ({user.email})
                       </div>
-                      <div className="text-sm text-gray-400">{user.role}</div>
+                      <div className="col-span-1 text-sm text-gray-400">
+                        {user.role}
+                      </div>
+                      <div className="col-span-1 flex justify-end">
+                        {selectedGroup?.role === "Administratorius" &&
+                          selectedGroup?.ownerId !== user.clerk_id && (
+                            <button
+                              onClick={() => handleRemoveUser(user.clerk_id)}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth="1.5"
+                                stroke="currentColor"
+                                className="h-5 w-5"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M6 18L18 6M6 6l12 12"
+                                />
+                              </svg>
+                            </button>
+                          )}
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -404,8 +466,34 @@ export default function Home() {
         )}
         {activeTab === "settings" && (
           <div>
+            {showDeleteConfirm && (
+              <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                <div className="items-center rounded-lg bg-white p-6 shadow-lg">
+                  <h2 className="mb-4 text-lg font-semibold">
+                    Ar tikrai norite ištrinti grupę?
+                  </h2>
+                  <h3 className="text-sm text-red-500">
+                    Šio veiksmo atkurti negalima.
+                  </h3>
+                  <div className="mt-4 flex justify-center space-x-2">
+                    <button
+                      className="rounded-md bg-red-500 px-4 py-2 text-xs text-white transition duration-200 hover:bg-red-600"
+                      onClick={handleGroupDelete}
+                    >
+                      Ištrinti
+                    </button>
+                    <button
+                      className="rounded-md bg-gray-400 px-4 py-2 text-xs text-white transition duration-200 hover:bg-gray-500"
+                      onClick={() => setShowDeleteConfirm(false)}
+                    >
+                      Atšaukti
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
             <button
-              onClick={handleGroupDelete}
+              onClick={() => setShowDeleteConfirm(true)}
               className="rounded-md bg-red-500 px-4 py-2 text-xs text-white transition duration-200 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
             >
               Ištrinti grupę.
