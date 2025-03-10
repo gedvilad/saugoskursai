@@ -1,39 +1,74 @@
 // app/api/groups/route.ts
+import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import { db } from "~/server/db";
+import { groups } from "~/server/db/schema";
 import {
   createGroup,
   getUserGroups,
   getGroupAllUsers,
 } from "~/server/group-queries";
 
-interface CreateGroupRequest {
-  name: string;
-  ownerId: string;
-}
-
 export async function POST(req: Request) {
   try {
-    // Validate and type the request body
-    const body = (await req.json()) as CreateGroupRequest;
+    // Parse the request body
+    const body = (await req.json()) as {
+      action: string;
+      name?: string;
+      ownerId?: string;
+      groupId?: number;
+    };
 
-    if (!body.name || !body.ownerId) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 },
+    // Handle creating a group
+    if (body.action === "create") {
+      if (!body.name || !body.ownerId) {
+        return new Response(
+          JSON.stringify({ message: "Grupė privalo turėti pavadinimą!" }),
+          { status: 409, headers: { "Content-Type": "application/json" } },
+        );
+      }
+
+      await createGroup(body.name, body.ownerId);
+
+      return new Response(
+        JSON.stringify({ message: "Grupė sėkmingai sukurta" }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
       );
     }
 
-    await createGroup(body.name, body.ownerId);
+    // Handle deleting a group
+    if (body.action === "delete") {
+      if (!body.groupId) {
+        return new Response(
+          JSON.stringify({ message: "Nenurodytas grupės ID" }),
+          { status: 409, headers: { "Content-Type": "application/json" } },
+        );
+      }
 
-    return NextResponse.json(
-      { message: "Group created successfully" },
-      { status: 201 },
+      const result = await db.delete(groups).where(eq(groups.id, body.groupId));
+
+      if (result.count === 0) {
+        throw new Error("Grupė nerasta");
+      }
+
+      return new Response(
+        JSON.stringify({ message: "Grupė sėkmingai pašalinta" }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    }
+
+    // If the action is not recognized
+    return new Response(
+      JSON.stringify({ message: "Įvyko klaidą - nenurodytas veiksmas!" }),
+      { status: 400, headers: { "Content-Type": "application/json" } },
     );
   } catch (error) {
-    console.error("Error creating group:", error);
-    return NextResponse.json(
-      { error: "Failed to create group" },
-      { status: 500 },
+    return new Response(
+      JSON.stringify({ message: "Įvyko klaida: " + String(error) }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      },
     );
   }
 }

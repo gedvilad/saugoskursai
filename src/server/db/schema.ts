@@ -25,6 +25,7 @@ export const users = createTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
       () => new Date(),
     ),
+    role: varchar("role", { length: 50 }).default("user").notNull(),
   },
   (example) => ({
     userIndex: index("user_idx").on(example.clerk_id),

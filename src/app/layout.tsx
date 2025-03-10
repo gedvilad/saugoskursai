@@ -7,6 +7,7 @@ import { TRPCReactProvider } from "~/trpc/react";
 import { Header } from "./_components/header";
 import Footer from "./_components/footer";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -21,6 +22,7 @@ export default async function RootLayout({
     <ClerkProvider>
       <html lang="en" className={`${GeistSans.variable}`}>
         <body>
+          <Toaster position="top-center" />
           <Header />
           <div className="min-h-screen pt-[60px]">
             <TRPCReactProvider>{children}</TRPCReactProvider>

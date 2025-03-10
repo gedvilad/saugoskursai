@@ -4,11 +4,14 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Message from "../_components/message";
+import toast from "react-hot-toast";
+export const dynamic = "force-dynamic";
 interface Group {
   id: number;
   name: string;
   createdAt: string;
   role: string;
+  ownerId: string;
 }
 interface User {
   id: number;
@@ -16,9 +19,16 @@ interface User {
   first_name: string;
   last_name: string;
   clerk_id: string;
+  role: string;
 }
 interface ApiResponse {
-  groups: { id: number; name: string; createdAt: string; role: string }[];
+  groups: {
+    id: number;
+    name: string;
+    createdAt: string;
+    role: string;
+    ownerId: string;
+  }[];
 }
 interface ApiResponseUsers {
   users: {
@@ -27,9 +37,12 @@ interface ApiResponseUsers {
     first_name: string;
     last_name: string;
     clerk_id: string;
+    role: string;
   }[];
 }
-
+interface ErrorResponse {
+  message: string;
+}
 export default function Home() {
   const router = useRouter();
   const { userId } = useAuth();
@@ -43,10 +56,10 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showUserList, setShowUserList] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [message, setMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
+  const [isLoadingGroups, setIsLoadingGroups] = useState(true);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showUserDeleteConfirm, setShowUserDeleteConfirm] = useState(false);
 
   useEffect(() => {
     const fetchGroups = async () => {
@@ -64,11 +77,13 @@ export default function Home() {
     };
     const fetchAllUsers = async () => {
       try {
+        setIsLoadingGroups(true);
         const res = await fetch("/api/users");
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
         const data = (await res.json()) as ApiResponseUsers;
+        setTimeout(() => setIsLoadingGroups(false), 700);
         setAllUsers(data.users);
       } catch (error) {
         console.error("Error fetching users:", error);
@@ -88,16 +103,22 @@ export default function Home() {
   };
 
   const handleSaveGroup = async () => {
-    if (newGroupName.trim() === "") {
-      alert("Group name cannot be empty.");
-      return;
-    }
-
-    await fetch("/api/groups", {
+    const response = await fetch("/api/groups", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newGroupName, ownerId: userId }),
+      body: JSON.stringify({
+        action: "create",
+        name: newGroupName,
+        ownerId: userId,
+      }),
     });
+
+    const errorData = (await response.json()) as ErrorResponse;
+    if (!response.ok) {
+      toast.error(errorData.message);
+      return;
+    }
+    toast.success(errorData.message);
     const res = await fetch(`/api/groups?userId=${userId}`);
     const data = (await res.json()) as ApiResponse;
 
@@ -113,10 +134,13 @@ export default function Home() {
   };
   const fetchUsers = async (groupId: number) => {
     try {
+      setIsLoadingUsers(true);
+
       const res = await fetch(`/api/groups?groupId=${groupId}`);
       if (!res.ok) throw new Error("Failed to fetch users");
 
       const data = (await res.json()) as ApiResponseUsers;
+      setTimeout(() => setIsLoadingUsers(false), 700);
       setUsers(data.users);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -131,23 +155,26 @@ export default function Home() {
     }
   };
   const handleAddUser = async () => {
-    // Adding the user to the group
-    await fetch(`/api/groups/addUser`, {
+    const response = await fetch(`/api/groups/groupUser`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        clerkId: selectedUser?.clerk_id,
-        groupId: selectedGroup?.id,
+        action: "addUser",
+        clerkId: selectedUser!.clerk_id,
+        groupId: selectedGroup!.id,
       }),
     });
 
+    const errorData = (await response.json()) as ErrorResponse;
+    if (!response.ok) {
+      toast.error(errorData.message);
+      return;
+    }
+
+    toast.success(errorData.message);
     await fetchUsers(selectedGroup!.id);
     setSelectedUser(null);
     setSearchTerm("");
-    setMessage({
-      type: "error",
-      text: "Vartotojas jau yra grupėje.",
-    });
   };
 
   const filteredUsers = allUsers.filter((user) =>
@@ -167,47 +194,113 @@ export default function Home() {
     setSelectedUser(user); // Store the selected user
     setShowUserList(false); // Hide the dropdown
   };
+  const handleRemoveUser = async (userIdToRemove: string) => {
+    setShowUserDeleteConfirm(false);
+    setSelectedUser(null);
+    if (!selectedGroup) return;
+
+    if (userIdToRemove === userId) {
+      toast.error("Negalite pašalinti savęs iš grupės.");
+      return;
+    }
+
+    const response = await fetch(`/api/groups/groupUser`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "removeUser",
+        clerkId: userIdToRemove,
+        groupId: selectedGroup.id,
+      }),
+    });
+
+    const errorData = (await response.json()) as ErrorResponse;
+    if (!response.ok) {
+      toast.error(errorData.message);
+      return;
+    }
+
+    toast.success(errorData.message);
+    await fetchUsers(selectedGroup.id);
+  };
+
+  const handleGroupDelete = async () => {
+    setShowDeleteConfirm(false);
+    const response = await fetch("/api/groups", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "delete",
+        groupId: selectedGroup?.id,
+      }),
+    });
+    const errorData = (await response.json()) as ErrorResponse;
+    if (!response.ok) {
+      toast.error(errorData.message);
+      return;
+    }
+    toast.success(errorData.message);
+    try {
+      const res = await fetch(`/api/groups?userId=${userId}`);
+      const data = (await res.json()) as ApiResponse;
+      if (data.groups && data.groups.length > 0) {
+        setGroups(data.groups);
+        setSelectedGroup(data.groups[0]!);
+        await fetchUsers(data.groups[0]!.id);
+      }
+    } catch (error) {
+      console.error("Request failed:", error);
+    }
+    setActiveTab("users");
+    return;
+  };
 
   return (
     <div className="flex h-screen">
-      {message && <Message type={message.type} message={message.text} />}
-      {/* Sidebar */}
-
       <aside className="w-1/4 border-r bg-gray-100 p-4">
         <h2 className="mb-4 text-lg font-semibold">Jūsų grupės</h2>
         <div className="space-y-2">
-          {groups.map((group) => (
-            <button
-              key={group.id}
-              className={`flex w-full items-center justify-between rounded-md p-2 text-left ${
-                selectedGroup?.id === group.id
-                  ? "bg-blue-500 text-white"
-                  : "border bg-white"
-              }`}
-              onClick={() => handleGroupSelect(group)}
-            >
-              <span className="font-semibold">{group.name}</span>
-              <span className="text-sm text-gray-300">{group.role}</span>
-            </button>
-          ))}
+          {isLoadingGroups
+            ? // Skeleton loader (3 placeholders)
+              Array.from({ length: 3 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-10 w-full animate-pulse rounded-md bg-gray-200"
+                ></div>
+              ))
+            : groups.map((group) => (
+                <button
+                  key={group.id}
+                  className={`flex w-full items-center justify-between rounded-md p-2 text-left ${
+                    selectedGroup?.id === group.id
+                      ? "bg-blue-500 text-white"
+                      : "border bg-white"
+                  }`}
+                  onClick={() => handleGroupSelect(group)}
+                >
+                  <span className="font-semibold">{group.name}</span>
+                  <span className="text-sm text-gray-300">{group.role}</span>
+                </button>
+              ))}
+
           {isCreating ? (
             <div className="space-y-2">
               <input
                 type="text"
-                placeholder="New Group Name"
+                placeholder="Įveskite naujos grupės pavadinimą"
                 className="w-full rounded-md border p-2"
                 value={newGroupName}
                 onChange={(e) => setNewGroupName(e.target.value)}
               />
               <div className="flex space-x-2">
                 <button
-                  className="rounded-md bg-green-500 p-2 text-white"
+                  className="rounded-md bg-blue-500 px-4 py-2 text-xs text-white transition duration-200 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   onClick={handleSaveGroup}
                 >
                   Sukurti
                 </button>
                 <button
-                  className="rounded-md bg-gray-300 p-2"
+                  className="rounded-md bg-gray-400 px-4 py-2 text-xs text-white transition duration-200 hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400"
                   onClick={handleCancelCreate}
                 >
                   Atšaukti
@@ -216,7 +309,7 @@ export default function Home() {
             </div>
           ) : (
             <button
-              className="flex w-full items-center justify-center gap-2 rounded-md border bg-white p-2 text-left"
+              className="flex w-full items-center justify-center gap-2 rounded-md border bg-white p-2 text-left transition duration-200 hover:bg-blue-300"
               onClick={handleCreateGroup}
             >
               <svg
@@ -316,21 +409,133 @@ export default function Home() {
 
             <div className="rounded-md border bg-white p-4">
               <h2 className="mb-4 text-lg font-semibold">Grupės nariai:</h2>
-              {users.length > 0 ? (
+
+              {isLoadingUsers ? (
+                // Skeleton Loader
                 <ul className="space-y-2">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <li
+                      key={i}
+                      className="h-7 w-full animate-pulse rounded-md bg-gray-200"
+                    ></li>
+                  ))}
+                </ul>
+              ) : users.length > 0 ? (
+                // Render Users
+                <ul className="w-full">
+                  {showUserDeleteConfirm && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                      <div className="items-center rounded-lg bg-white p-6 shadow-lg">
+                        <h2 className="mb-4 text-lg font-semibold">
+                          Ar tikrai norite pašalinti vartotoją{" "}
+                          {selectedUser!.first_name} {selectedUser!.last_name}{" "}
+                          iš grupės?
+                        </h2>
+                        <h3 className="text-sm text-red-500">
+                          Šio veiksmo atkurti negalima.
+                        </h3>
+                        <div className="mt-4 flex justify-center space-x-2">
+                          <button
+                            className="rounded-md bg-red-500 px-4 py-2 text-xs text-white transition duration-200 hover:bg-red-600"
+                            onClick={() =>
+                              handleRemoveUser(selectedUser!.clerk_id)
+                            }
+                          >
+                            Ištrinti
+                          </button>
+                          <button
+                            className="rounded-md bg-gray-400 px-4 py-2 text-xs text-white transition duration-200 hover:bg-gray-500"
+                            onClick={() => setShowUserDeleteConfirm(false)}
+                          >
+                            Atšaukti
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   {users.map((user) => (
-                    <li key={user.id} className="border-b p-2">
-                      {user.first_name} {user.last_name} ({user.email})
+                    <li
+                      key={user.id}
+                      className="grid grid-cols-3 items-center border-b-2 p-2 shadow-sm"
+                    >
+                      <div className="col-span-1">
+                        {user.first_name} {user.last_name} ({user.email})
+                      </div>
+                      <div className="col-span-1 text-sm text-gray-400">
+                        {user.role}
+                      </div>
+                      <div className="col-span-1 flex justify-end">
+                        {selectedGroup?.role === "Administratorius" &&
+                          selectedGroup?.ownerId !== user.clerk_id && (
+                            <button
+                              onClick={() => {
+                                setSelectedUser(user);
+                                setShowUserDeleteConfirm(true);
+                              }}
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth="1.5"
+                                stroke="currentColor"
+                                className="h-5 w-5"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M6 18L18 6M6 6l12 12"
+                                />
+                              </svg>
+                            </button>
+                          )}
+                      </div>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p>Loading ...</p>
+                <p>Nėra narių</p>
               )}
             </div>
           </div>
         )}
-        {activeTab === "settings" && <div>Settings panel...</div>}
+        {activeTab === "settings" && (
+          <div>
+            {showDeleteConfirm && (
+              <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                <div className="items-center rounded-lg bg-white p-6 shadow-lg">
+                  <h2 className="mb-4 text-lg font-semibold">
+                    Ar tikrai norite ištrinti grupę?
+                  </h2>
+                  <h3 className="text-sm text-red-500">
+                    Šio veiksmo atkurti negalima.
+                  </h3>
+                  <div className="mt-4 flex justify-center space-x-2">
+                    <button
+                      className="rounded-md bg-red-500 px-4 py-2 text-xs text-white transition duration-200 hover:bg-red-600"
+                      onClick={handleGroupDelete}
+                    >
+                      Ištrinti
+                    </button>
+                    <button
+                      className="rounded-md bg-gray-400 px-4 py-2 text-xs text-white transition duration-200 hover:bg-gray-500"
+                      onClick={() => setShowDeleteConfirm(false)}
+                    >
+                      Atšaukti
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="rounded-md bg-red-500 px-4 py-2 text-xs text-white transition duration-200 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+            >
+              Ištrinti grupę.
+            </button>
+          </div>
+        )}
         {activeTab === "analytics" && <div>Analytics dashboard...</div>}
       </main>
     </div>
