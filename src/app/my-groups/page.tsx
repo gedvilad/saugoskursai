@@ -31,7 +31,9 @@ interface ApiResponseUsers {
     clerk_id: string;
   }[];
 }
-
+interface ErrorResponse {
+  message: string;
+}
 export default function Home() {
   const router = useRouter();
   const { userId } = useAuth();
@@ -140,40 +142,25 @@ export default function Home() {
     }
   };
   const handleAddUser = async () => {
-    try {
-      const response = await fetch(`/api/groups/addUser`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          clerkId: selectedUser!.clerk_id,
-          groupId: selectedGroup!.id,
-        }),
-      });
+    const response = await fetch(`/api/groups/addUser`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        clerkId: selectedUser!.clerk_id,
+        groupId: selectedGroup!.id,
+      }),
+    });
 
-      if (!response.ok) {
-        if (response.status === 409) {
-          toast.error("Vartotojas jau yra grupėje.");
-        } else if (response.status === 404) {
-          toast.error("Grupė nerasata.");
-        } else if (response.status === 400) {
-          toast.error("Trūksta privalomų reikšmių (grupės id, vartotojo id).");
-        }
-        return;
-      }
-
-      toast.success("Vartotojas sėkmingai pridėtas į grupę!");
-
-      // Refresh users after successful addition
-      await fetchUsers(selectedGroup!.id);
-      setSelectedUser(null);
-      setSearchTerm("");
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message || "An error occurred while adding the user");
-      } else {
-        toast.error("An unknown error occurred while adding the user");
-      }
+    const errorData = (await response.json()) as ErrorResponse;
+    if (!response.ok) {
+      toast.error(errorData.message);
+      return;
     }
+
+    toast.success(errorData.message);
+    await fetchUsers(selectedGroup!.id);
+    setSelectedUser(null);
+    setSearchTerm("");
   };
 
   const filteredUsers = allUsers.filter((user) =>
