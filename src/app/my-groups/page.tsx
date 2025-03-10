@@ -59,6 +59,7 @@ export default function Home() {
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [isLoadingGroups, setIsLoadingGroups] = useState(true);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showUserDeleteConfirm, setShowUserDeleteConfirm] = useState(false);
 
   useEffect(() => {
     const fetchGroups = async () => {
@@ -194,6 +195,8 @@ export default function Home() {
     setShowUserList(false); // Hide the dropdown
   };
   const handleRemoveUser = async (userIdToRemove: string) => {
+    setShowUserDeleteConfirm(false);
+    setSelectedUser(null);
     if (!selectedGroup) return;
 
     if (userIdToRemove === userId) {
@@ -420,6 +423,36 @@ export default function Home() {
               ) : users.length > 0 ? (
                 // Render Users
                 <ul className="w-full">
+                  {showUserDeleteConfirm && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                      <div className="items-center rounded-lg bg-white p-6 shadow-lg">
+                        <h2 className="mb-4 text-lg font-semibold">
+                          Ar tikrai norite pašalinti vartotoją{" "}
+                          {selectedUser!.first_name} {selectedUser!.last_name}{" "}
+                          iš grupės?
+                        </h2>
+                        <h3 className="text-sm text-red-500">
+                          Šio veiksmo atkurti negalima.
+                        </h3>
+                        <div className="mt-4 flex justify-center space-x-2">
+                          <button
+                            className="rounded-md bg-red-500 px-4 py-2 text-xs text-white transition duration-200 hover:bg-red-600"
+                            onClick={() =>
+                              handleRemoveUser(selectedUser!.clerk_id)
+                            }
+                          >
+                            Ištrinti
+                          </button>
+                          <button
+                            className="rounded-md bg-gray-400 px-4 py-2 text-xs text-white transition duration-200 hover:bg-gray-500"
+                            onClick={() => setShowUserDeleteConfirm(false)}
+                          >
+                            Atšaukti
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   {users.map((user) => (
                     <li
                       key={user.id}
@@ -435,7 +468,10 @@ export default function Home() {
                         {selectedGroup?.role === "Administratorius" &&
                           selectedGroup?.ownerId !== user.clerk_id && (
                             <button
-                              onClick={() => handleRemoveUser(user.clerk_id)}
+                              onClick={() => {
+                                setSelectedUser(user);
+                                setShowUserDeleteConfirm(true);
+                              }}
                               className="text-red-500 hover:text-red-700"
                             >
                               <svg
