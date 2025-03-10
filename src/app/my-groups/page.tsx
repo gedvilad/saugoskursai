@@ -129,6 +129,7 @@ export default function Home() {
     setActiveTab("users");
     setIsCreating(false);
     setNewGroupName("");
+    await fetchUsers(data.groups[data.groups.length - 1]!.id);
   };
 
   const handleCancelCreate = () => {
