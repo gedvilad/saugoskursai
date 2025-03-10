@@ -1,16 +1,13 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-import { NextResponse } from "next/server";
-import { addUserToGroup } from "~/server/group-queries";
 import { db } from "~/server/db";
 import { groups, userGroups, users } from "~/server/db/schema";
 import { and, eq } from "drizzle-orm";
 interface CreateUserRequest {
   clerkId: string;
-  groupId: string;
+  groupId: number;
 }
 export async function POST(req: Request) {
   try {
-    const { clerkId, groupId } = await req.json();
+    const { clerkId, groupId } = (await req.json()) as CreateUserRequest;
 
     if (!clerkId || !groupId) {
       return new Response(
@@ -25,7 +22,10 @@ export async function POST(req: Request) {
     });
 
     if (!group) {
-      //throw new Error("Group not found");
+      return new Response(
+        JSON.stringify({ message: "KLAIDA: Grupė nerasta" }),
+        { status: 409, headers: { "Content-Type": "application/json" } },
+      );
     }
 
     // Check if the user is already in the group
@@ -56,20 +56,23 @@ export async function POST(req: Request) {
       JSON.stringify({ message: "User added successfully" }),
       { status: 200, headers: { "Content-Type": "application/json" } },
     );
-  } catch (error: any) {
-    console.error("Error adding user:", error);
-
-    // Check error message and return specific status
+  } catch (error: unknown) {
     let status = 500;
-    if (error.message === "User is already in this group") {
-      status = 409; // 409 Conflict - User is already in group
-    } else if (error.message === "Group not found") {
-      status = 404; // 404 Not Found - Group doesn't exist
+    let message = "Internal Server Error";
+
+    if (error instanceof Error) {
+      message = error.message;
+
+      if (error.message === "User is already in this group") {
+        status = 409;
+      } else if (error.message === "Group not found") {
+        status = 404;
+      }
     }
 
-    return new Response(
-      JSON.stringify({ message: error.message || "Internal Server Error" }),
-      { status, headers: { "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ message }), {
+      status,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }

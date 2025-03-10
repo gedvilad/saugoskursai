@@ -149,10 +149,8 @@ export default function Home() {
           toast.error("Group not found.");
         } else if (response.status === 400) {
           toast.error("Missing required fields.");
-        } else {
-          toast.error(result.message || "An unexpected error occurred.");
         }
-        return; // Stop execution if there's an error
+        return;
       }
 
       toast.success("User added successfully!");
@@ -162,7 +160,11 @@ export default function Home() {
       setSelectedUser(null);
       setSearchTerm("");
     } catch (error) {
-      toast.error(error.message || "An error occurred while adding the user.");
+      if (error instanceof Error) {
+        toast.error(error.message || "An error occurred while adding the user");
+      } else {
+        toast.error("An unknown error occurred while adding the user");
+      }
     }
   };
 
