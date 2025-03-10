@@ -74,7 +74,7 @@ export default function Home() {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
         const data = (await res.json()) as ApiResponseUsers;
-        setTimeout(() => setIsLoadingGroups(false), 1000);
+        setTimeout(() => setIsLoadingGroups(false), 700);
         setAllUsers(data.users);
       } catch (error) {
         console.error("Error fetching users:", error);
@@ -131,7 +131,7 @@ export default function Home() {
       if (!res.ok) throw new Error("Failed to fetch users");
 
       const data = (await res.json()) as ApiResponseUsers;
-      setTimeout(() => setIsLoadingUsers(false), 1000);
+      setTimeout(() => setIsLoadingUsers(false), 700);
       setUsers(data.users);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -248,20 +248,20 @@ export default function Home() {
             <div className="space-y-2">
               <input
                 type="text"
-                placeholder="New Group Name"
+                placeholder="Įveskite naujos grupės pavadinimą"
                 className="w-full rounded-md border p-2"
                 value={newGroupName}
                 onChange={(e) => setNewGroupName(e.target.value)}
               />
               <div className="flex space-x-2">
                 <button
-                  className="rounded-md bg-green-500 p-2 text-white"
+                  className="rounded-md bg-blue-500 px-4 py-2 text-xs text-white transition duration-200 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   onClick={handleSaveGroup}
                 >
                   Sukurti
                 </button>
                 <button
-                  className="rounded-md bg-gray-300 p-2"
+                  className="rounded-md bg-gray-400 px-4 py-2 text-xs text-white transition duration-200 hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400"
                   onClick={handleCancelCreate}
                 >
                   Atšaukti
@@ -270,7 +270,7 @@ export default function Home() {
             </div>
           ) : (
             <button
-              className="flex w-full items-center justify-center gap-2 rounded-md border bg-white p-2 text-left"
+              className="flex w-full items-center justify-center gap-2 rounded-md border bg-white p-2 text-left transition duration-200 hover:bg-blue-300"
               onClick={handleCreateGroup}
             >
               <svg
