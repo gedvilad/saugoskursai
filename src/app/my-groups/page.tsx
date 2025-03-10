@@ -5,6 +5,7 @@ import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Message from "../_components/message";
 import toast from "react-hot-toast";
+import { set } from "zod";
 interface Group {
   id: number;
   name: string;
@@ -48,6 +49,8 @@ export default function Home() {
     type: "success" | "error";
     text: string;
   } | null>(null);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
+  const [isLoadingGroups, setIsLoadingGroups] = useState(true);
 
   useEffect(() => {
     const fetchGroups = async () => {
@@ -65,11 +68,13 @@ export default function Home() {
     };
     const fetchAllUsers = async () => {
       try {
+        setIsLoadingGroups(true);
         const res = await fetch("/api/users");
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
         const data = (await res.json()) as ApiResponseUsers;
+        setTimeout(() => setIsLoadingGroups(false), 1000);
         setAllUsers(data.users);
       } catch (error) {
         console.error("Error fetching users:", error);
@@ -114,10 +119,13 @@ export default function Home() {
   };
   const fetchUsers = async (groupId: number) => {
     try {
+      setIsLoadingUsers(true);
+
       const res = await fetch(`/api/groups?groupId=${groupId}`);
       if (!res.ok) throw new Error("Failed to fetch users");
 
       const data = (await res.json()) as ApiResponseUsers;
+      setTimeout(() => setIsLoadingUsers(false), 1000);
       setUsers(data.users);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -144,16 +152,16 @@ export default function Home() {
 
       if (!response.ok) {
         if (response.status === 409) {
-          toast.error("User is already in this group.");
+          toast.error("Vartotojas jau yra grupėje.");
         } else if (response.status === 404) {
-          toast.error("Group not found.");
+          toast.error("Grupė nerasata.");
         } else if (response.status === 400) {
-          toast.error("Missing required fields.");
+          toast.error("Trūksta privalomų reikšmių (grupės id, vartotojo id).");
         }
         return;
       }
 
-      toast.success("User added successfully!");
+      toast.success("Vartotojas sėkmingai pridėtas į grupę!");
 
       // Refresh users after successful addition
       await fetchUsers(selectedGroup!.id);
@@ -194,20 +202,29 @@ export default function Home() {
       <aside className="w-1/4 border-r bg-gray-100 p-4">
         <h2 className="mb-4 text-lg font-semibold">Jūsų grupės</h2>
         <div className="space-y-2">
-          {groups.map((group) => (
-            <button
-              key={group.id}
-              className={`flex w-full items-center justify-between rounded-md p-2 text-left ${
-                selectedGroup?.id === group.id
-                  ? "bg-blue-500 text-white"
-                  : "border bg-white"
-              }`}
-              onClick={() => handleGroupSelect(group)}
-            >
-              <span className="font-semibold">{group.name}</span>
-              <span className="text-sm text-gray-300">{group.role}</span>
-            </button>
-          ))}
+          {isLoadingGroups
+            ? // Skeleton loader (3 placeholders)
+              Array.from({ length: 3 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-10 w-full animate-pulse rounded-md bg-gray-300"
+                ></div>
+              ))
+            : groups.map((group) => (
+                <button
+                  key={group.id}
+                  className={`flex w-full items-center justify-between rounded-md p-2 text-left ${
+                    selectedGroup?.id === group.id
+                      ? "bg-blue-500 text-white"
+                      : "border bg-white"
+                  }`}
+                  onClick={() => handleGroupSelect(group)}
+                >
+                  <span className="font-semibold">{group.name}</span>
+                  <span className="text-sm text-gray-300">{group.role}</span>
+                </button>
+              ))}
+
           {isCreating ? (
             <div className="space-y-2">
               <input
@@ -334,7 +351,19 @@ export default function Home() {
 
             <div className="rounded-md border bg-white p-4">
               <h2 className="mb-4 text-lg font-semibold">Grupės nariai:</h2>
-              {users.length > 0 ? (
+
+              {isLoadingUsers ? (
+                // Skeleton Loader
+                <ul className="space-y-2">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <li
+                      key={i}
+                      className="h-7 w-full animate-pulse rounded-md bg-gray-200"
+                    ></li>
+                  ))}
+                </ul>
+              ) : users.length > 0 ? (
+                // Render Users
                 <ul className="space-y-2">
                   {users.map((user) => (
                     <li key={user.id} className="border-b p-2">
@@ -343,7 +372,7 @@ export default function Home() {
                   ))}
                 </ul>
               ) : (
-                <p>Loading ...</p>
+                <p>Nėra narių</p>
               )}
             </div>
           </div>
