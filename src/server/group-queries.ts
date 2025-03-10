@@ -2,6 +2,7 @@ import "server-only";
 import { db } from "~/server/db";
 import { groups, userGroups, users } from "./db/schema";
 import { and, eq } from "drizzle-orm";
+import { userAgentFromString } from "next/server";
 export async function createGroup(name: string, ownerId: string) {
   // Step 1: Insert into `groups` and get the new group ID
   const [newGroup] = await db
@@ -51,6 +52,7 @@ export async function getGroupAllUsers(groupId: number) {
       email: users.email,
       first_name: users.first_name,
       last_name: users.last_name,
+      role: userGroups.role,
     })
     .from(userGroups)
     .innerJoin(users, eq(userGroups.userId, users.clerk_id)) // Join users table

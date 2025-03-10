@@ -5,7 +5,7 @@ import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Message from "../_components/message";
 import toast from "react-hot-toast";
-import { set } from "zod";
+export const dynamic = "force-dynamic";
 interface Group {
   id: number;
   name: string;
@@ -18,6 +18,7 @@ interface User {
   first_name: string;
   last_name: string;
   clerk_id: string;
+  role: string;
 }
 interface ApiResponse {
   groups: { id: number; name: string; createdAt: string; role: string }[];
@@ -29,6 +30,7 @@ interface ApiResponseUsers {
     first_name: string;
     last_name: string;
     clerk_id: string;
+    role: string;
   }[];
 }
 interface ErrorResponse {
@@ -47,10 +49,6 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showUserList, setShowUserList] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [message, setMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [isLoadingGroups, setIsLoadingGroups] = useState(true);
 
@@ -99,7 +97,11 @@ export default function Home() {
     const response = await fetch("/api/groups", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newGroupName, ownerId: userId }),
+      body: JSON.stringify({
+        action: "create",
+        name: newGroupName,
+        ownerId: userId,
+      }),
     });
 
     const errorData = (await response.json()) as ErrorResponse;
@@ -182,10 +184,38 @@ export default function Home() {
     setSelectedUser(user); // Store the selected user
     setShowUserList(false); // Hide the dropdown
   };
+  const handleGroupDelete = async () => {
+    const response = await fetch("/api/groups", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "delete",
+        groupId: selectedGroup?.id,
+      }),
+    });
+    const errorData = (await response.json()) as ErrorResponse;
+    if (!response.ok) {
+      toast.error(errorData.message);
+      return;
+    }
+    toast.success(errorData.message);
+    try {
+      const res = await fetch(`/api/groups?userId=${userId}`);
+      const data = (await res.json()) as ApiResponse;
+      if (data.groups && data.groups.length > 0) {
+        setGroups(data.groups);
+        setSelectedGroup(data.groups[0]!);
+        await fetchUsers(data.groups[0]!.id);
+      }
+    } catch (error) {
+      console.error("Request failed:", error);
+    }
+    setActiveTab("users");
+    return;
+  };
 
   return (
     <div className="flex h-screen">
-      {message && <Message type={message.type} message={message.text} />}
       {/* Sidebar */}
 
       <aside className="w-1/4 border-r bg-gray-100 p-4">
@@ -355,8 +385,14 @@ export default function Home() {
                 // Render Users
                 <ul className="space-y-2">
                   {users.map((user) => (
-                    <li key={user.id} className="border-b p-2">
-                      {user.first_name} {user.last_name} ({user.email})
+                    <li
+                      key={user.id}
+                      className="flex justify-between border-b p-2"
+                    >
+                      <div>
+                        {user.first_name} {user.last_name} ({user.email})
+                      </div>
+                      <div className="text-sm text-gray-400">{user.role}</div>
                     </li>
                   ))}
                 </ul>
@@ -366,7 +402,16 @@ export default function Home() {
             </div>
           </div>
         )}
-        {activeTab === "settings" && <div>Settings panel...</div>}
+        {activeTab === "settings" && (
+          <div>
+            <button
+              onClick={handleGroupDelete}
+              className="rounded-md bg-red-500 px-4 py-2 text-xs text-white transition duration-200 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+            >
+              Ištrinti grupę.
+            </button>
+          </div>
+        )}
         {activeTab === "analytics" && <div>Analytics dashboard...</div>}
       </main>
     </div>
