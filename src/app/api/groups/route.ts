@@ -17,23 +17,23 @@ export async function POST(req: Request) {
     const body = (await req.json()) as CreateGroupRequest;
 
     if (!body.name || !body.ownerId) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 },
+      return new Response(
+        JSON.stringify({ message: "Grupė privalo turėti pavadinimą!" }),
+        { status: 409, headers: { "Content-Type": "application/json" } },
       );
     }
 
     await createGroup(body.name, body.ownerId);
 
-    return NextResponse.json(
-      { message: "Group created successfully" },
-      { status: 201 },
+    return new Response(
+      JSON.stringify({ message: "Grupė sėkmingai sukurta" }),
+      { status: 200, headers: { "Content-Type": "application/json" } },
     );
   } catch (error) {
-    console.error("Error creating group:", error);
-    return NextResponse.json(
-      { error: "Failed to create group" },
-      { status: 500 },
+    return new Response(
+      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+      JSON.stringify({ message: "Įvyko klaida kuriant grupę" + error }),
+      { status: 409, headers: { "Content-Type": "application/json" } },
     );
   }
 }

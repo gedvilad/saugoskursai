@@ -36,7 +36,6 @@ export function Header() {
       try {
         const response = await fetch(`/api/users?clerkId=${userId}`);
         const apiResponse = (await response.json()) as ApiResponse; // Correct type
-        console.log("Fetched user data:", apiResponse);
 
         if (response.ok) {
           setUserData(apiResponse.user); // Extract the 'user' property

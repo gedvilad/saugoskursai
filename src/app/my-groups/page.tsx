@@ -96,16 +96,18 @@ export default function Home() {
   };
 
   const handleSaveGroup = async () => {
-    if (newGroupName.trim() === "") {
-      alert("Group name cannot be empty.");
-      return;
-    }
-
-    await fetch("/api/groups", {
+    const response = await fetch("/api/groups", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: newGroupName, ownerId: userId }),
     });
+
+    const errorData = (await response.json()) as ErrorResponse;
+    if (!response.ok) {
+      toast.error(errorData.message);
+      return;
+    }
+    toast.success(errorData.message);
     const res = await fetch(`/api/groups?userId=${userId}`);
     const data = (await res.json()) as ApiResponse;
 
@@ -194,7 +196,7 @@ export default function Home() {
               Array.from({ length: 3 }).map((_, i) => (
                 <div
                   key={i}
-                  className="h-10 w-full animate-pulse rounded-md bg-gray-300"
+                  className="h-10 w-full animate-pulse rounded-md bg-gray-200"
                 ></div>
               ))
             : groups.map((group) => (
