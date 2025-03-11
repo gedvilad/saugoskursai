@@ -24,11 +24,13 @@ interface ApiResponse {
   user: User;
 }
 interface Notification {
-  id: number;
   message: string;
   created_at: string;
+  status: string;
 }
-
+interface ApiResponseNotification {
+  data: Notification[]; // Define the expected structure
+}
 export function Header() {
   const router = useRouter();
   const { userId } = useAuth();
@@ -37,24 +39,45 @@ export function Header() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
 
-  /*useEffect(() => {
-    if (!userId) return;
-
-    (async () => {
-      try {
-        const response = await fetch(`/api/users?clerkId=${userId}`);
-        const apiResponse = (await response.json()) as ApiResponse;
-
-        if (response.ok) {
-          setUserData(apiResponse.user);
-        } else {
-          console.error("Error fetching user data:", response.status);
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      if (userId) {
+        try {
+          const res = await fetch(`/api/header?userId=${userId}`);
+          const dataResponse = (await res.json()) as ApiResponseNotification;
+          if (dataResponse.data) {
+            setNotifications(dataResponse.data);
+          } else {
+            setNotifications([]);
+          }
+        } catch (error) {
+          console.error("Request failed:", error);
         }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
       }
-    })();
-  }, [userId]);*/
+    };
+    const fetchUserInfo = async () => {
+      if (userId) {
+        try {
+          const response = await fetch(`/api/users?clerkId=${userId}`);
+          const apiResponse = (await response.json()) as ApiResponse;
+
+          if (response.ok) {
+            setUserData(apiResponse.user);
+          } else {
+            console.error("Error fetching user data:", response.status);
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      }
+    };
+    fetchUserInfo().catch((error) =>
+      console.error("Error fetching user info:", error),
+    );
+    fetchNotifications().catch((error) =>
+      console.error("Error fetching groups:", error),
+    );
+  }, [userId]);
 
   return (
     <div className="fixed top-0 z-50 mb-4 flex w-full border-b border-black bg-white text-lg">
