@@ -21,38 +21,43 @@ interface User {
 }
 
 interface ApiResponse {
-  user: User; // The API returns an object with a 'user' property
+  user: User;
 }
 
 export function Header() {
   const router = useRouter();
   const { userId } = useAuth();
   const [userData, setUserData] = useState<User>();
+  const [notifications, setNotifications] = useState<string[]>([
+    "New policy update",
+    "Safety training scheduled",
+    "Reminder: Wear PPE",
+  ]);
+  const [showNotifications, setShowNotifications] = useState(false);
 
-  useEffect(() => {
+  /*useEffect(() => {
     if (!userId) return;
 
     (async () => {
       try {
         const response = await fetch(`/api/users?clerkId=${userId}`);
-        const apiResponse = (await response.json()) as ApiResponse; // Correct type
+        const apiResponse = (await response.json()) as ApiResponse;
 
         if (response.ok) {
-          setUserData(apiResponse.user); // Extract the 'user' property
+          setUserData(apiResponse.user);
         } else {
           console.error("Error fetching user data:", response.status);
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
-      } finally {
       }
-    })().catch((error) => console.error("Unhandled error:", error));
-  }, [userId]);
+    })();
+  }, [userId]);*/
 
   return (
     <div className="fixed top-0 z-50 mb-4 flex w-full border-b border-black bg-white text-lg">
       <div className="m-2 border-2 border-black">LOGO</div>
-      <div className="flex w-full flex-wrap justify-end space-x-10 p-2">
+      <div className="relative flex w-full flex-wrap justify-end space-x-6 p-2">
         <button
           className="w-32 hover:text-xl"
           onClick={() => router.push("/teorija")}
@@ -79,6 +84,41 @@ export function Header() {
             Admin panel
           </button>
         )}
+        <div className="relative">
+          <button
+            onClick={() => setShowNotifications(!showNotifications)}
+            className="relative rounded-full bg-gray-100 p-2 hover:bg-gray-200"
+          >
+            <img
+              src="https://static-00.iconduck.com/assets.00/notification-icon-1842x2048-xr57og4y.png"
+              alt="Notifications"
+              className="h-5 w-5" // Adjust size as needed
+            />
+            {notifications.length > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+                {notifications.length}
+              </span>
+            )}
+          </button>
+          {showNotifications && (
+            <div className="absolute right-0 mt-2 w-64 rounded-lg border border-gray-300 bg-white shadow-lg">
+              <ul className="p-2">
+                {notifications.length > 0 ? (
+                  notifications.map((notif, index) => (
+                    <li
+                      key={index}
+                      className="border-b p-2 last:border-0 hover:bg-gray-100"
+                    >
+                      {notif}
+                    </li>
+                  ))
+                ) : (
+                  <li className="p-2 text-gray-500">No new notifications</li>
+                )}
+              </ul>
+            </div>
+          )}
+        </div>
         <ClerkProvider>
           <SignedOut>
             <SignInButton>
