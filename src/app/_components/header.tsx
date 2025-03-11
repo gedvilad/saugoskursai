@@ -23,16 +23,18 @@ interface User {
 interface ApiResponse {
   user: User;
 }
+interface Notification {
+  id: number;
+  message: string;
+  created_at: string;
+}
 
 export function Header() {
   const router = useRouter();
   const { userId } = useAuth();
   const [userData, setUserData] = useState<User>();
-  const [notifications, setNotifications] = useState<string[]>([
-    "New policy update",
-    "Safety training scheduled",
-    "Reminder: Wear PPE",
-  ]);
+  const [newNotifications, setNewNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
 
   /*useEffect(() => {
@@ -94,9 +96,9 @@ export function Header() {
               alt="Notifications"
               className="h-5 w-5" // Adjust size as needed
             />
-            {notifications.length > 0 && (
+            {newNotifications.length > 0 && (
               <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
-                {notifications.length}
+                {newNotifications.length}
               </span>
             )}
           </button>
@@ -107,13 +109,13 @@ export function Header() {
                   notifications.map((notif, index) => (
                     <li
                       key={index}
-                      className="border-b p-2 last:border-0 hover:bg-gray-100"
+                      className="border-b p-2 text-sm last:border-0 hover:bg-gray-100"
                     >
-                      {notif}
+                      {notif.message}
                     </li>
                   ))
                 ) : (
-                  <li className="p-2 text-gray-500">No new notifications</li>
+                  <li className="p-2 text-gray-500">Neturite pranešimų</li>
                 )}
               </ul>
             </div>
