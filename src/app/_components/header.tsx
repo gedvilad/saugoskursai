@@ -44,12 +44,13 @@ export function Header() {
       if (userId) {
         try {
           const res = await fetch(`/api/header?userId=${userId}`);
-          const dataResponse = (await res.json()) as ApiResponseNotification;
-          if (dataResponse.data) {
-            setNotifications(dataResponse.data);
-          } else {
-            setNotifications([]);
-          }
+          const { dataNew, data } = (await res.json()) as {
+            dataNew: Notification[];
+            data: Notification[] | null;
+          };
+
+          setNewNotifications(dataNew || []);
+          setNotifications(data ?? []);
         } catch (error) {
           console.error("Request failed:", error);
         }
@@ -79,10 +80,23 @@ export function Header() {
     );
   }, [userId]);
 
+  const handleOpenNotif = async () => {
+    setShowNotifications(!showNotifications);
+    if (showNotifications === true) {
+      const res = await fetch("/api/header?userId=" + userId, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = (await res.json()) as ApiResponseNotification;
+      setNotifications(data.data);
+      setNewNotifications([]);
+    }
+  };
+
   return (
     <div className="fixed top-0 z-50 mb-4 flex w-full border-b border-black bg-white text-lg">
       <div className="m-2 border-2 border-black">LOGO</div>
-      <div className="relative flex w-full flex-wrap justify-end space-x-6 p-2">
+      <div className="font-Jakarta relative flex w-full flex-wrap justify-end space-x-6 p-2">
         <button
           className="w-32 hover:text-xl"
           onClick={() => router.push("/teorija")}
@@ -111,7 +125,7 @@ export function Header() {
         )}
         <div className="relative">
           <button
-            onClick={() => setShowNotifications(!showNotifications)}
+            onClick={handleOpenNotif}
             className="relative rounded-full bg-gray-100 p-2 hover:bg-gray-200"
           >
             <img
@@ -126,17 +140,19 @@ export function Header() {
             )}
           </button>
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-64 rounded-lg border border-gray-300 bg-white shadow-lg">
+            <div className="absolute right-0 mt-2 w-80 rounded-lg border border-gray-300 bg-white shadow-lg">
               <ul className="p-2">
-                {notifications.length > 0 ? (
-                  notifications.map((notif, index) => (
-                    <li
-                      key={index}
-                      className="border-b p-2 text-sm last:border-0 hover:bg-gray-100"
-                    >
-                      {notif.message}
-                    </li>
-                  ))
+                {[...newNotifications, ...notifications].length > 0 ? (
+                  [...newNotifications, ...notifications].map(
+                    (notif, index) => (
+                      <li
+                        key={index}
+                        className={`border-b p-2 text-xs last:border-0 hover:bg-gray-100 ${newNotifications.includes(notif) ? "font-bold" : ""}`}
+                      >
+                        {notif.message}
+                      </li>
+                    ),
+                  )
                 ) : (
                   <li className="p-2 text-gray-500">Neturite pranešimų</li>
                 )}

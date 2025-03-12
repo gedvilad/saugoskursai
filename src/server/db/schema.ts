@@ -83,7 +83,7 @@ export const notifications = createTable(
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    status: integer("status").default(0).notNull(),
+    status: integer("status").default(1).notNull(),
   },
   (table) => ({
     notificationIndex: index("notification_idx").on(table.id),

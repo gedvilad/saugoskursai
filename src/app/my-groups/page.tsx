@@ -515,46 +515,78 @@ export default function Home() {
                   ) : users.length > 0 ? (
                     // Render Users
                     <ul className="w-full">
-                      {users.map((user) => (
-                        <li
-                          key={user.id}
-                          className="grid grid-cols-3 items-center border-b-2 p-2 shadow-sm"
-                        >
-                          <div className="col-span-1">
-                            {user.first_name} {user.last_name} ({user.email})
+                      {showUserDeleteConfirm && (
+                        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                          <div className="items-center rounded-lg bg-white p-6 shadow-lg">
+                            <h2 className="mb-4 text-lg font-semibold">
+                              Ar tikrai norite pašalinti vartotoją{" "}
+                              {selectedUser!.first_name}{" "}
+                              {selectedUser!.last_name} iš grupės?
+                            </h2>
+                            <h3 className="text-sm text-red-500">
+                              Šio veiksmo atkurti negalima.
+                            </h3>
+                            <div className="mt-4 flex justify-center space-x-2">
+                              <button
+                                className="rounded-md bg-red-500 px-4 py-2 text-xs text-white transition duration-200 hover:bg-red-600"
+                                onClick={() =>
+                                  handleRemoveUser(selectedUser!.clerk_id)
+                                }
+                              >
+                                Ištrinti
+                              </button>
+                              <button
+                                className="rounded-md bg-gray-400 px-4 py-2 text-xs text-white transition duration-200 hover:bg-gray-500"
+                                onClick={() => setShowUserDeleteConfirm(false)}
+                              >
+                                Atšaukti
+                              </button>
+                            </div>
                           </div>
-                          <div className="col-span-1 text-sm text-gray-400">
-                            {user.role}
-                          </div>
-                          <div className="col-span-1 flex justify-end">
-                            {selectedGroup?.role === "Administratorius" &&
-                              selectedGroup?.ownerId !== user.clerk_id && (
-                                <button
-                                  onClick={() => {
-                                    setSelectedUser(user);
-                                    setShowUserDeleteConfirm(true);
-                                  }}
-                                  className="text-red-500 hover:text-red-700"
-                                >
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    strokeWidth="1.5"
-                                    stroke="currentColor"
-                                    className="h-5 w-5"
+                        </div>
+                      )}
+                      {users
+                        .filter((user) => user.role !== "Pakviestas") // Filter out users with the "Pakviestas" role
+                        .map((user) => (
+                          <li
+                            key={user.id}
+                            className="grid grid-cols-3 items-center border-b-2 p-2 shadow-sm"
+                          >
+                            <div className="col-span-1">
+                              {user.first_name} {user.last_name} ({user.email})
+                            </div>
+                            <div className="col-span-1 text-sm text-gray-400">
+                              {user.role}
+                            </div>
+                            <div className="col-span-1 flex justify-end">
+                              {selectedGroup?.role === "Administratorius" &&
+                                selectedGroup?.ownerId !== user.clerk_id && (
+                                  <button
+                                    onClick={() => {
+                                      setSelectedUser(user);
+                                      setShowUserDeleteConfirm(true);
+                                    }}
+                                    className="text-red-500 hover:text-red-700"
                                   >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      d="M6 18L18 6M6 6l12 12"
-                                    />
-                                  </svg>
-                                </button>
-                              )}
-                          </div>
-                        </li>
-                      ))}
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      strokeWidth="1.5"
+                                      stroke="currentColor"
+                                      className="h-5 w-5"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M6 18L18 6M6 6l12 12"
+                                      />
+                                    </svg>
+                                  </button>
+                                )}
+                            </div>
+                          </li>
+                        ))}
                     </ul>
                   ) : (
                     <p>Nėra narių</p>
