@@ -125,7 +125,7 @@ export async function POST(req: Request) {
 
       await db.insert(notifications).values({
         userId: body.clerkId,
-        message: `Jūs buvote pakviestas į grupę ${group.name}`,
+        message: `Gavote kvietimą į grupę: ${group.name}`,
         createdAt: new Date(),
       });
 
@@ -185,7 +185,11 @@ export async function POST(req: Request) {
             eq(userGroups.groupId, body.groupId),
           ),
         );
-      //-----------------------------------------------------------------------------
+      await db.insert(notifications).values({
+        userId: body.clerkId,
+        message: `Buvote pašalintas iš grupės: ${group.name}`,
+        createdAt: new Date(),
+      });
 
       return new Response(
         JSON.stringify({ message: "Vartotojas sėkmingai pašalintas" }),
