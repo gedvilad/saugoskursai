@@ -1,6 +1,7 @@
 "use client";
 export const dynamic = "force-dynamic";
 import { useEffect, useRef } from "react";
+import Image from "next/image";
 
 export default function Home() {
   const buttonBarRef = useRef<HTMLDivElement>(null);
@@ -9,10 +10,9 @@ export default function Home() {
     const section = document.getElementById(sectionId);
     if (section && buttonBarRef.current) {
       const buttonBarHeight = buttonBarRef.current.offsetHeight;
-
       const sectionPosition = section.getBoundingClientRect().top;
       const offsetPosition =
-        sectionPosition + window.pageYOffset - buttonBarHeight - 70;
+        sectionPosition + window.pageYOffset - buttonBarHeight - 20;
 
       window.scrollTo({
         top: offsetPosition,
@@ -22,9 +22,10 @@ export default function Home() {
   };
 
   return (
-    <div>
+    <div className="bg-gray-100 text-gray-900">
+      {/* Fixed Navigation Bar */}
       <div
-        className="fixed left-0 top-[45px] z-40 mb-4 flex w-full gap-4 bg-white p-4 shadow-md"
+        className="fixed left-0 top-[45px] z-50 flex w-full justify-center gap-6 bg-white bg-opacity-90 p-4 shadow-md backdrop-blur-md"
         ref={buttonBarRef}
       >
         {["section1", "section2", "section3"].map((section) => (
@@ -32,36 +33,58 @@ export default function Home() {
             key={section}
             href={`#${section}`}
             onClick={(e) => {
-              e.preventDefault(); // Prevent default anchor behavior
+              e.preventDefault();
               scrollToSection(section);
             }}
-            className="rounded bg-gray-200 px-4 py-2 transition hover:bg-gray-300"
+            className="rounded-lg bg-blue-500 px-5 py-2 text-white transition-all hover:bg-blue-600 active:scale-95"
           >
             {section.toUpperCase()}
           </a>
         ))}
       </div>
-      <div className="relative mt-8">
-        <div className="scroll-smooth pt-16">
+
+      {/* Main Content */}
+      <div className="relative mt-20 flex flex-col items-center space-y-16 p-6">
+        {[1, 2, 3].map((num) => (
           <div
-            id="section1"
-            className="m-8 flex items-center justify-center border-2 border-gray-200"
+            key={num}
+            id={`section${num}`}
+            className="flex w-full max-w-4xl flex-col rounded-lg border border-gray-300 bg-white p-8 shadow-lg"
           >
-            <h2 className="text-3xl font-bold">Section 1</h2>
+            <h2 className="mb-6 border-b pb-4 text-3xl font-bold text-gray-800">
+              Section {num}
+            </h2>
+            <div className="space-y-4 text-lg text-gray-700">
+              <p className="leading-relaxed">
+                Workplace safety is essential for preventing accidents and
+                ensuring a secure environment. In this section, you will learn
+                about fundamental safety measures.
+              </p>
+              <ul className="list-disc pl-5">
+                <li>Understanding workplace hazards</li>
+                <li>Proper use of safety equipment</li>
+                <li>Emergency procedures</li>
+              </ul>
+              <div className="mt-4 border-l-4 border-blue-500 bg-blue-100 p-4 text-blue-700">
+                <strong>Tip:</strong> Always wear protective gear when handling
+                hazardous materials.
+              </div>
+              {/* Example Image */}
+              <div className="mt-6 flex flex-col items-center">
+                <img
+                  src="https://cdn11.bigcommerce.com/s-10c6f/product_images/uploaded_images/types-of-hazards.jpg"
+                  alt="Example of safety procedure"
+                  width={400}
+                  height={300}
+                  className="rounded-lg shadow-md"
+                />
+                <p className="mt-2 text-sm text-gray-500">
+                  Example: Proper use of safety gear in the workplace.
+                </p>
+              </div>
+            </div>
           </div>
-          <div
-            id="section2"
-            className="m-8 flex h-screen items-center justify-center border-2 border-gray-200"
-          >
-            <h2 className="text-3xl font-bold">Section 2</h2>
-          </div>
-          <div
-            id="section3"
-            className="m-8 flex items-center justify-center border-2 border-gray-200"
-          >
-            <h2 className="text-3xl font-bold">Section 3</h2>
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   );

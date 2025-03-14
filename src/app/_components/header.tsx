@@ -21,38 +21,82 @@ interface User {
 }
 
 interface ApiResponse {
-  user: User; // The API returns an object with a 'user' property
+  user: User;
 }
-
+interface Notification {
+  message: string;
+  created_at: string;
+  status: string;
+}
+interface ApiResponseNotification {
+  data: Notification[]; // Define the expected structure
+}
 export function Header() {
   const router = useRouter();
   const { userId } = useAuth();
   const [userData, setUserData] = useState<User>();
+  const [newNotifications, setNewNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   useEffect(() => {
-    if (!userId) return;
+    const fetchNotifications = async () => {
+      if (userId) {
+        try {
+          const res = await fetch(`/api/header?userId=${userId}`);
+          const { dataNew, data } = (await res.json()) as {
+            dataNew: Notification[];
+            data: Notification[] | null;
+          };
 
-    (async () => {
-      try {
-        const response = await fetch(`/api/users?clerkId=${userId}`);
-        const apiResponse = (await response.json()) as ApiResponse; // Correct type
-
-        if (response.ok) {
-          setUserData(apiResponse.user); // Extract the 'user' property
-        } else {
-          console.error("Error fetching user data:", response.status);
+          setNewNotifications(dataNew || []);
+          setNotifications(data ?? []);
+        } catch (error) {
+          console.error("Request failed:", error);
         }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      } finally {
       }
-    })().catch((error) => console.error("Unhandled error:", error));
+    };
+    const fetchUserInfo = async () => {
+      if (userId) {
+        try {
+          const response = await fetch(`/api/users?clerkId=${userId}`);
+          const apiResponse = (await response.json()) as ApiResponse;
+
+          if (response.ok) {
+            setUserData(apiResponse.user);
+          } else {
+            console.error("Error fetching user data:", response.status);
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      }
+    };
+    fetchUserInfo().catch((error) =>
+      console.error("Error fetching user info:", error),
+    );
+    fetchNotifications().catch((error) =>
+      console.error("Error fetching groups:", error),
+    );
   }, [userId]);
+
+  const handleOpenNotif = async () => {
+    setShowNotifications(!showNotifications);
+    if (showNotifications === true) {
+      const res = await fetch("/api/header?userId=" + userId, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = (await res.json()) as ApiResponseNotification;
+      setNotifications(data.data);
+      setNewNotifications([]);
+    }
+  };
 
   return (
     <div className="fixed top-0 z-50 mb-4 flex w-full border-b border-black bg-white text-lg">
       <div className="m-2 border-2 border-black">LOGO</div>
-      <div className="flex w-full flex-wrap justify-end space-x-10 p-2">
+      <div className="font-Jakarta relative flex w-full flex-wrap justify-end space-x-6 p-2">
         <button
           className="w-32 hover:text-xl"
           onClick={() => router.push("/teorija")}
@@ -79,6 +123,43 @@ export function Header() {
             Admin panel
           </button>
         )}
+        <div className="relative">
+          <button
+            onClick={handleOpenNotif}
+            className="relative rounded-full bg-gray-100 p-2 hover:bg-gray-200"
+          >
+            <img
+              src="https://static-00.iconduck.com/assets.00/notification-icon-1842x2048-xr57og4y.png"
+              alt="Notifications"
+              className="h-5 w-5" // Adjust size as needed
+            />
+            {newNotifications.length > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+                {newNotifications.length}
+              </span>
+            )}
+          </button>
+          {showNotifications && (
+            <div className="absolute right-0 mt-2 w-80 rounded-lg border border-gray-300 bg-white shadow-lg">
+              <ul className="p-2">
+                {[...newNotifications, ...notifications].length > 0 ? (
+                  [...newNotifications, ...notifications].map(
+                    (notif, index) => (
+                      <li
+                        key={index}
+                        className={`border-b p-2 text-xs last:border-0 hover:bg-gray-100 ${newNotifications.includes(notif) ? "font-bold" : ""}`}
+                      >
+                        {notif.message}
+                      </li>
+                    ),
+                  )
+                ) : (
+                  <li className="p-2 text-gray-500">Neturite pranešimų</li>
+                )}
+              </ul>
+            </div>
+          )}
+        </div>
         <ClerkProvider>
           <SignedOut>
             <SignInButton>

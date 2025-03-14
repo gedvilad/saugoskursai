@@ -68,7 +68,24 @@ export const userGroups = createTable(
       .notNull(),
   },
   (table) => ({
-    pk: primaryKey({ columns: [table.userId, table.groupId] }), // Composite primary key
+    pk: primaryKey({ columns: [table.userId, table.groupId] }),
     userGroupIndex: index("user_group_idx").on(table.userId, table.groupId),
+  }),
+);
+export const notifications = createTable(
+  "notifications",
+  {
+    id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+    userId: varchar("user_id", { length: 50 })
+      .notNull()
+      .references(() => users.clerk_id),
+    message: varchar("message", { length: 255 }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    status: integer("status").default(1).notNull(),
+  },
+  (table) => ({
+    notificationIndex: index("notification_idx").on(table.id),
   }),
 );

@@ -261,6 +261,64 @@ export default function Home() {
     setActiveTab("users");
     return;
   };
+  const handleAcceptInvite = async () => {
+    const response = await fetch(`/api/groups/groupUser`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "acceptInvite",
+        clerkId: userId,
+        groupId: selectedGroup!.id,
+      }),
+    });
+
+    const errorData = (await response.json()) as ErrorResponse;
+    if (!response.ok) {
+      toast.error(errorData.message);
+      return;
+    }
+
+    toast.success(errorData.message);
+    await RefetchGroups();
+    //await fetchUsers(selectedGroup!.id);
+  };
+  const handelRefuseInvite = async () => {
+    const response = await fetch(`/api/groups/groupUser`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "refuseInvite",
+        clerkId: userId,
+        groupId: selectedGroup!.id,
+      }),
+    });
+
+    const errorData = (await response.json()) as ErrorResponse;
+    if (!response.ok) {
+      toast.error(errorData.message);
+      return;
+    }
+
+    toast.success(errorData.message);
+    await RefetchGroups();
+    //await fetchUsers(selectedGroup!.id);
+  };
+  const RefetchGroups = async () => {
+    try {
+      const res = await fetch(`/api/groups?userId=${userId}`);
+      const data = (await res.json()) as ApiResponse;
+      if (data.groups && data.groups.length > 0) {
+        setGroups(data.groups);
+        setSelectedGroup(data.groups[0]!);
+        await fetchUsers(data.groups[0]!.id);
+      } else {
+        setSelectedGroup(null);
+        setGroups([]);
+      }
+    } catch (error) {
+      console.error("Request failed:", error);
+    }
+  };
 
   return (
     <div className="flex h-screen">
@@ -340,214 +398,241 @@ export default function Home() {
       </aside>
 
       {/* Main Panel */}
-      {selectedGroup && (
-        <main className="flex-1 p-6">
+      {selectedGroup?.role === "Pakviestas" ? (
+        <div className="flex-1 p-6">
           <h1 className="mb-4 text-xl font-bold">
             Grupė: {selectedGroup?.name}
           </h1>
-
-          {/* Tabs */}
-          <div className="mb-4 flex space-x-4 border-b">
-            {[
-              { key: "users", label: "Grupės nariai" },
-              { key: "settings", label: "Nustatymai" },
-              { key: "analytics", label: "Statistika" },
-            ].map((tab) => (
+          <div className="space-y-2">
+            <p>Esate pakviestas į šią grupę! Ar norite priimti kvietimą?</p>
+            <div className="space-x-3">
               <button
-                key={tab.key}
-                className={`px-4 py-2 ${
-                  activeTab === tab.key
-                    ? "border-b-2 border-blue-500 text-blue-500"
-                    : "text-gray-500"
-                }`}
-                onClick={() => setActiveTab(tab.key)}
+                className="rounded-md bg-blue-500 px-4 py-2 text-xs text-white transition duration-200 hover:bg-blue-600"
+                onClick={handleAcceptInvite}
               >
-                {tab.label}
+                Priimti
               </button>
-            ))}
+              <button
+                className="rounded-md bg-red-500 px-4 py-2 text-xs text-white transition duration-200 hover:bg-red-600"
+                onClick={handelRefuseInvite}
+              >
+                Atmesti
+              </button>
+            </div>
           </div>
+        </div>
+      ) : (
+        selectedGroup && (
+          <main className="flex-1 p-6">
+            <h1 className="mb-4 text-xl font-bold">
+              Grupė: {selectedGroup?.name}
+            </h1>
 
-          {/* Tab Content */}
-          {/* Users List */}
-          {activeTab === "users" && (
-            <div>
-              <div className="mb-4 flex gap-2">
-                {/* Input */}
-                <input
-                  type="text"
-                  placeholder="Ieškoti vartotojų..."
-                  className="w-1/4 rounded-md border border-gray-300 p-1 text-xs shadow-sm transition duration-200 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                />
-
-                {/* Add User Button */}
+            {/* Tabs */}
+            <div className="mb-4 flex space-x-4 border-b">
+              {[
+                { key: "users", label: "Grupės nariai" },
+                { key: "settings", label: "Nustatymai" },
+                { key: "analytics", label: "Statistika" },
+              ].map((tab) => (
                 <button
-                  onClick={handleAddUser}
-                  disabled={!selectedUser}
-                  className={`rounded-md px-3 py-1 text-xs text-white transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    selectedUser
-                      ? "bg-blue-500 hover:bg-blue-600"
-                      : "cursor-not-allowed bg-gray-400"
+                  key={tab.key}
+                  className={`px-4 py-2 ${
+                    activeTab === tab.key
+                      ? "border-b-2 border-blue-500 text-blue-500"
+                      : "text-gray-500"
                   }`}
+                  onClick={() => setActiveTab(tab.key)}
                 >
-                  Pridėti
+                  {tab.label}
                 </button>
-              </div>
-              {/* Dropdown List */}
-              {showUserList && (
-                <div className="absolute w-1/4 rounded-md border bg-white shadow-lg">
-                  {filteredUsers.length > 0 ? (
-                    <ul className="max-h-48 overflow-y-auto py-1 text-sm">
-                      {filteredUsers.map((user) => (
-                        <li
-                          key={user.id}
-                          className="cursor-pointer px-4 py-2 hover:bg-gray-100"
-                          onClick={() => handleSelectUser(user)}
-                        >
-                          {user.first_name} {user.last_name} ({user.email})
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <div className="px-4 py-2 text-sm text-gray-500">
-                      Nerasta jokių vartotojų.
-                    </div>
-                  )}
+              ))}
+            </div>
+
+            {/* Tab Content */}
+            {/* Users List */}
+            {activeTab === "users" && (
+              <div>
+                <div className="mb-4 flex gap-2">
+                  {/* Input */}
+                  <input
+                    type="text"
+                    placeholder="Ieškoti vartotojų..."
+                    className="w-1/4 rounded-md border border-gray-300 p-1 text-xs shadow-sm transition duration-200 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                  />
+
+                  {/* Add User Button */}
+                  <button
+                    onClick={handleAddUser}
+                    disabled={!selectedUser}
+                    className={`rounded-md px-3 py-1 text-xs text-white transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      selectedUser
+                        ? "bg-blue-500 hover:bg-blue-600"
+                        : "cursor-not-allowed bg-gray-400"
+                    }`}
+                  >
+                    Pakviesti
+                  </button>
                 </div>
-              )}
-
-              <div className="rounded-md border bg-white p-4">
-                <h2 className="mb-4 text-lg font-semibold">Grupės nariai:</h2>
-
-                {isLoadingUsers ? (
-                  // Skeleton Loader
-                  <ul className="space-y-2">
-                    {Array.from({ length: 3 }).map((_, i) => (
-                      <li
-                        key={i}
-                        className="h-7 w-full animate-pulse rounded-md bg-gray-200"
-                      ></li>
-                    ))}
-                  </ul>
-                ) : users.length > 0 ? (
-                  // Render Users
-                  <ul className="w-full">
-                    {showUserDeleteConfirm && (
-                      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                        <div className="items-center rounded-lg bg-white p-6 shadow-lg">
-                          <h2 className="mb-4 text-lg font-semibold">
-                            Ar tikrai norite pašalinti vartotoją{" "}
-                            {selectedUser!.first_name} {selectedUser!.last_name}{" "}
-                            iš grupės?
-                          </h2>
-                          <h3 className="text-sm text-red-500">
-                            Šio veiksmo atkurti negalima.
-                          </h3>
-                          <div className="mt-4 flex justify-center space-x-2">
-                            <button
-                              className="rounded-md bg-red-500 px-4 py-2 text-xs text-white transition duration-200 hover:bg-red-600"
-                              onClick={() =>
-                                handleRemoveUser(selectedUser!.clerk_id)
-                              }
-                            >
-                              Ištrinti
-                            </button>
-                            <button
-                              className="rounded-md bg-gray-400 px-4 py-2 text-xs text-white transition duration-200 hover:bg-gray-500"
-                              onClick={() => setShowUserDeleteConfirm(false)}
-                            >
-                              Atšaukti
-                            </button>
-                          </div>
-                        </div>
+                {/* Dropdown List */}
+                {showUserList && (
+                  <div className="absolute w-1/4 rounded-md border bg-white shadow-lg">
+                    {filteredUsers.length > 0 ? (
+                      <ul className="max-h-48 overflow-y-auto py-1 text-sm">
+                        {filteredUsers.map((user) => (
+                          <li
+                            key={user.id}
+                            className="cursor-pointer px-4 py-2 hover:bg-gray-100"
+                            onClick={() => handleSelectUser(user)}
+                          >
+                            {user.first_name} {user.last_name} ({user.email})
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <div className="px-4 py-2 text-sm text-gray-500">
+                        Nerasta jokių vartotojų.
                       </div>
                     )}
-                    {users.map((user) => (
-                      <li
-                        key={user.id}
-                        className="grid grid-cols-3 items-center border-b-2 p-2 shadow-sm"
-                      >
-                        <div className="col-span-1">
-                          {user.first_name} {user.last_name} ({user.email})
-                        </div>
-                        <div className="col-span-1 text-sm text-gray-400">
-                          {user.role}
-                        </div>
-                        <div className="col-span-1 flex justify-end">
-                          {selectedGroup?.role === "Administratorius" &&
-                            selectedGroup?.ownerId !== user.clerk_id && (
-                              <button
-                                onClick={() => {
-                                  setSelectedUser(user);
-                                  setShowUserDeleteConfirm(true);
-                                }}
-                                className="text-red-500 hover:text-red-700"
-                              >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  strokeWidth="1.5"
-                                  stroke="currentColor"
-                                  className="h-5 w-5"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M6 18L18 6M6 6l12 12"
-                                  />
-                                </svg>
-                              </button>
-                            )}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p>Nėra narių</p>
+                  </div>
                 )}
+
+                <div className="rounded-md border bg-white p-4">
+                  <h2 className="mb-4 text-lg font-semibold">Grupės nariai:</h2>
+
+                  {isLoadingUsers ? (
+                    // Skeleton Loader
+                    <ul className="space-y-2">
+                      {Array.from({ length: 3 }).map((_, i) => (
+                        <li
+                          key={i}
+                          className="h-7 w-full animate-pulse rounded-md bg-gray-200"
+                        ></li>
+                      ))}
+                    </ul>
+                  ) : users.length > 0 ? (
+                    // Render Users
+                    <ul className="w-full">
+                      {showUserDeleteConfirm && (
+                        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                          <div className="items-center rounded-lg bg-white p-6 shadow-lg">
+                            <h2 className="mb-4 text-lg font-semibold">
+                              Ar tikrai norite pašalinti vartotoją{" "}
+                              {selectedUser!.first_name}{" "}
+                              {selectedUser!.last_name} iš grupės?
+                            </h2>
+                            <h3 className="text-sm text-red-500">
+                              Šio veiksmo atkurti negalima.
+                            </h3>
+                            <div className="mt-4 flex justify-center space-x-2">
+                              <button
+                                className="rounded-md bg-red-500 px-4 py-2 text-xs text-white transition duration-200 hover:bg-red-600"
+                                onClick={() =>
+                                  handleRemoveUser(selectedUser!.clerk_id)
+                                }
+                              >
+                                Pašalinti
+                              </button>
+                              <button
+                                className="rounded-md bg-gray-400 px-4 py-2 text-xs text-white transition duration-200 hover:bg-gray-500"
+                                onClick={() => setShowUserDeleteConfirm(false)}
+                              >
+                                Atšaukti
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      {users
+                        .filter((user) => user.role !== "Pakviestas") // Filter out users with the "Pakviestas" role
+                        .map((user) => (
+                          <li
+                            key={user.id}
+                            className="grid grid-cols-3 items-center border-b-2 p-2 shadow-sm"
+                          >
+                            <div className="col-span-1">
+                              {user.first_name} {user.last_name} ({user.email})
+                            </div>
+                            <div className="col-span-1 text-sm text-gray-400">
+                              {user.role}
+                            </div>
+                            <div className="col-span-1 flex justify-end">
+                              {selectedGroup?.role === "Administratorius" &&
+                                selectedGroup?.ownerId !== user.clerk_id && (
+                                  <button
+                                    onClick={() => {
+                                      setSelectedUser(user);
+                                      setShowUserDeleteConfirm(true);
+                                    }}
+                                    className="text-red-500 hover:text-red-700"
+                                  >
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      strokeWidth="1.5"
+                                      stroke="currentColor"
+                                      className="h-5 w-5"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M6 18L18 6M6 6l12 12"
+                                      />
+                                    </svg>
+                                  </button>
+                                )}
+                            </div>
+                          </li>
+                        ))}
+                    </ul>
+                  ) : (
+                    <p>Nėra narių</p>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
-          {activeTab === "settings" && (
-            <div>
-              {showDeleteConfirm && (
-                <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                  <div className="items-center rounded-lg bg-white p-6 shadow-lg">
-                    <h2 className="mb-4 text-lg font-semibold">
-                      Ar tikrai norite ištrinti grupę?
-                    </h2>
-                    <h3 className="text-sm text-red-500">
-                      Šio veiksmo atkurti negalima.
-                    </h3>
-                    <div className="mt-4 flex justify-center space-x-2">
-                      <button
-                        className="rounded-md bg-red-500 px-4 py-2 text-xs text-white transition duration-200 hover:bg-red-600"
-                        onClick={handleGroupDelete}
-                      >
-                        Ištrinti
-                      </button>
-                      <button
-                        className="rounded-md bg-gray-400 px-4 py-2 text-xs text-white transition duration-200 hover:bg-gray-500"
-                        onClick={() => setShowDeleteConfirm(false)}
-                      >
-                        Atšaukti
-                      </button>
+            )}
+            {activeTab === "settings" && (
+              <div>
+                {showDeleteConfirm && (
+                  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="items-center rounded-lg bg-white p-6 shadow-lg">
+                      <h2 className="mb-4 text-lg font-semibold">
+                        Ar tikrai norite ištrinti grupę?
+                      </h2>
+                      <h3 className="text-sm text-red-500">
+                        Šio veiksmo atkurti negalima.
+                      </h3>
+                      <div className="mt-4 flex justify-center space-x-2">
+                        <button
+                          className="rounded-md bg-red-500 px-4 py-2 text-xs text-white transition duration-200 hover:bg-red-600"
+                          onClick={handleGroupDelete}
+                        >
+                          Ištrinti
+                        </button>
+                        <button
+                          className="rounded-md bg-gray-400 px-4 py-2 text-xs text-white transition duration-200 hover:bg-gray-500"
+                          onClick={() => setShowDeleteConfirm(false)}
+                        >
+                          Atšaukti
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-              <button
-                onClick={() => setShowDeleteConfirm(true)}
-                className="rounded-md bg-red-500 px-4 py-2 text-xs text-white transition duration-200 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
-              >
-                Ištrinti grupę.
-              </button>
-            </div>
-          )}
-          {activeTab === "analytics" && <div>Analytics dashboard...</div>}
-        </main>
+                )}
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="rounded-md bg-red-500 px-4 py-2 text-xs text-white transition duration-200 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                >
+                  Ištrinti grupę.
+                </button>
+              </div>
+            )}
+            {activeTab === "analytics" && <div>Analytics dashboard...</div>}
+          </main>
+        )
       )}
     </div>
   );
