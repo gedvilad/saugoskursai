@@ -94,35 +94,39 @@ export function Header() {
   };
 
   return (
-    <div className="fixed top-0 z-50 mb-4 flex w-full border-b border-black bg-white text-lg">
-      <div className="m-2 border-2 border-black">LOGO</div>
-      <div className="font-Jakarta relative flex w-full flex-wrap justify-end space-x-6 p-2">
-        <button
-          className="w-32 hover:text-xl"
-          onClick={() => router.push("/teorija")}
-        >
-          Teorija
-        </button>
-        <button
-          className="w-32 rounded-md border-2 border-gray-200 hover:bg-gray-100"
-          onClick={() => router.push("/testai")}
-        >
-          Testai
-        </button>
-        <button
-          className="w-32 rounded-md border-2 border-gray-200 hover:bg-gray-100"
-          onClick={() => router.push("/my-groups")}
-        >
-          Mano grupės
-        </button>
-        {userData?.role === "admin" && (
+    <div className="fixed top-0 z-50 flex w-full items-center justify-between bg-white px-6 py-4 shadow-md">
+      <Link href="/" className="text-2xl font-semibold text-gray-800">
+        LOGO
+      </Link>
+      <div className="flex items-center space-x-6">
+        <nav className="flex space-x-4">
           <button
-            className="w-32 rounded-md border-2 border-gray-200 hover:bg-gray-100"
-            onClick={() => router.push("/admin-panel")}
+            className="rounded-md px-3 py-2 text-gray-600 hover:bg-gray-100 hover:text-gray-800"
+            onClick={() => router.push("/teorija")}
           >
-            Admin panel
+            Teorija
           </button>
-        )}
+          <button
+            className="rounded-md px-3 py-2 text-gray-600 hover:bg-gray-100 hover:text-gray-800"
+            onClick={() => router.push("/testai")}
+          >
+            Testai
+          </button>
+          <button
+            className="rounded-md px-3 py-2 text-gray-600 hover:bg-gray-100 hover:text-gray-800"
+            onClick={() => router.push("/my-groups")}
+          >
+            Mano grupės
+          </button>
+          {userData?.role === "admin" && (
+            <button
+              className="rounded-md px-3 py-2 text-gray-600 hover:bg-gray-100 hover:text-gray-800"
+              onClick={() => router.push("/admin-panel")}
+            >
+              Admin panel
+            </button>
+          )}
+        </nav>
         <div className="relative">
           <button
             onClick={handleOpenNotif}
@@ -140,30 +144,40 @@ export function Header() {
             )}
           </button>
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-80 rounded-lg border border-gray-300 bg-white shadow-lg">
-              <ul className="p-2">
+            <div className="absolute right-0 mt-2 w-80 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+              <ul className="divide-y divide-gray-200">
                 {[...newNotifications, ...notifications].length > 0 ? (
                   [...newNotifications, ...notifications].map(
                     (notif, index) => (
                       <li
                         key={index}
-                        className={`border-b p-2 text-xs last:border-0 hover:bg-gray-100 ${newNotifications.includes(notif) ? "font-bold" : ""}`}
+                        className={`px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${newNotifications.includes(notif) ? "font-semibold" : ""}`}
                       >
                         {notif.message}
                       </li>
                     ),
                   )
                 ) : (
-                  <li className="p-2 text-gray-500">Neturite pranešimų</li>
+                  <li className="px-4 py-2 text-sm text-gray-500">
+                    Neturite pranešimų
+                  </li>
                 )}
               </ul>
+              <div className="m-2">
+                <Link
+                  href="/"
+                  className="block px-4 py-2 text-center text-sm text-blue-600 underline hover:text-blue-800"
+                >
+                  peržiūrėti visus pranešimus
+                </Link>
+              </div>
             </div>
           )}
         </div>
         <ClerkProvider>
           <SignedOut>
             <SignInButton>
-              <button className="w-32 rounded-md border-2 border-gray-200 hover:bg-gray-100">
+              <button className="rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
                 Prisijungti
               </button>
             </SignInButton>

@@ -24,7 +24,7 @@ export default async function RootLayout({
         <body>
           <Toaster position="top-center" />
           <Header />
-          <div className="min-h-screen pt-[60px]">
+          <div className="min-h-screen pt-[70px]">
             <TRPCReactProvider>{children}</TRPCReactProvider>
           </div>
           <Footer
