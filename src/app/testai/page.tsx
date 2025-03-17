@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import Link from "next/link";
+import React, { useEffect, useState } from "react";
 
 // Define types for different question types
 type QuestionType = "multipleChoice" | "multipleSelect" | "trueFalse";
@@ -51,16 +52,34 @@ interface Question {
     options: ["HTML", "CSS", "JavaScript", "React", "Node.js", "English"],
     correctAnswers: ["JavaScript", "React", "Node.js"],
   },
-];
-
+];*/
+interface Test {
+  id: number;
+  name: string;
+  createdAt: Date;
+}
+interface ApiResponseTest {
+  tests: Test[];
+}
 const TestPage = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<number, string[]>>({}); // Store answers as arrays
   const [showResults, setShowResults] = useState(false);
+  const [testData, setTestData] = useState<Test[]>();
 
-  const currentQuestion = testData[currentQuestionIndex];
+  //const currentQuestion = testData[currentQuestionIndex];
 
-  const handleAnswerSelect = (answer: string) => {
+  useEffect(() => {
+    const fetchTest = async () => {
+      const response = await fetch("/api/tests");
+      const data = (await response.json()) as ApiResponseTest;
+      console.log(data.tests[0]);
+      setTestData(data.tests);
+    };
+    fetchTest().catch((error) => console.error("Error fetching test:", error));
+  }, []);
+
+  /*const handleAnswerSelect = (answer: string) => {
     setAnswers((prevAnswers) => {
       const questionId = currentQuestion.id;
       if (
@@ -124,9 +143,9 @@ const TestPage = () => {
       userAnswers.length === correctAnswers.length &&
       userAnswers.every((answer) => correctAnswers.includes(answer))
     );
-  };
+  };*/
 
-  const renderQuestionContent = () => {
+  /*const renderQuestionContent = () => {
     if (!currentQuestion) return null;
 
     switch (currentQuestion.type) {
@@ -196,11 +215,27 @@ const TestPage = () => {
       default:
         return <p>Unsupported question type</p>;
     }
-  };
+  };*/
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="p-4">
+      <h1 className="mb-4 text-2xl font-bold">Testai:</h1>
+      <div className="space-y-2">
+        {testData?.map((test) => (
+          <Link
+            key={test.id}
+            href={`/testai/${test.id}`}
+            className="block border-b-2 p-2 hover:bg-gray-100"
+          >
+            <span className="font-semibold">{test.name}</span>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
 
+  /*return (
+    <div className="flex min-h-screen bg-gray-50">
       <aside className="w-64 border-r border-gray-200 bg-white px-3 py-6">
         <div className="mb-8 text-lg font-semibold text-gray-700">
           Test Navigation
@@ -240,7 +275,6 @@ const TestPage = () => {
         </div>
       </aside>
 
-
       <main className="flex-1 p-8">
         <div className="rounded-lg bg-white p-6 shadow-md">
           <h1 className="mb-4 text-2xl font-semibold text-gray-800">Test</h1>
@@ -274,15 +308,7 @@ const TestPage = () => {
         </div>
       </main>
     </div>
-  );
+  );*/
 };
 
-export default TestPage;*/
-const TestPage = () => {
-  return (
-    <div>
-      <h1>Test</h1>
-    </div>
-  );
-};
 export default TestPage;

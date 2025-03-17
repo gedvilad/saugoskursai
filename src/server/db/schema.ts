@@ -113,7 +113,6 @@ export const test_questions = createTable(
       .notNull()
       .references(() => tests.id),
     question: varchar("question", { length: 512 }).notNull(),
-    answer: varchar("answer", { length: 512 }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -123,6 +122,20 @@ export const test_questions = createTable(
     testQuestionIndex: index("testQuestion_idx").on(table.testId),
   }),
 );
+export const test_answers = createTable(
+  "test_answers",
+  {
+    id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+    questionId: integer("question_id")
+      .notNull()
+      .references(() => test_questions.id, { onDelete: "cascade" }),
+    answer: varchar("answer", { length: 512 }).notNull(),
+  },
+  (table) => ({
+    questionAnswerIndex: index("questionAnswer_idx").on(table.questionId),
+  }),
+);
+
 export const test_question_choices = createTable(
   "test_question_choices",
   {

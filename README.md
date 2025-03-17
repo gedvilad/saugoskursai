@@ -5,4 +5,6 @@ TODO:
 [x] Notificationai
 [ ] Padaryti grupes palikima
 [x] Padaryt logika ir atvaizdavima nauju pranesimu
-[ ] Pradėti daryt testus
+[ ] Pradėti daryt testus =>{
+[ ] Perdariau kad gali saugot kelis ats, todel atsirado naujas table, reikia perdaryt data fetchinima ir display !!!!!!!!!!
+}
