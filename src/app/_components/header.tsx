@@ -127,53 +127,55 @@ export function Header() {
             </button>
           )}
         </nav>
-        <div className="relative">
-          <button
-            onClick={handleOpenNotif}
-            className="relative rounded-full bg-gray-100 p-2 hover:bg-gray-200"
-          >
-            <img
-              src="https://static-00.iconduck.com/assets.00/notification-icon-1842x2048-xr57og4y.png"
-              alt="Notifications"
-              className="h-5 w-5" // Adjust size as needed
-            />
-            {newNotifications.length > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
-                {newNotifications.length}
-              </span>
-            )}
-          </button>
-          {showNotifications && (
-            <div className="absolute right-0 mt-2 w-80 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-              <ul className="divide-y divide-gray-200">
-                {[...newNotifications, ...notifications].length > 0 ? (
-                  [...newNotifications, ...notifications].map(
-                    (notif, index) => (
-                      <li
-                        key={index}
-                        className={`px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${newNotifications.includes(notif) ? "font-semibold" : ""}`}
-                      >
-                        {notif.message}
-                      </li>
-                    ),
-                  )
-                ) : (
-                  <li className="px-4 py-2 text-sm text-gray-500">
-                    Neturite pranešimų
-                  </li>
-                )}
-              </ul>
-              <div className="m-2">
-                <Link
-                  href="/"
-                  className="block px-4 py-2 text-center text-sm text-blue-600 underline hover:text-blue-800"
-                >
-                  peržiūrėti visus pranešimus
-                </Link>
+        <SignedIn>
+          <div className="relative">
+            <button
+              onClick={handleOpenNotif}
+              className="relative rounded-full bg-gray-100 p-2 hover:bg-gray-200"
+            >
+              <img
+                src="https://static-00.iconduck.com/assets.00/notification-icon-1842x2048-xr57og4y.png"
+                alt="Notifications"
+                className="h-5 w-5" // Adjust size as needed
+              />
+              {newNotifications.length > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+                  {newNotifications.length}
+                </span>
+              )}
+            </button>
+            {showNotifications && (
+              <div className="absolute right-0 mt-2 w-80 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                <ul className="divide-y divide-gray-200">
+                  {[...newNotifications, ...notifications].length > 0 ? (
+                    [...newNotifications, ...notifications].map(
+                      (notif, index) => (
+                        <li
+                          key={index}
+                          className={`px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${newNotifications.includes(notif) ? "font-semibold" : ""}`}
+                        >
+                          {notif.message}
+                        </li>
+                      ),
+                    )
+                  ) : (
+                    <li className="px-4 py-2 text-sm text-gray-500">
+                      Neturite pranešimų
+                    </li>
+                  )}
+                </ul>
+                <div className="m-2">
+                  <Link
+                    href="/"
+                    className="block px-4 py-2 text-center text-sm text-blue-600 underline hover:text-blue-800"
+                  >
+                    peržiūrėti visus pranešimus
+                  </Link>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        </SignedIn>
         <ClerkProvider>
           <SignedOut>
             <SignInButton>

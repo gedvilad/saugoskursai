@@ -1,6 +1,9 @@
 "use client";
+import { useAuth } from "@clerk/nextjs";
+import { ApiError } from "next/dist/server/api-utils";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 interface Question {
   id: number;
@@ -10,6 +13,7 @@ interface Question {
 }
 
 interface QuestionChoices {
+  choiceId: number;
   choice: string;
   isCorrect: boolean; // Used internally, not displayed
   questionId: number;
@@ -20,14 +24,22 @@ interface ApiResponseQuestions {
   questionChoices: QuestionChoices[];
 }
 
+interface SelectedAnswer {
+  choice: string;
+  choiceId: number;
+}
+interface ApiErrorResponse {
+  message: string;
+}
+
 export default function TestPage() {
   const params = useParams();
   const id = Number(params.id);
-
+  const { userId } = useAuth();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<
-    Record<number, string | string[]>
+    Record<number, SelectedAnswer | SelectedAnswer[]>
   >({});
   const [submitted, setSubmitted] = useState(false);
 
@@ -35,7 +47,6 @@ export default function TestPage() {
     const fetchQuestions = async () => {
       const response = await fetch("/api/tests/testQuestions?id=" + id);
       const data = (await response.json()) as ApiResponseQuestions;
-      console.log(data);
 
       // Map choices to corresponding questions
       const mappedQuestions = data.questions.map((question) => ({
@@ -60,28 +71,101 @@ export default function TestPage() {
   const handleAnswerSelect = (
     questionId: number,
     choice: string,
+    choiceId: number,
     type: number,
   ) => {
     setSelectedAnswers((prev) => {
       if (type === 1) {
-        return { ...prev, [questionId]: choice || "" }; // Ensure it's always a string
-      } else {
-        const prevAnswers = Array.isArray(prev[questionId])
-          ? prev[questionId]
-          : []; // Ensure it's an array
+        // Single choice
         return {
           ...prev,
-          [questionId]: prevAnswers.includes(choice)
-            ? prevAnswers.filter((c) => c !== choice) // Remove choice if already selected
-            : [...prevAnswers, choice], // Add choice if not selected
+          [questionId]: { choice, choiceId },
         };
+      } else {
+        // Multi choice
+        const prevAnswers = (prev[questionId] as SelectedAnswer[]) || [];
+        const existingIndex = prevAnswers.findIndex(
+          (answer) => answer.choiceId === choiceId,
+        );
+
+        if (existingIndex > -1) {
+          // Remove existing answer
+          const newAnswers = [...prevAnswers];
+          newAnswers.splice(existingIndex, 1); // remove 1 element at existingIndex
+          return {
+            ...prev,
+            [questionId]: newAnswers,
+          };
+        } else {
+          // Add new answer
+          return {
+            ...prev,
+            [questionId]: [...prevAnswers, { choice, choiceId }],
+          };
+        }
       }
     });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setSubmitted(true);
     console.log("Submitted answers:", selectedAnswers);
+
+    try {
+      const currentUserId = userId;
+      if (!currentUserId) {
+        toast.error("Klaida: Trūksta vartotojo ID");
+        return;
+      }
+
+      const answersArray = Object.entries(selectedAnswers)
+        .map(([questionId, answer]) => {
+          if (Array.isArray(answer)) {
+            return answer.map((a) => ({
+              questionId: parseInt(questionId),
+              choiceId: a.choiceId,
+              answer: a.choice,
+            }));
+          } else {
+            return {
+              questionId: parseInt(questionId),
+              choiceId: answer.choiceId,
+              answer: answer.choice,
+            };
+          }
+        })
+        .flat();
+
+      const response = await fetch("/api/tests/testQuestions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          testId: id,
+          answers: answersArray,
+          userId: currentUserId,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error("Failed to submit test:", response.statusText);
+        try {
+          const errorData = (await response.json()) as ApiErrorResponse;
+          console.error("Error message from API:", errorData.message);
+          toast.error(errorData.message);
+        } catch (jsonError) {
+          console.error("Error parsing JSON error response:", jsonError);
+          toast.error("Nepavyko pateikti testo atsakymų. Bandykite dar kartą.");
+        }
+        return;
+      }
+
+      toast.success("Testas sėkmingai pateiktas!");
+    } catch (error) {
+      console.error("Error submitting test:", error);
+      toast.error("Serverio klaida apdorojant užklausą!");
+    }
   };
 
   const currentQuestion = questions[currentQuestionIndex];
@@ -105,7 +189,7 @@ export default function TestPage() {
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
-                  Question {index + 1}
+                  {index + 1} Klausimas
                   {submitted &&
                   selectedAnswers[question.id] &&
                   currentQuestionIndex === index ? (
@@ -123,9 +207,9 @@ export default function TestPage() {
         <div className="mt-8">
           <button
             onClick={handleSubmit}
-            className="w-full rounded-md bg-green-500 px-4 py-2 font-medium text-white transition-colors duration-200 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1"
+            className="w-full rounded-md bg-blue-500 px-4 py-2 font-medium text-white transition-colors duration-200 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
           >
-            Submit Test
+            Baigti testą
           </button>
         </div>
       </aside>
@@ -150,7 +234,7 @@ export default function TestPage() {
               {currentQuestion && (
                 <div>
                   <p className="mb-4 text-gray-600">
-                    Question {currentQuestionIndex + 1} of {questions.length}
+                    {currentQuestionIndex + 1} klausimas iš {questions.length}
                   </p>
                   <div className="mb-6">
                     <p className="text-lg text-gray-800">
@@ -169,12 +253,16 @@ export default function TestPage() {
                               handleAnswerSelect(
                                 currentQuestion.id,
                                 choice.choice,
+                                choice.choiceId,
                                 1,
                               )
                             }
-                            className={`w-full rounded-md px-4 py-2 text-left transition-colors duration-200 ${
-                              selectedAnswers[currentQuestion.id] ===
-                              choice.choice
+                            className={`w-full rounded-md px-4 py-2 text-left ${
+                              (
+                                selectedAnswers[
+                                  currentQuestion.id
+                                ] as SelectedAnswer
+                              )?.choice === choice.choice
                                 ? "bg-blue-500 text-white"
                                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                             }`}
@@ -194,15 +282,18 @@ export default function TestPage() {
                               handleAnswerSelect(
                                 currentQuestion.id,
                                 choice.choice,
+                                choice.choiceId,
                                 2,
                               )
                             }
-                            className={`flex w-full items-center rounded-md px-4 py-2 transition-colors duration-200 ${
+                            className={`flex w-full items-center rounded-md px-4 py-2 ${
                               (
                                 (selectedAnswers[
                                   currentQuestion.id
-                                ] as string[]) || []
-                              ).includes(choice.choice)
+                                ] as SelectedAnswer[]) || []
+                              ).some(
+                                (answer) => answer.choiceId === choice.choiceId,
+                              )
                                 ? "bg-blue-500 text-white"
                                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                             }`}
@@ -212,8 +303,10 @@ export default function TestPage() {
                               checked={(
                                 (selectedAnswers[
                                   currentQuestion.id
-                                ] as string[]) || []
-                              ).includes(choice.choice)}
+                                ] as SelectedAnswer[]) || []
+                              ).some(
+                                (answer) => answer.choiceId === choice.choiceId,
+                              )}
                               readOnly
                               className="mr-2"
                             />
