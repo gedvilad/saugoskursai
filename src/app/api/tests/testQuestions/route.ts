@@ -1,5 +1,5 @@
 import { db } from "~/server/db";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import {
   test_question_choices,
   test_questions,
@@ -116,6 +116,24 @@ export async function POST(req: Request) {
     const startTime = new Date(); // Capture start time
     const endTime = new Date(); // Capture end time
 
+    const correctAnswers = await db
+      .select({
+        test_question_choices_is_correct: test_question_choices.isCorrect,
+        test_question: test_questions.question,
+        test_question_choice: test_question_choices.choice,
+      })
+      .from(test_question_choices)
+      .innerJoin(
+        test_questions,
+        eq(test_questions.id, test_question_choices.testQuestionId),
+      )
+      .where(
+        and(
+          eq(test_questions.testId, body.testId),
+          eq(test_question_choices.isCorrect, true),
+        ),
+      );
+
     // Calculate score (This is a placeholder - improve as needed)
     let score = 0;
     for (const answer of body.answers) {
@@ -139,7 +157,7 @@ export async function POST(req: Request) {
         );
       }
     }
-
+    const overallScore = (score / correctAnswers.length) * 100;
     const [userTestResponse] = await db
       .insert(user_test_responses)
       .values({
@@ -147,7 +165,7 @@ export async function POST(req: Request) {
         testId: body.testId,
         startTime: startTime,
         endTime: endTime,
-        score: score,
+        score: overallScore,
       })
       .returning();
 
