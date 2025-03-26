@@ -60,8 +60,6 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    //const body = await req.json();
-    //const { testId, answers, userId } = body; // Get userId from body
     const body = (await req.json()) as {
       testId: number;
       answers: {
@@ -161,7 +159,7 @@ export async function POST(req: Request) {
     const [userTestResponse] = await db
       .insert(user_test_responses)
       .values({
-        userId: body.userId, // Use userId from the request
+        userId: body.userId,
         testId: body.testId,
         startTime: startTime,
         endTime: endTime,
@@ -222,7 +220,10 @@ export async function POST(req: Request) {
     }
 
     return new Response(
-      JSON.stringify({ message: "Testas sėkmingai pateiktas!" }),
+      JSON.stringify({
+        message: "Testas sėkmingai pateiktas!",
+        score: overallScore,
+      }),
       {
         status: 201,
         headers: { "Content-Type": "application/json" },

@@ -28,8 +28,9 @@ interface SelectedAnswer {
   choice: string;
   choiceId: number;
 }
-interface ApiErrorResponse {
+interface ApiTestSubmitRespone {
   message: string;
+  score: number;
 }
 
 export default function TestPage() {
@@ -42,6 +43,7 @@ export default function TestPage() {
     Record<number, SelectedAnswer | SelectedAnswer[]>
   >({});
   const [submitted, setSubmitted] = useState(false);
+  const [score, setScore] = useState(0);
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -147,21 +149,21 @@ export default function TestPage() {
           userId: currentUserId,
         }),
       });
-
+      const data = (await response.json()) as ApiTestSubmitRespone;
       if (!response.ok) {
         console.error("Failed to submit test:", response.statusText);
         try {
-          const errorData = (await response.json()) as ApiErrorResponse;
-          console.error("Error message from API:", errorData.message);
-          toast.error(errorData.message);
+          console.error("Error message from API:", data.message);
+          toast.error(data.message);
         } catch (jsonError) {
           console.error("Error parsing JSON error response:", jsonError);
           toast.error("Nepavyko pateikti testo atsakymų. Bandykite dar kartą.");
         }
         return;
+      } else {
+        toast.success("Testas sėkmingai pateiktas!");
+        setScore(data.score);
       }
-
-      toast.success("Testas sėkmingai pateiktas!");
     } catch (error) {
       console.error("Error submitting test:", error);
       toast.error("Serverio klaida apdorojant užklausą!");
@@ -224,10 +226,7 @@ export default function TestPage() {
               <h2 className="mb-4 text-xl font-semibold text-gray-800">
                 Test Submitted!
               </h2>
-              <p className="text-gray-600">
-                Your responses have been recorded. Results will be available
-                later.
-              </p>
+              <h3 className="text-gray-600">Result: {score.toFixed(2)}/100</h3>
             </div>
           ) : (
             <>
