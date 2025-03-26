@@ -8,5 +8,9 @@ TODO:
 [ ] Pradėti daryt testus =>{
 [x] Perdariau kad gali saugot kelis ats, todel atsirado naujas table, reikia perdaryt data fetchinima ir display !!!!!!!!!!
 [ ] Padaryt kad rodytu simbolius ar atsake ar ne realiu laiku sprendziant testa
-[ ] Padaryt logika patikrint rezultatus ir issaugoti
+[x] Padaryt logika patikrint rezultatus ir issaugoti
+[ ] Sutvarkyt testo rezultato skaičiavimo logika
+[ ] Sutvarkyt tikrinant atsakymus ivertinti, kad gali buti keli teisingi
+[ ] Sufixint eslinto errorus del deploymento
+[ ] Padaryt laiko skaiciavimo kiek truko padaryt testa
 }

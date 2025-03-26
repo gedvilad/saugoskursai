@@ -60,24 +60,33 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { testId, answers, userId } = body; // Get userId from body
+    //const body = await req.json();
+    //const { testId, answers, userId } = body; // Get userId from body
+    const body = (await req.json()) as {
+      testId: number;
+      answers: {
+        questionId: number;
+        choiceId: number;
+        answer: string;
+      }[];
+      userId?: string;
+    };
 
-    if (!userId) {
+    if (!body.userId) {
       return new Response(
         JSON.stringify({ message: "Vartotojo ID privalomas!" }),
         { status: 400, headers: { "Content-Type": "application/json" } },
       );
     }
     // Check if the userId is a string (or validate as needed)
-    if (typeof userId !== "string") {
+    if (typeof body.userId !== "string") {
       return new Response(
         JSON.stringify({ message: "Netinkamas vartotojo ID formatas!" }),
         { status: 400, headers: { "Content-Type": "application/json" } },
       );
     }
 
-    if (!testId || !answers || !Array.isArray(answers)) {
+    if (!body.testId || !body.answers || !Array.isArray(body.answers)) {
       return new Response(
         JSON.stringify({
           message: "Netinkamas testo ID arba atsakymų formatas!",
@@ -87,7 +96,7 @@ export async function POST(req: Request) {
     }
 
     // Basic validation of answers structure
-    for (const answer of answers) {
+    for (const answer of body.answers) {
       if (
         typeof answer.questionId !== "number" ||
         typeof answer.choiceId !== "number" ||
@@ -109,7 +118,7 @@ export async function POST(req: Request) {
 
     // Calculate score (This is a placeholder - improve as needed)
     let score = 0;
-    for (const answer of answers) {
+    for (const answer of body.answers) {
       try {
         // Fetch the correct choice to check `isCorrect`
         const correctChoice = await db.query.test_question_choices.findFirst({
@@ -134,8 +143,8 @@ export async function POST(req: Request) {
     const [userTestResponse] = await db
       .insert(user_test_responses)
       .values({
-        userId: userId, // Use userId from the request
-        testId: testId,
+        userId: body.userId, // Use userId from the request
+        testId: body.testId,
         startTime: startTime,
         endTime: endTime,
         score: score,
@@ -152,7 +161,7 @@ export async function POST(req: Request) {
     }
 
     // 2. Create user_test_answers records for each answer
-    for (const answer of answers) {
+    for (const answer of body.answers) {
       try {
         // Fetch the question and choice details to populate user_test_answers
         const question = await db.query.test_questions.findFirst({
@@ -174,8 +183,8 @@ export async function POST(req: Request) {
           user_test_response_id: userTestResponse.id,
           test_questions_id: answer.questionId,
           test_question_choices_id: answer.choiceId,
-          userId: userId, // Use userId from the request
-          testId: testId,
+          userId: body.userId, // Use userId from the request
+          testId: body.testId,
           answer: answer.answer,
           createdAt: new Date(),
           isCorrect: choice.isCorrect, // Save the correct status,
