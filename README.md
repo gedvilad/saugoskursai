@@ -14,3 +14,6 @@ TODO:
 [ ] Sufixint eslinto errorus del deploymento
 [ ] Padaryt laiko skaiciavimo kiek truko padaryt testa
 }
+[ ] Pradet daryt dashboardo fronta
+[ ] Pradet daryt paslaugu pirkimo logika
+[ ] Stripe API
