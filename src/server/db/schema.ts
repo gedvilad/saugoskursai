@@ -6,7 +6,9 @@ import {
   timestamp,
   index,
   primaryKey,
+  boolean,
 } from "drizzle-orm/pg-core";
+import { start } from "repl";
 
 // Create your custom table creator with a prefix (optional)
 export const createTable = pgTableCreator((name) => `pvpwebsite_${name}`);
@@ -87,5 +89,121 @@ export const notifications = createTable(
   },
   (table) => ({
     notificationIndex: index("notification_idx").on(table.id),
+  }),
+);
+export const tests = createTable(
+  "tests",
+  {
+    id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+    name: varchar("name", { length: 255 }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (table) => ({
+    testNameIndex: index("testName_idx").on(table.name),
+  }),
+);
+
+export const test_questions = createTable(
+  "test_questions",
+  {
+    id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+    testId: integer("test_id")
+      .notNull()
+      .references(() => tests.id),
+    question: varchar("question", { length: 512 }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    type: integer("type").notNull(),
+  },
+  (table) => ({
+    testQuestionIndex: index("testQuestion_idx").on(table.testId),
+  }),
+);
+export const test_answers = createTable(
+  "test_answers",
+  {
+    id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+    questionId: integer("question_id")
+      .notNull()
+      .references(() => test_questions.id, { onDelete: "cascade" }),
+    answer: varchar("answer", { length: 512 }).notNull(),
+  },
+  (table) => ({
+    questionAnswerIndex: index("questionAnswer_idx").on(table.questionId),
+  }),
+);
+
+export const test_question_choices = createTable(
+  "test_question_choices",
+  {
+    id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+    testQuestionId: integer("test_question_id")
+      .notNull()
+      .references(() => test_questions.id),
+    choice: varchar("choice", { length: 512 }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    isCorrect: boolean("is_correct").notNull(),
+  },
+  (table) => ({
+    questionChoiceIndex: index("question_choice_index").on(table.id),
+  }),
+);
+export const user_test_responses = createTable(
+  "user_test_responeses",
+  {
+    id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+    userId: varchar("user_id", { length: 50 })
+      .notNull()
+      .references(() => users.clerk_id),
+    testId: integer("test_id")
+      .notNull()
+      .references(() => tests.id),
+    startTime: timestamp("start_time", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    endTime: timestamp("end_time", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    score: integer("score").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (table) => ({
+    userTestResponseIndex: index("user_test_response_index").on(table.id),
+  }),
+);
+export const user_test_answers = createTable(
+  "user_test_answers",
+  {
+    id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+    user_test_response_id: integer("user_test_response_id")
+      .notNull()
+      .references(() => user_test_responses.id),
+    test_questions_id: integer("test_questions_id")
+      .notNull()
+      .references(() => test_questions.id),
+    test_question_choices_id: integer("test_question_choices_id")
+      .notNull()
+      .references(() => test_question_choices.id),
+    userId: varchar("user_id", { length: 50 })
+      .notNull()
+      .references(() => users.clerk_id),
+    testId: integer("test_id")
+      .notNull()
+      .references(() => tests.id),
+    answer: varchar("answer", { length: 512 }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    isCorrect: boolean("is_correct").notNull(),
+  },
+  (table) => ({
+    userTestAnswerIndex: index("user_test_answer_index").on(table.id),
   }),
 );
