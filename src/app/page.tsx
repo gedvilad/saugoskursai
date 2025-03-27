@@ -32,7 +32,7 @@ export default async function Home() {
           <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-2">
             <div>
               <h2 className="mb-6 text-3xl font-semibold text-white">
-                (Mūsų komandą)
+                (Mūsų komanda)
               </h2>
               <h3 className="mb-6 text-3xl font-semibold text-white">
                 nuotrauka
