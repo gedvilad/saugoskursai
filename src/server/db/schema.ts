@@ -7,6 +7,7 @@ import {
   index,
   primaryKey,
   boolean,
+  numeric,
 } from "drizzle-orm/pg-core";
 import { start } from "repl";
 
@@ -169,7 +170,7 @@ export const user_test_responses = createTable(
     endTime: timestamp("end_time", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    score: integer("score").notNull(),
+    score: numeric("score", { precision: 5, scale: 2 }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -205,5 +206,24 @@ export const user_test_answers = createTable(
   },
   (table) => ({
     userTestAnswerIndex: index("user_test_answer_index").on(table.id),
+  }),
+);
+export const course = createTable(
+  "course",
+  {
+    id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+    name: varchar("name", { length: 255 }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
+      () => new Date(),
+    ),
+    course_test: integer("course_test")
+      .notNull()
+      .references(() => tests.id),
+  },
+  (course) => ({
+    nameIndex: index("course_name_idx").on(course.name),
   }),
 );

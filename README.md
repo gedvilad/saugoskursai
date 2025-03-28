@@ -17,3 +17,6 @@ TODO:
 [ ] Pradet daryt dashboardo fronta
 [ ] Pradet daryt paslaugu pirkimo logika
 [ ] Stripe API
+[ ] Nauja lentele saugot nupirtkus/priskirtus kursus
+[ ] Sutvarkyt fetchinima kursu
+[ ] Padaryt priskirima kursu
