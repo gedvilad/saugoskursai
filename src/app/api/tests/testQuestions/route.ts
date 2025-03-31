@@ -62,12 +62,12 @@ export async function POST(req: Request) {
   try {
     const body = (await req.json()) as {
       testId: number;
+      userId: string;
       answers: {
         questionId: number;
         choiceId: number;
         answer: string;
       }[];
-      userId?: string;
     };
 
     if (!body.userId) {
@@ -161,9 +161,7 @@ export async function POST(req: Request) {
       .values({
         userId: body.userId,
         testId: body.testId,
-        startTime: startTime,
-        endTime: endTime,
-        score: overallScore,
+        score: overallScore.toFixed(2),
       })
       .returning();
 
