@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import Message from "../_components/message";
 import toast from "react-hot-toast";
 export const dynamic = "force-dynamic";
 interface Group {
@@ -48,8 +47,9 @@ interface Course {
   name: string;
 }
 interface ApiResponseCourses {
-  courses: Course[];
+  boughtCourses: Course[];
   assignedCourses: Course[];
+  message: string;
 }
 export default function Home() {
   const router = useRouter();
@@ -105,17 +105,19 @@ export default function Home() {
     const fetchCourses = async () => {
       try {
         const res = await fetch(`/api/courses?userId=${userId}`);
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
+
         const data = (await res.json()) as ApiResponseCourses;
-        setCourses(data.courses);
+        if (!res.ok) {
+          toast.error(data.message);
+          return;
+        }
+        setCourses(data.boughtCourses);
         setAssignedCourses(data.assignedCourses);
       } catch (error) {
         console.error("Error fetching courses:", error);
       }
     };
-
+    if (!userId) return;
     fetchGroups().catch((error) =>
       console.error("Error fetching groups:", error),
     );
@@ -723,7 +725,7 @@ export default function Home() {
                               </div>
                               <button
                                 className="ml-4 rounded-md bg-blue-500 px-2 py-1 text-xs text-white"
-                                onClick={() => handleAddUserToCourse(user)}
+                                // onClick={() => handleAddUserToCourse(user)}
                               >
                                 Priskirti
                               </button>

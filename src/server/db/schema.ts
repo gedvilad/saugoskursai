@@ -208,8 +208,8 @@ export const user_test_answers = createTable(
     userTestAnswerIndex: index("user_test_answer_index").on(table.id),
   }),
 );
-export const course = createTable(
-  "course",
+export const courses = createTable(
+  "courses",
   {
     id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
     name: varchar("name", { length: 255 }).notNull(),
@@ -225,5 +225,38 @@ export const course = createTable(
   },
   (course) => ({
     nameIndex: index("course_name_idx").on(course.name),
+  }),
+);
+export const user_bought_courses = createTable(
+  "user_bought_courses",
+  {
+    id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+    userId: varchar("user_id", { length: 50 })
+      .notNull()
+      .references(() => users.clerk_id),
+    courseId: integer("course_id")
+      .notNull()
+      .references(() => courses.id),
+  },
+  (user_bought_courses) => ({
+    nameIndex: index("user_bought_course_idx").on(user_bought_courses.id),
+  }),
+);
+export const user_assigned_courses = createTable(
+  "user_assigned_courses",
+  {
+    id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+    userId: varchar("user_id", { length: 50 })
+      .notNull()
+      .references(() => users.clerk_id),
+    courseId: integer("course_id")
+      .notNull()
+      .references(() => courses.id),
+    groupId: integer("group_id")
+      .notNull()
+      .references(() => groups.id),
+  },
+  (user_assigned_courses) => ({
+    nameIndex: index("user_assigned_course_idx").on(user_assigned_courses.id),
   }),
 );
