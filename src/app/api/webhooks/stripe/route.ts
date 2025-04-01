@@ -100,7 +100,7 @@ export async function POST(req: Request) {
     console.error("[STRIPE HOOK] Error processing event", error);
   }
 
-  return NextResponse.json({ received: true });
+  return NextResponse.json({ received: true }, { status: 200 });
 }
 type Success<T> = {
   data: T;
