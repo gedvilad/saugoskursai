@@ -54,7 +54,7 @@ export type STRIPE_SUB_CACHE =
   | {
       status: "none";
     };
-/*async function processEvent(event: Stripe.Event) {
+async function processEvent(event: Stripe.Event) {
   // Skip processing if the event isn't one I'm tracking (list of all events below)
   if (!allowedEvents.includes(event.type)) return;
 
@@ -70,8 +70,9 @@ export type STRIPE_SUB_CACHE =
     );
   }
 
-  return await syncStripeDataToKV(customerId);
-}*/
+  //return await syncStripeDataToKV(customerId);
+  console.log(customerId);
+}
 export async function POST(req: Request) {
   const body = await req.text();
   const signature = (await headers()).get("Stripe-Signature");
@@ -89,7 +90,7 @@ export async function POST(req: Request) {
       process.env.STRIPE_WEBHOOK_SECRET!,
     );
 
-    //waitUntil(processEvent(event));
+    waitUntil(processEvent(event));
   }
 
   const { error } = await tryCatch(doEventProcessing());
@@ -111,7 +112,7 @@ type Failure<E> = {
 };
 
 type Result<T, E = Error> = Success<T> | Failure<E>;
-export async function tryCatch<T, E = Error>(
+async function tryCatch<T, E = Error>(
   promise: Promise<T>,
 ): Promise<Result<T, E>> {
   try {
