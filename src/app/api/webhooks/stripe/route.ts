@@ -28,6 +28,8 @@ const allowedEvents: Stripe.Event.Type[] = [
   "payment_intent.succeeded",
   "payment_intent.payment_failed",
   "payment_intent.canceled",
+  "charge.succeeded",
+  "charge.updated",
 ];
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: "2025-02-24.acacia",
@@ -77,7 +79,6 @@ async function processEvent(event: Stripe.Event) {
 export async function POST(req: Request) {
   const body = await req.text();
   const signature = (await headers()).get("Stripe-Signature");
-
   if (!signature) return NextResponse.json({}, { status: 400 });
 
   async function doEventProcessing() {
