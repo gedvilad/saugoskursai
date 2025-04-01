@@ -71,7 +71,8 @@ async function processEvent(event: Stripe.Event) {
   }
 
   //return await syncStripeDataToKV(customerId);
-  console.log(customerId);
+  //console.log(customerId);
+  return true;
 }
 export async function POST(req: Request) {
   const body = await req.text();
