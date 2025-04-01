@@ -7,6 +7,7 @@ import {
   index,
   primaryKey,
   boolean,
+  numeric,
 } from "drizzle-orm/pg-core";
 import { start } from "repl";
 
@@ -169,7 +170,7 @@ export const user_test_responses = createTable(
     endTime: timestamp("end_time", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    score: integer("score").notNull(),
+    score: numeric("score", { precision: 5, scale: 2 }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -205,5 +206,57 @@ export const user_test_answers = createTable(
   },
   (table) => ({
     userTestAnswerIndex: index("user_test_answer_index").on(table.id),
+  }),
+);
+export const courses = createTable(
+  "courses",
+  {
+    id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+    name: varchar("name", { length: 255 }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
+      () => new Date(),
+    ),
+    course_test: integer("course_test")
+      .notNull()
+      .references(() => tests.id),
+  },
+  (course) => ({
+    nameIndex: index("course_name_idx").on(course.name),
+  }),
+);
+export const user_bought_courses = createTable(
+  "user_bought_courses",
+  {
+    id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+    userId: varchar("user_id", { length: 50 })
+      .notNull()
+      .references(() => users.clerk_id),
+    courseId: integer("course_id")
+      .notNull()
+      .references(() => courses.id),
+  },
+  (user_bought_courses) => ({
+    nameIndex: index("user_bought_course_idx").on(user_bought_courses.id),
+  }),
+);
+export const user_assigned_courses = createTable(
+  "user_assigned_courses",
+  {
+    id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
+    userId: varchar("user_id", { length: 50 })
+      .notNull()
+      .references(() => users.clerk_id),
+    courseId: integer("course_id")
+      .notNull()
+      .references(() => courses.id),
+    groupId: integer("group_id")
+      .notNull()
+      .references(() => groups.id),
+  },
+  (user_assigned_courses) => ({
+    nameIndex: index("user_assigned_course_idx").on(user_assigned_courses.id),
   }),
 );

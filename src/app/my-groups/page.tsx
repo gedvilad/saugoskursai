@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import Message from "../_components/message";
 import toast from "react-hot-toast";
 export const dynamic = "force-dynamic";
 interface Group {
@@ -43,6 +42,15 @@ interface ApiResponseUsers {
 interface ErrorResponse {
   message: string;
 }
+interface Course {
+  id: number;
+  name: string;
+}
+interface ApiResponseCourses {
+  boughtCourses: Course[];
+  assignedCourses: Course[];
+  message: string;
+}
 export default function Home() {
   const router = useRouter();
   const { userId } = useAuth();
@@ -60,6 +68,9 @@ export default function Home() {
   const [isLoadingGroups, setIsLoadingGroups] = useState(true);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showUserDeleteConfirm, setShowUserDeleteConfirm] = useState(false);
+  const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [assignedCourses, setAssignedCourses] = useState<Course[]>([]);
 
   useEffect(() => {
     const fetchGroups = async () => {
@@ -91,12 +102,30 @@ export default function Home() {
         console.error("Error fetching users:", error);
       }
     };
+    const fetchCourses = async () => {
+      try {
+        const res = await fetch(`/api/courses?userId=${userId}`);
 
+        const data = (await res.json()) as ApiResponseCourses;
+        if (!res.ok) {
+          toast.error(data.message);
+          return;
+        }
+        setCourses(data.boughtCourses);
+        setAssignedCourses(data.assignedCourses);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      }
+    };
+    if (!userId) return;
     fetchGroups().catch((error) =>
       console.error("Error fetching groups:", error),
     );
     fetchAllUsers().catch((error) =>
       console.error("Error fetching all users:", error),
+    );
+    fetchCourses().catch((error) =>
+      console.error("Error fetching courses:", error),
     );
   }, [userId]);
 
@@ -319,6 +348,9 @@ export default function Home() {
       console.error("Request failed:", error);
     }
   };
+  const handleCourseSelect = (courseId: number) => {
+    setSelectedCourseId(courseId);
+  };
 
   return (
     <div className="flex h-screen">
@@ -433,7 +465,7 @@ export default function Home() {
               {[
                 { key: "users", label: "Grupės nariai" },
                 { key: "settings", label: "Nustatymai" },
-                { key: "analytics", label: "Statistika" },
+                { key: "courses", label: "Priskirti kursus" },
               ].map((tab) => (
                 <button
                   key={tab.key}
@@ -630,7 +662,81 @@ export default function Home() {
                 </button>
               </div>
             )}
-            {activeTab === "analytics" && <div>Analytics dashboard...</div>}
+            {activeTab === "courses" && (
+              <div className="space-y-4">
+                <h2 className="text-lg font-semibold">Priskirti kursus</h2>
+
+                {/* Step 1: Select Course */}
+                <div>
+                  <label
+                    htmlFor="course-select"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Pasirinkite kursą:
+                  </label>
+                  <select
+                    id="course-select"
+                    className="w-full rounded-md border-gray-300 p-2 text-sm shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    value={selectedCourseId ?? ""}
+                    onChange={(e) => handleCourseSelect(Number(e.target.value))}
+                  >
+                    <option value="">Pasirinkite kursą</option>
+                    {courses.map((course) => (
+                      <option key={course.id} value={course.id}>
+                        {course.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {selectedCourseId && (
+                  <div>
+                    <h3 className="text-md mt-4 font-semibold">
+                      Pasirinkite narius, kuriems priskirti kursą:
+                    </h3>
+
+                    {/* User search filter */}
+                    <div className="mb-4 flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Ieškoti vartotojų..."
+                        className="w-1/4 rounded-md border border-gray-300 p-1 text-xs shadow-sm transition duration-200 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                      />
+                    </div>
+
+                    {/* Display the user list with the option to add */}
+                    {isLoadingUsers ? (
+                      // Skeleton loader for user list
+                      <div>Loading...</div>
+                    ) : (
+                      <ul className="space-y-2">
+                        {users
+                          .filter((user) => user.role !== "Pakviestas") // Only show users who are not invited
+                          .map((user) => (
+                            <li
+                              key={user.id}
+                              className="flex items-center justify-between rounded-md border p-2"
+                            >
+                              <div>
+                                {user.first_name} {user.last_name} ({user.email}
+                                )
+                              </div>
+                              <button
+                                className="ml-4 rounded-md bg-blue-500 px-2 py-1 text-xs text-white"
+                                // onClick={() => handleAddUserToCourse(user)}
+                              >
+                                Priskirti
+                              </button>
+                            </li>
+                          ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </main>
         )
       )}
