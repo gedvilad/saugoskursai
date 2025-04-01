@@ -56,7 +56,7 @@ export type STRIPE_SUB_CACHE =
     };
 async function processEvent(event: Stripe.Event) {
   // Skip processing if the event isn't one I'm tracking (list of all events below)
-  if (!allowedEvents.includes(event.type)) return;
+  /*if (!allowedEvents.includes(event.type)) return;
 
   // All the events I track have a customerId
   const { customer: customerId } = event?.data?.object as {
@@ -71,7 +71,7 @@ async function processEvent(event: Stripe.Event) {
   }
 
   //return await syncStripeDataToKV(customerId);
-  //console.log(customerId);
+  //console.log(customerId);*/
   return true;
 }
 export async function POST(req: Request) {
