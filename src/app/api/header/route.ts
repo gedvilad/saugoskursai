@@ -77,9 +77,12 @@ export async function GET(req: Request) {
       return NextResponse.json({ data, dataNew });
     } catch (error) {
       console.error("Error fetching users for group:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch users" },
-        { status: 500 },
+      return new Response(
+        JSON.stringify({ message: "Įvyko klaida: " + String(error) }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        },
       );
     }
   }

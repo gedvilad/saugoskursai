@@ -1,9 +1,14 @@
 // app/page.tsx
+"use client";
 import React from "react";
+import { createCheckoutSession } from "~/backend/subscriptions/actions/createCheckout";
 
 export const dynamic = "force-dynamic";
 
-export default async function Home() {
+export default function Home() {
+  const handleBuyingCourse = async () => {
+    await createCheckoutSession();
+  };
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Hero & About Us Section */}
@@ -64,7 +69,10 @@ export default async function Home() {
             <div className="rounded-md bg-white p-4 shadow-md">
               <h3 className="mb-2 text-xl font-semibold text-gray-800">a</h3>
               <p className="text-gray-700">Info</p>
-              <button className="mt-4 rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-700">
+              <button
+                className="mt-4 rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-700"
+                onClick={handleBuyingCourse}
+              >
                 Plačiau
               </button>
             </div>

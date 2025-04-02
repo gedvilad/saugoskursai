@@ -17,10 +17,14 @@ export async function GET(req: Request) {
 
     if (userId) {
       const user = await getUserByClerkId(userId);
+      console.log("USER: ", user);
       if (!user) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
       }
-      return NextResponse.json({ user });
+      return new Response(JSON.stringify({ user }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // If no ID is provided, return all users

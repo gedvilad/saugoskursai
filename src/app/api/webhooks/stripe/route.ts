@@ -8,6 +8,7 @@ import Stripe from "stripe";
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { waitUntil } from "@vercel/functions";
+import { syncStripeDataToKV } from "~/backend/subscriptions/stripe-sync";
 
 const allowedEvents: Stripe.Event.Type[] = [
   "checkout.session.completed",
@@ -38,25 +39,9 @@ export const config = {
     bodyParser: false, // Stripe needs the raw request body
   },
 };
-export type STRIPE_SUB_CACHE =
-  | {
-      subscriptionId: string | null;
-      status: Stripe.Subscription.Status;
-      priceId: string | null;
-      currentPeriodStart: number | null;
-      currentPeriodEnd: number | null;
-      cancelAtPeriodEnd: boolean;
-      paymentMethod: {
-        brand: string | null; // e.g., "visa", "mastercard"
-        last4: string | null; // e.g., "4242"
-      } | null;
-    }
-  | {
-      status: "none";
-    };
 async function processEvent(event: Stripe.Event) {
   // Skip processing if the event isn't one I'm tracking (list of all events below)
-  /*if (!allowedEvents.includes(event.type)) return;
+  if (!allowedEvents.includes(event.type)) return;
 
   // All the events I track have a customerId
   const { customer: customerId } = event?.data?.object as {
@@ -70,9 +55,8 @@ async function processEvent(event: Stripe.Event) {
     );
   }
 
-  //return await syncStripeDataToKV(customerId);
-  //console.log(customerId);*/
-  return true;
+  return await syncStripeDataToKV(customerId);
+  //return true;
 }
 export async function POST(req: Request) {
   const body = await req.text();
