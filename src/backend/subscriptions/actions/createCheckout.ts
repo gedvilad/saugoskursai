@@ -78,9 +78,7 @@ export async function createCheckoutSession(productID: string) {
     });
   } catch (error) {
     console.error("Error creating checkout session:", error);
-    throw new Error(
-      "Failed to create checkout session. Please refresh and try again.",
-    );
+    return "Nepavyko sukurti mokėjimo sesijos. Atnaujinkite puslapį ir bandykite dar kartą.";
   }
   redirect(session.url!);
 }

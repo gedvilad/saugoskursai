@@ -16,7 +16,7 @@ interface ApiResponseCourses {
   courses: Course[];
   message: string;
 }
-export default function Home(productId: string) {
+export default function Home() {
   const [courses, setCourses] = useState<Course[]>([]);
 
   const { userId } = useAuth();
