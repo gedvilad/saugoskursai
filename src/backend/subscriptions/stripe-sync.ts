@@ -4,7 +4,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 
-import { STRIPE_CACHE_KV } from "./store";
+import { STRIPE_CACHE_KV, STRIPE_SUB_CACHE } from "./store";
 import stripe from "../utils/stripe";
 
 export async function syncStripeDataToKV(customerId: string) {
@@ -12,38 +12,37 @@ export async function syncStripeDataToKV(customerId: string) {
 
   const subscriptions = await stripe.subscriptions.list({
     customer: customerId,
-    limit: 1,
-    status: "all",
+    limit: 3,
+    status: "active",
     expand: ["data.default_payment_method"],
   });
   if (subscriptions.data.length === 0) {
     await STRIPE_CACHE_KV.set(customerId, { status: "none" });
     return { status: "none" };
   }
-  // If a user can have multiple subscriptions, that's your problem
-  const subscription = subscriptions.data[0];
-  if (!subscription) return { status: "none" };
-  if (!subscription.items.data[0]) return { status: "none" };
-  // Store complete subscription state
-  const subData = {
-    subscriptionId: subscription.id,
-    status: subscription.status,
-    priceId: subscription.items.data[0].price.id,
-    currentPeriodEnd: subscription.current_period_end,
-    currentPeriodStart: subscription.current_period_start,
-    cancelAtPeriodEnd: subscription.cancel_at_period_end,
-    paymentMethod:
-      subscription.default_payment_method &&
-      typeof subscription.default_payment_method !== "string"
-        ? {
-            brand: subscription.default_payment_method.card?.brand ?? null,
-            last4: subscription.default_payment_method.card?.last4 ?? null,
-          }
-        : null,
-  };
+  const subDataArray = subscriptions.data
+    .filter((sub) => sub.items.data.length > 0)
+    .map((sub) => ({
+      subscriptionId: sub.id,
+      status: sub.status,
+      priceId: sub.items.data[0]?.price.id,
+      productId: sub.items.data[0]?.price.product as string,
+      currentPeriodStart: sub.current_period_start,
+      currentPeriodEnd: sub.current_period_end,
+      cancelAtPeriodEnd: sub.cancel_at_period_end,
+      paymentMethod:
+        sub.default_payment_method &&
+        typeof sub.default_payment_method !== "string"
+          ? {
+              brand: sub.default_payment_method.card?.brand ?? null,
+              last4: sub.default_payment_method.card?.last4 ?? null,
+            }
+          : null,
+    }));
 
-  // Store in Redis (convert object to JSON string)
-  await STRIPE_CACHE_KV.set(customerId, subData);
+  const cacheData: STRIPE_SUB_CACHE = { subscriptions: subDataArray };
+  await STRIPE_CACHE_KV.set(customerId, cacheData);
+  //await STRIPE_CACHE_KV.set(customerId, subDataArray);
 
-  return subData;
+  return subDataArray;
 }

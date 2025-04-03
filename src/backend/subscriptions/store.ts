@@ -1,7 +1,7 @@
 import redis from "../utils/redis";
 import Stripe from "stripe";
 
-export type STRIPE_SUB_CACHE =
+/*export type STRIPE_SUB_CACHE =
   | {
       subscriptionId: string | null;
       status: Stripe.Subscription.Status;
@@ -16,7 +16,25 @@ export type STRIPE_SUB_CACHE =
     }
   | {
       status: "none";
-    };
+    };*/
+export type STRIPE_SUB_CACHE =
+  | {
+      subscriptions: {
+        subscriptionId: string | null;
+        status: Stripe.Subscription.Status;
+        priceId: string | null | undefined;
+        productId: string | null | undefined;
+        currentPeriodStart: number | null;
+        currentPeriodEnd: number | null;
+        cancelAtPeriodEnd: boolean;
+        paymentMethod: {
+          brand: string | null;
+          last4: string | null;
+        } | null;
+      }[];
+    }
+  | { status: "none" };
+
 export const STRIPE_CACHE_KV = {
   generateKey(stripeCustomerId: string) {
     return `stripe:customer:${stripeCustomerId}:sub-status`;

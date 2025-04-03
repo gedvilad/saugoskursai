@@ -1,13 +1,51 @@
 // app/page.tsx
 "use client";
-import React from "react";
+import { useAuth } from "@clerk/nextjs";
+import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { createCheckoutSession } from "~/backend/subscriptions/actions/createCheckout";
 
 export const dynamic = "force-dynamic";
 
-export default function Home() {
-  const handleBuyingCourse = async () => {
-    await createCheckoutSession();
+interface Course {
+  id: number;
+  name: string;
+  productId: string;
+}
+interface ApiResponseCourses {
+  courses: Course[];
+  message: string;
+}
+export default function Home(productId: string) {
+  const [courses, setCourses] = useState<Course[]>([]);
+
+  const { userId } = useAuth();
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const res = await fetch(`/api/courses?userId=${userId}`);
+
+        const data = (await res.json()) as ApiResponseCourses;
+        if (!res.ok) {
+          toast.error(data.message);
+          return;
+        }
+        setCourses(data.courses);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      }
+    };
+    if (!userId) return;
+    fetchCourses().catch((error) =>
+      console.error("Error fetching courses:", error),
+    );
+  }, [userId]);
+
+  const handleBuyingCourse = async (productId: string) => {
+    const error = await createCheckoutSession(productId);
+    if (error) {
+      toast.error(error);
+    }
   };
   return (
     <div className="min-h-screen bg-gray-100">
@@ -65,35 +103,23 @@ export default function Home() {
             Siūlomi kursai
           </h2>
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-            {/* Course Card 1 */}
-            <div className="rounded-md bg-white p-4 shadow-md">
-              <h3 className="mb-2 text-xl font-semibold text-gray-800">a</h3>
-              <p className="text-gray-700">Info</p>
-              <button
-                className="mt-4 rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-700"
-                onClick={handleBuyingCourse}
+            {courses.map((course) => (
+              <div
+                key={course.productId}
+                className="rounded-md bg-white p-4 shadow-md"
               >
-                Plačiau
-              </button>
-            </div>
-
-            {/* Course Card 2 */}
-            <div className="rounded-md bg-white p-4 shadow-md">
-              <h3 className="mb-2 text-xl font-semibold text-gray-800">b</h3>
-              <p className="text-gray-700">Info</p>
-              <button className="mt-4 rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-700">
-                Plačiau
-              </button>
-            </div>
-
-            {/* Course Card 3 */}
-            <div className="rounded-md bg-white p-4 shadow-md">
-              <h3 className="mb-2 text-xl font-semibold text-gray-800">c</h3>
-              <p className="text-gray-700">Info</p>
-              <button className="mt-4 rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-700">
-                Plačiau
-              </button>
-            </div>
+                <h3 className="mb-2 text-xl font-semibold text-gray-800">
+                  {course.name}
+                </h3>
+                <p className="text-gray-700">desc</p>
+                <button
+                  className="mt-4 rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-700"
+                  onClick={() => handleBuyingCourse(course.productId)}
+                >
+                  Plačiau
+                </button>
+              </div>
+            ))}
           </div>
         </div>
       </section>

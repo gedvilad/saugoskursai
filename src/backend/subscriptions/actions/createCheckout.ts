@@ -6,17 +6,30 @@ import { getStripeSubByUserId, STRIPE_CUSTOMER_ID_KV } from "../store";
 import stripe from "~/backend/utils/stripe";
 import { getUserByClerkId } from "~/server/user-queries";
 import toast from "react-hot-toast";
+import { db } from "~/server/db";
+import { courses } from "~/server/db/schema";
+import { eq } from "drizzle-orm";
 
-export async function createCheckoutSession() {
+export async function createCheckoutSession(productID: string) {
   const { userId } = await auth();
   if (!userId) {
     redirect("/");
   }
 
   const existingSub = await getStripeSubByUserId(userId);
-  if (existingSub?.status === "active") {
-    throw new Error("You already have an active subscription");
+  if (existingSub) {
+    if ("subscriptions" in existingSub) {
+      const hasExistingProductSub = existingSub.subscriptions.some(
+        (sub) => sub.productId === productID,
+      );
+
+      if (hasExistingProductSub) {
+        const error = "Jau turite prenumeratą šiam produktui.";
+        return error;
+      }
+    }
   }
+
   let stripeCustomerId = (await STRIPE_CUSTOMER_ID_KV.get(userId)) ?? undefined;
   const user = await getUserByClerkId(userId);
   if (!stripeCustomerId) {
@@ -31,10 +44,27 @@ export async function createCheckoutSession() {
     stripeCustomerId = newCustomer.id;
   }
 
+  const stripePriceNr = await db
+    .select({
+      stripePriceNr: courses.productPriceNr,
+    })
+    .from(courses)
+    .where(eq(courses.productId, productID))
+    .limit(1);
+  let priceId;
+  if (stripePriceNr[0]?.stripePriceNr === 1) {
+    priceId = process.env.STRIPE_PRICE_ID_1;
+  }
+  if (stripePriceNr[0]?.stripePriceNr === 2) {
+    priceId = process.env.STRIPE_PRICE_ID_2;
+  }
+  if (stripePriceNr[0]?.stripePriceNr === 3) {
+    priceId = process.env.STRIPE_PRICE_ID_3;
+  }
   let session;
   try {
     session = await stripe.checkout.sessions.create({
-      line_items: [{ price: process.env.STRIPE_PRICE_ID_1, quantity: 1 }],
+      line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
       success_url: `http://localhost:3000/success?userId=${userId}`,
       cancel_url: "http://localhost:3000/",

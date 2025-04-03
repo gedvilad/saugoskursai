@@ -219,9 +219,11 @@ export const courses = createTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).$onUpdate(
       () => new Date(),
     ),
-    course_test: integer("course_test")
+    courseTest: integer("course_test")
       .notNull()
       .references(() => tests.id),
+    productId: varchar("product_id", { length: 255 }).notNull(),
+    productPriceNr: integer("product_price_nr").notNull(),
   },
   (course) => ({
     nameIndex: index("course_name_idx").on(course.name),
