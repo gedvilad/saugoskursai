@@ -40,6 +40,7 @@ export const config = {
   },
 };
 async function processEvent(event: Stripe.Event) {
+  console.log(event.type);
   if (!allowedEvents.includes(event.type)) return;
 
   const { customer: customerId } = event?.data?.object as {

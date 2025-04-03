@@ -40,34 +40,53 @@ function ClientConfirmStripeSession() {
     if (!isSignedIn) {
       redirect("/");
     }
-
+    let timeoutId: NodeJS.Timeout;
     async function syncStripe() {
-      console.log("Syncing with Stripe...");
       setSyncing(true);
-      if (!userId) return;
-      const { error } = await tryCatch(triggerStripeSyncForUser(userId));
+
+      const minLoadingTime = 3000;
+
+      // Create a promise that resolves after the minimum loading time
+      const minTimePromise = new Promise<void>((resolve) => {
+        timeoutId = setTimeout(() => {
+          resolve();
+        }, minLoadingTime);
+      });
+
+      // Await both the Stripe sync and the minimum time
+      await Promise.all([
+        tryCatch(triggerStripeSyncForUser(userId ?? "")),
+        minTimePromise,
+      ]);
+
+      clearTimeout(timeoutId); // Clear the timeout if the sync finished before
+
       setSyncing(false);
 
-      if (error) {
-        console.error("Failed to sync with Stripe:", error);
-        // Handle error (e.g., display an error message)
-      } else {
-        redirect("/");
-      }
+      redirect("/");
     }
 
-    void syncStripe(); // Mark as explicitly ignored
+    void syncStripe();
   }, [userId, isSignedIn, isLoaded]);
 
   if (!isLoaded) {
-    return <div>Loading authentication...</div>;
+    return <LoadingScreen message="Mokėjimas apdorojamas" />;
   }
 
   if (syncing) {
-    return <div>Syncing with Stripe...</div>;
+    return <LoadingScreen message="Mokėjimas apdorojamas" />;
   }
 
-  return <div>Processing...</div>; // Or any other appropriate message
+  return null; // Don't render anything after syncing. The redirect takes over.
+}
+
+function LoadingScreen({ message }: { message: string }) {
+  return (
+    <div className="flex h-screen flex-col items-center justify-center bg-gray-100">
+      <div className="mb-4 text-2xl font-semibold">{message}</div>
+      <div className="h-16 w-16 animate-spin rounded-full border-b-2 border-t-2 border-blue-500"></div>
+    </div>
+  );
 }
 
 export default ClientConfirmStripeSession;
