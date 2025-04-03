@@ -20,7 +20,6 @@ export async function syncStripeDataToKV(customerId: string) {
     await STRIPE_CACHE_KV.set(customerId, { status: "none" });
     return { status: "none" };
   }
-
   // If a user can have multiple subscriptions, that's your problem
   const subscription = subscriptions.data[0];
   if (!subscription) return { status: "none" };

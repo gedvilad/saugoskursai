@@ -28,13 +28,7 @@ async function tryCatch<T, E = Error>(
   }
 }
 
-interface ClientConfirmStripeSessionProps {
-  sessionId: string | undefined;
-}
-
-function ClientConfirmStripeSession({
-  sessionId,
-}: ClientConfirmStripeSessionProps) {
+function ClientConfirmStripeSession() {
   const { userId, isSignedIn, isLoaded } = useAuth();
   const [syncing, setSyncing] = useState(false);
 
@@ -50,7 +44,8 @@ function ClientConfirmStripeSession({
     async function syncStripe() {
       console.log("Syncing with Stripe...");
       setSyncing(true);
-      const { error } = await tryCatch(triggerStripeSyncForUser());
+      if (!userId) return;
+      const { error } = await tryCatch(triggerStripeSyncForUser(userId));
       setSyncing(false);
 
       if (error) {

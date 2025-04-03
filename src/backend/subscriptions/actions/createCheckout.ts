@@ -17,7 +17,6 @@ export async function createCheckoutSession() {
   if (existingSub?.status === "active") {
     throw new Error("You already have an active subscription");
   }
-
   let stripeCustomerId = (await STRIPE_CUSTOMER_ID_KV.get(userId)) ?? undefined;
   const user = await getUserByClerkId(userId);
   if (!stripeCustomerId) {
@@ -37,8 +36,7 @@ export async function createCheckoutSession() {
     session = await stripe.checkout.sessions.create({
       line_items: [{ price: process.env.STRIPE_PRICE_ID_1, quantity: 1 }],
       mode: "subscription",
-      success_url:
-        "http://localhost:3000/success?session_id={CHECKOUT_SESSION_ID}",
+      success_url: `http://localhost:3000/success?userId=${userId}`,
       cancel_url: "http://localhost:3000/",
       subscription_data: {
         metadata: {
