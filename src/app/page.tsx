@@ -1,8 +1,8 @@
 // app/page.tsx
 "use client";
-import { useAuth } from "@clerk/nextjs";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { useAuth } from "@clerk/nextjs";
 import { createCheckoutSession } from "~/backend/subscriptions/actions/createCheckout";
 
 export const dynamic = "force-dynamic";
@@ -11,30 +11,35 @@ interface Course {
   id: number;
   name: string;
   productId: string;
+  description: string;
 }
+
 interface ApiResponseCourses {
   courses: Course[];
   message: string;
 }
+
 export default function Home() {
   const [courses, setCourses] = useState<Course[]>([]);
+  const { userId, isLoaded, isSignedIn } = useAuth();
 
-  const { userId } = useAuth();
   useEffect(() => {
     const fetchCourses = async () => {
       try {
         const res = await fetch(`/api/courses?userId=${userId}`);
-
         const data = (await res.json()) as ApiResponseCourses;
+
         if (!res.ok) {
           toast.error(data.message);
           return;
         }
+
         setCourses(data.courses);
       } catch (error) {
         console.error("Error fetching courses:", error);
       }
     };
+
     if (!userId) return;
     fetchCourses().catch((error) =>
       console.error("Error fetching courses:", error),
@@ -47,82 +52,212 @@ export default function Home() {
       toast.error(error);
     }
   };
+
+  const scrollToCourses = () => {
+    const coursesSection = document.getElementById("courses-section");
+    if (coursesSection) {
+      coursesSection.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Hero & About Us Section */}
-      <section
-        className="py-20 text-white"
-        style={{
-          backgroundImage: `url(${"https://wallpapers.com/images/hd/silhouette-construction-workers-zbf1w86pg3o3730z.jpg"})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          opacity: 0.85,
-        }}
-      >
-        <div className="container mx-auto">
-          {/* Hero Section Content */}
-          <div className="mb-12 text-center">
-            <h1 className="mb-4 text-4xl font-bold">
-              Tavo kelias į saugią darbo aplinką
-            </h1>
-            <p className="mb-8 text-lg"></p>
-            <button className="rounded-md bg-white px-6 py-3 font-bold text-blue-600 hover:bg-blue-100">
-              Apžvelgti kursus
-            </button>
-          </div>
-
-          {/* About Us Section Content */}
-          <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-2">
-            <div>
-              <h2 className="mb-6 text-3xl font-semibold text-white">
-                (Mūsų komanda)
-              </h2>
-              <h3 className="mb-6 text-3xl font-semibold text-white">
-                nuotrauka
-              </h3>
-            </div>
-            <div>
-              <h2 className="mb-6 text-3xl font-semibold text-white">
-                Apie mus
-              </h2>
-              <p className="mb-4 leading-relaxed">Mes siūlome ...</p>
-              <ul className="list-disc pl-5">
-                <li>a</li>
-                <li>b</li>
-                <li>c</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Courses Overview Section */}
-      <section className="bg-gray-200 py-12">
-        <div className="container mx-auto">
-          <h2 className="mb-6 text-center text-3xl font-semibold text-gray-800">
-            Siūlomi kursai
-          </h2>
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-            {courses.map((course) => (
-              <div
-                key={course.productId}
-                className="rounded-md bg-white p-4 shadow-md"
-              >
-                <h3 className="mb-2 text-xl font-semibold text-gray-800">
-                  {course.name}
-                </h3>
-                <p className="text-gray-700">desc</p>
+    <div className="flex min-h-screen flex-col bg-gray-100">
+      <main className="flex-grow pt-20">
+        {" "}
+        {/* Add padding-top to account for fixed header */}
+        {/* Hero Section */}
+        <section
+          className="py-24 text-white"
+          style={{
+            backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url("https://images.unsplash.com/photo-1564182842519-8a3b2af3e228?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80")`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}
+        >
+          <div className="container mx-auto px-4">
+            <div className="mx-auto max-w-3xl text-center">
+              <h1 className="mb-6 text-5xl font-bold">
+                Tavo kelias į saugią darbo aplinką
+              </h1>
+              <p className="mb-8 text-lg">
+                Mokykitės su profesionalais ir įgykite reikalingus įgūdžius
+                saugiai dirbti. Mūsų kursai padės jums pasiruošti darbui ir
+                užtikrinti saugumą darbo vietoje.
+              </p>
+              <div className="flex flex-col justify-center gap-4 sm:flex-row">
                 <button
-                  className="mt-4 rounded-md bg-blue-500 px-4 py-2 text-white hover:bg-blue-700"
-                  onClick={() => handleBuyingCourse(course.productId)}
+                  onClick={scrollToCourses}
+                  className="rounded-md bg-blue-600 px-8 py-3 font-bold text-white transition duration-300 hover:bg-blue-700"
                 >
-                  Plačiau
+                  Apžvelgti kursus
+                </button>
+                <button className="rounded-md bg-white px-8 py-3 font-bold text-blue-600 transition duration-300 hover:bg-blue-50">
+                  Sužinoti daugiau
                 </button>
               </div>
-            ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+        {/* About Us Section */}
+        <section className="bg-white py-16">
+          <div className="container mx-auto px-4">
+            <h2 className="mb-12 text-center text-3xl font-semibold text-gray-800">
+              Apie mus
+            </h2>
+
+            <div className="grid grid-cols-1 items-center gap-16 md:grid-cols-2">
+              <div className="rounded-lg bg-gray-100 p-6 shadow-md">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
+                  <svg
+                    className="h-6 w-6 text-blue-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    />
+                  </svg>
+                </div>
+                <h3 className="mb-2 text-xl font-semibold">
+                  Nuotoliniai kursai
+                </h3>
+                <p className="text-gray-600">
+                  Mokykitės patogiu laiku iš bet kurios vietos. Mūsų virtuali
+                  mokymosi aplinka veikia visais įrenginiais.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="mb-6 text-2xl font-semibold">Ką mes siūlome</h3>
+                <p className="mb-6 text-lg leading-relaxed text-gray-700">
+                  Mes siūlome profesionalius mokymo kursus, kurie padės jums
+                  įgyti reikalingus įgūdžius ir žinias apie saugą darbe. Mūsų
+                  kursai yra pritaikyti įvairioms pramonės šakoms ir parengti
+                  ekspertų.
+                </p>
+                <ul className="space-y-4">
+                  <li className="flex items-start">
+                    <svg
+                      className="mr-2 h-6 w-6 text-blue-600"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    <span className="text-gray-700">
+                      Interaktyvūs mokymosi kursai su praktinėmis užduotimis
+                    </span>
+                  </li>
+                  <li className="flex items-start">
+                    <svg
+                      className="mr-2 h-6 w-6 text-blue-600"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    <span className="text-gray-700">
+                      Sertifikuoti mokytojai su ilgamete patirtimi
+                    </span>
+                  </li>
+                  <li className="flex items-start">
+                    <svg
+                      className="mr-2 h-6 w-6 text-blue-600"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    <span className="text-gray-700">
+                      Lankstus mokymosi grafikas ir prieinamumas internetu
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+        {/* Courses Section */}
+        <section id="courses-section" className="bg-gray-200 py-16">
+          <div className="container mx-auto px-4">
+            <h2 className="mb-12 text-center text-3xl font-semibold text-gray-800">
+              Siūlomi kursai
+            </h2>
+
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+              {courses && courses.length > 0 ? (
+                courses.map((course) => (
+                  <div
+                    key={course.productId}
+                    className="overflow-hidden rounded-lg bg-white shadow-lg transition-transform hover:scale-105 hover:transform"
+                  >
+                    <div className="flex h-40 items-center justify-center bg-blue-100">
+                      <svg
+                        className="h-16 w-16 text-blue-500"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                        />
+                      </svg>
+                    </div>
+                    <div className="p-6">
+                      <h3 className="mb-3 text-xl font-semibold text-gray-800">
+                        {course.name}
+                      </h3>
+                      <p className="mb-4 text-gray-600">
+                        {course.description ||
+                          "Sužinokite daugiau apie šį kursą ir įgykite reikalingus įgūdžius saugiam darbui."}
+                      </p>
+                      <button
+                        className="mt-2 w-full rounded-md bg-blue-600 px-4 py-3 font-medium text-white transition duration-300 hover:bg-blue-700"
+                        onClick={() => handleBuyingCourse(course.productId)}
+                        disabled={!isLoaded && !isSignedIn && !userId}
+                      >
+                        Plačiau
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-3 py-10 text-center">
+                  <p className="text-gray-600">
+                    Šiuo metu kursų nėra arba reikia prisijungti, kad juos
+                    pamatytumėte.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }
