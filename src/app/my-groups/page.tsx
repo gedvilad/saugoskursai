@@ -104,7 +104,7 @@ export default function Home() {
     };
     const fetchCourses = async () => {
       try {
-        const res = await fetch(`/api/courses?userId=${userId}`);
+        const res = await fetch(`/api/courses/userCourses?userId=${userId}`);
 
         const data = (await res.json()) as ApiResponseCourses;
         if (!res.ok) {

@@ -8,6 +8,7 @@ import Stripe from "stripe";
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { waitUntil } from "@vercel/functions";
+import { syncStripeDataToKV } from "~/backend/subscriptions/stripe-sync";
 
 const allowedEvents: Stripe.Event.Type[] = [
   "checkout.session.completed",
@@ -35,44 +36,24 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
 
 export const config = {
   api: {
-    bodyParser: false, // Stripe needs the raw request body
+    bodyParser: false,
   },
 };
-export type STRIPE_SUB_CACHE =
-  | {
-      subscriptionId: string | null;
-      status: Stripe.Subscription.Status;
-      priceId: string | null;
-      currentPeriodStart: number | null;
-      currentPeriodEnd: number | null;
-      cancelAtPeriodEnd: boolean;
-      paymentMethod: {
-        brand: string | null; // e.g., "visa", "mastercard"
-        last4: string | null; // e.g., "4242"
-      } | null;
-    }
-  | {
-      status: "none";
-    };
 async function processEvent(event: Stripe.Event) {
-  // Skip processing if the event isn't one I'm tracking (list of all events below)
-  /*if (!allowedEvents.includes(event.type)) return;
+  console.log(event.type);
+  if (!allowedEvents.includes(event.type)) return;
 
-  // All the events I track have a customerId
   const { customer: customerId } = event?.data?.object as {
-    customer: string; // Sadly TypeScript does not know this
+    customer: string;
   };
 
-  // This helps make it typesafe and also lets me know if my assumption is wrong
   if (typeof customerId !== "string") {
     throw new Error(
       `[STRIPE HOOK][CANCER] ID isn't string.\nEvent type: ${event.type}`,
     );
   }
 
-  //return await syncStripeDataToKV(customerId);
-  //console.log(customerId);*/
-  return true;
+  return await syncStripeDataToKV(customerId);
 }
 export async function POST(req: Request) {
   const body = await req.text();
