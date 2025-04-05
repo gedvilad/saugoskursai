@@ -66,8 +66,8 @@ export async function createCheckoutSession(productID: string) {
     session = await stripe.checkout.sessions.create({
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
-      success_url: `http://localhost:3000/success?userId=${userId}`,
-      cancel_url: "http://localhost:3000/",
+      success_url: `https://pvpwebsite.vercel.app/success?userId=${userId}`,
+      cancel_url: "https://pvpwebsite.vercel.app/",
       subscription_data: {
         metadata: {
           userId: userId,
