@@ -61,6 +61,22 @@ export const STRIPE_CUSTOMER_ID_KV = {
   async set(userId: string, customerId: string) {
     await redis.set(this.generateKey(userId), customerId);
   },
+  async getUserId(customerId: string): Promise<string | null> {
+    // Iterate through all keys in Redis (This is generally NOT recommended for large datasets)
+    // A better approach might be to maintain a separate index if performance is critical
+    const keys = await redis.keys("user:*:stripe-customer-id");
+
+    for (const key of keys) {
+      const userId = key.split(":")[1]; // Extract userId from the key
+      const storedCustomerId = await redis.get(key);
+
+      if (storedCustomerId === customerId && userId) {
+        return userId;
+      }
+    }
+
+    return null; // Customer ID not found
+  },
 };
 
 export async function getStripeSubByUserId(userId: string) {

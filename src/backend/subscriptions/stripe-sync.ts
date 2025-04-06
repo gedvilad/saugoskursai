@@ -4,8 +4,15 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 
-import { STRIPE_CACHE_KV, STRIPE_SUB_CACHE } from "./store";
+import {
+  STRIPE_CACHE_KV,
+  STRIPE_CUSTOMER_ID_KV,
+  STRIPE_SUB_CACHE,
+} from "./store";
 import stripe from "../utils/stripe";
+import { courses, user_bought_courses } from "~/server/db/schema";
+import { db } from "~/server/db";
+import { and, eq, inArray } from "drizzle-orm";
 
 export async function syncStripeDataToKV(customerId: string) {
   // Fetch latest subscription data from Stripe
@@ -18,6 +25,13 @@ export async function syncStripeDataToKV(customerId: string) {
   });
   if (subscriptions.data.length === 0) {
     await STRIPE_CACHE_KV.set(customerId, { status: "none" });
+    const userId = await STRIPE_CUSTOMER_ID_KV.getUserId(customerId);
+    if (!userId) {
+      throw new Error(`No user ID found for customer ID: ${customerId}`);
+    }
+    await db
+      .delete(user_bought_courses)
+      .where(eq(user_bought_courses.userId, userId));
     return { status: "none" };
   }
   const subDataArray = subscriptions.data
@@ -42,7 +56,78 @@ export async function syncStripeDataToKV(customerId: string) {
 
   const cacheData: STRIPE_SUB_CACHE = { subscriptions: subDataArray };
   await STRIPE_CACHE_KV.set(customerId, cacheData);
-  //await STRIPE_CACHE_KV.set(customerId, subDataArray);
-
+  await updateUserBoughtCourses(customerId, subDataArray);
   return subDataArray;
+}
+interface subData {
+  subscriptionId: string;
+  status: string;
+  priceId: string | undefined;
+  productId: string;
+  currentPeriodStart: number;
+  currentPeriodEnd: number;
+  cancelAtPeriodEnd: boolean;
+  paymentMethod: {
+    brand: string | null;
+    last4: string | null;
+  } | null;
+}
+async function updateUserBoughtCourses(
+  customerId: string,
+  subscriptions: subData[],
+) {
+  const userId = await STRIPE_CUSTOMER_ID_KV.getUserId(customerId);
+  if (!userId) {
+    throw new Error(`No user ID found for customer ID: ${customerId}`);
+  }
+
+  const productIds = subscriptions.map((sub) => sub.productId);
+
+  // Fetch relevant courses by productId
+  const matchedCourses = await db
+    .select()
+    .from(courses)
+    .where(inArray(courses.productId, productIds));
+
+  const newCourseIds = matchedCourses.map((course) => course.id);
+
+  // Get user's current bought courses
+  const currentCourses = await db
+    .select({ courseId: user_bought_courses.courseId })
+    .from(user_bought_courses)
+    .where(eq(user_bought_courses.userId, userId));
+
+  const currentCourseIds = new Set(currentCourses.map((c) => c.courseId));
+
+  // Determine which to insert (new purchases)
+  const coursesToInsert = newCourseIds.filter(
+    (id) => !currentCourseIds.has(id),
+  );
+
+  // Determine which to delete (no longer subscribed)
+  const newCourseIdSet = new Set(newCourseIds);
+  const coursesToDelete = [...currentCourseIds].filter(
+    (id) => !newCourseIdSet.has(id),
+  );
+
+  // Insert only new courses
+  if (coursesToInsert.length > 0) {
+    const insertValues = coursesToInsert.map((courseId) => ({
+      userId,
+      courseId,
+    }));
+    await db.insert(user_bought_courses).values(insertValues);
+  }
+
+  // Delete only outdated courses
+  if (coursesToDelete.length > 0) {
+    await db
+      .delete(user_bought_courses)
+      .where(
+        and(
+          eq(user_bought_courses.userId, userId),
+          inArray(user_bought_courses.courseId, coursesToDelete),
+        ),
+      );
+  }
 }

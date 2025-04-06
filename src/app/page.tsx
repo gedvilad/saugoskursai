@@ -47,7 +47,11 @@ export default function Home() {
   }, [userId]);
 
   const handleBuyingCourse = async (productId: string) => {
-    const error = await createCheckoutSession(productId);
+    if (!userId) {
+      toast.error("Prisijunkite, kad galėtumėte pirkti kursus.");
+      return;
+    }
+    const error = await createCheckoutSession(productId, userId);
     if (error) {
       toast.error(error);
     }
