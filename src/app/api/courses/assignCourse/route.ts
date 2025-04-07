@@ -1,5 +1,5 @@
 import { db } from "~/server/db";
-import { user_assigned_courses } from "~/server/db/schema";
+import { notifications, user_assigned_courses } from "~/server/db/schema";
 
 export async function POST(req: Request) {
   try {
@@ -17,6 +17,16 @@ export async function POST(req: Request) {
         { status: 400, headers: { "Content-Type": "application/json" } },
       );
     }
+    const course = await db.query.courses.findFirst({
+      where: (courses, { eq }) => eq(courses.id, body.courseId),
+    });
+
+    if (!course) {
+      return new Response(
+        JSON.stringify({ message: "Toks kursas nerastas." }),
+        { status: 409, headers: { "Content-Type": "application/json" } },
+      );
+    }
     const userIds = body.userIds.map((id) => id);
 
     const valuesToInsert = userIds.map((id) => ({
@@ -24,8 +34,14 @@ export async function POST(req: Request) {
       courseId: body.courseId,
       groupId: body.groupId,
     }));
-
+    const valuesToInsertNotif = userIds.map((id) => ({
+      userId: id,
+      message: `Jums priskirtas naujas kursas: ${course.name}`,
+      createdAt: new Date(),
+    }));
     await db.insert(user_assigned_courses).values(valuesToInsert);
+    await db.insert(notifications).values(valuesToInsertNotif);
+
     return new Response(
       JSON.stringify({ message: "Kursai sėkmingai priskirti" }),
       { status: 200, headers: { "Content-Type": "application/json" } },
