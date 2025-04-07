@@ -257,6 +257,7 @@ export const user_assigned_courses = createTable(
     groupId: integer("group_id")
       .notNull()
       .references(() => groups.id),
+    status: varchar("status", { length: 50 }).default("Priskirtas").notNull(),
   },
   (user_assigned_courses) => ({
     nameIndex: index("user_assigned_course_idx").on(user_assigned_courses.id),

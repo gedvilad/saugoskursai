@@ -19,4 +19,5 @@ TODO:
 [x] Stripe API
 [x] Nauja lentele saugot nupirtkus/priskirtus kursus
 [x] Sutvarkyt fetchinima kursu
-[ ] Padaryt priskirima kursu
+[x] Padaryt priskirima nusipirktu kursu
+[ ] Padaryt priskirima kursu grupes nariams

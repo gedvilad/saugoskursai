@@ -71,6 +71,8 @@ export default function Home() {
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
   const [courses, setCourses] = useState<Course[]>([]);
   const [assignedCourses, setAssignedCourses] = useState<Course[]>([]);
+  const [selectedUsers2, setSelectedUsers2] = useState<string[]>([]);
+  const [filteredUsers2, setFilteredUsers2] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchGroups = async () => {
@@ -175,6 +177,16 @@ export default function Home() {
       const data = (await res.json()) as ApiResponseUsers;
       setTimeout(() => setIsLoadingUsers(false), 700);
       setUsers(data.users);
+      const filtered = data.users
+        .filter((user) => user.role !== "Pakviestas")
+        .filter((user) =>
+          (user.first_name + " " + user.last_name + " " + user.email)
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()),
+        )
+        .map((user) => user.clerk_id);
+
+      setFilteredUsers2(filtered);
     } catch (error) {
       console.error("Error fetching users:", error);
     }
@@ -350,6 +362,45 @@ export default function Home() {
   };
   const handleCourseSelect = (courseId: number) => {
     setSelectedCourseId(courseId);
+  };
+  const handleUserSelect = (userId: string) => {
+    setSelectedUsers2((prev) =>
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId],
+    );
+  };
+
+  // Handle select all checkbox
+  const handleSelectAllUsers = () => {
+    if (selectedUsers2.length === filteredUsers2.length) {
+      // If all are selected, deselect all
+      setSelectedUsers2([]);
+    } else {
+      // Otherwise select all filtered users
+      setSelectedUsers2(filteredUsers2.map((userId) => userId));
+    }
+  };
+
+  // Handle assigning selected users to the course
+  const handleAssignSelectedUsers = async () => {
+    const response = await fetch("/api/courses/assignCourse", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        courseId: selectedCourseId,
+        userIds: selectedUsers2,
+        groupId: selectedGroup!.id,
+      }),
+    });
+    const errorData = (await response.json()) as ErrorResponse;
+    if (!response.ok) {
+      toast.error(errorData.message);
+      return;
+    }
+
+    setSelectedUsers2([]);
+    toast.success("Kursai sėkmingai priskirti.");
   };
 
   return (
@@ -695,43 +746,78 @@ export default function Home() {
                       Pasirinkite narius, kuriems priskirti kursą:
                     </h3>
 
-                    {/* User search filter */}
-                    <div className="mb-4 flex gap-2">
-                      <input
-                        type="text"
-                        placeholder="Ieškoti vartotojų..."
-                        className="w-1/4 rounded-md border border-gray-300 p-1 text-xs shadow-sm transition duration-200 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        value={searchTerm}
-                        onChange={handleSearchChange}
-                      />
-                    </div>
-
-                    {/* Display the user list with the option to add */}
+                    {/* Display the user list with checkboxes */}
                     {isLoadingUsers ? (
-                      // Skeleton loader for user list
                       <div>Loading...</div>
                     ) : (
-                      <ul className="space-y-2">
-                        {users
-                          .filter((user) => user.role !== "Pakviestas") // Only show users who are not invited
-                          .map((user) => (
-                            <li
-                              key={user.id}
-                              className="flex items-center justify-between rounded-md border p-2"
-                            >
-                              <div>
-                                {user.first_name} {user.last_name} ({user.email}
-                                )
-                              </div>
-                              <button
-                                className="ml-4 rounded-md bg-blue-500 px-2 py-1 text-xs text-white"
-                                // onClick={() => handleAddUserToCourse(user)}
+                      <>
+                        <div className="mb-2 flex items-center">
+                          <input
+                            type="checkbox"
+                            id="select-all"
+                            checked={
+                              filteredUsers2.length > 0 &&
+                              selectedUsers2.length === filteredUsers2.length
+                            }
+                            onChange={handleSelectAllUsers}
+                            className="mr-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          />
+                          <label
+                            htmlFor="select-all"
+                            className="text-sm font-medium"
+                          >
+                            Pasirinkti visus
+                          </label>
+
+                          <button
+                            onClick={handleAssignSelectedUsers}
+                            disabled={selectedUsers2.length === 0}
+                            className="ml-auto rounded-md bg-blue-500 px-3 py-1 text-sm text-white hover:bg-blue-600 disabled:opacity-50"
+                          >
+                            Priskirti pasirinktus ({selectedUsers2.length})
+                          </button>
+                        </div>
+
+                        <ul className="max-h-96 space-y-2 overflow-y-auto">
+                          {users
+                            .filter((user) => user.role !== "Pakviestas")
+                            .filter((user) =>
+                              (
+                                user.first_name +
+                                " " +
+                                user.last_name +
+                                " " +
+                                user.email
+                              )
+                                .toLowerCase()
+                                .includes(searchTerm.toLowerCase()),
+                            )
+                            .map((user) => (
+                              <li
+                                key={user.clerk_id}
+                                className="flex items-center justify-between rounded-md border p-2"
                               >
-                                Priskirti
-                              </button>
-                            </li>
-                          ))}
-                      </ul>
+                                <div className="flex items-center">
+                                  <input
+                                    type="checkbox"
+                                    id={`user-${user.id}`}
+                                    checked={selectedUsers2.includes(
+                                      user.clerk_id,
+                                    )}
+                                    onChange={() =>
+                                      handleUserSelect(user.clerk_id)
+                                    }
+                                    className="mr-3 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                  />
+                                  <label htmlFor={`user-${user.id}`}>
+                                    {user.first_name} {user.last_name} (
+                                    {user.email})
+                                  </label>
+                                </div>
+                              </li>
+                            ))}
+                        </ul>
+                      </>
                     )}
                   </div>
                 )}
