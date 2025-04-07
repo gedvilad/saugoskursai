@@ -87,6 +87,7 @@ export const notifications = createTable(
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
     status: integer("status").default(1).notNull(),
+    url: varchar("url", { length: 512 }),
   },
   (table) => ({
     notificationIndex: index("notification_idx").on(table.id),

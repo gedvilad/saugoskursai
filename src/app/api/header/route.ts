@@ -20,6 +20,7 @@ export async function PUT(request: Request) {
           message: notifications.message,
           created_at: notifications.createdAt,
           status: notifications.status,
+          url: notifications.url,
         })
         .from(notifications)
         .where(eq(notifications.userId, userId))

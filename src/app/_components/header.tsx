@@ -28,6 +28,7 @@ interface Notification {
   message: string;
   created_at: string;
   status: string;
+  url: string;
 }
 
 interface ApiResponseNotification {
@@ -155,8 +156,8 @@ export function Header() {
                 key={item.name}
                 className={`rounded-md px-3 py-2 font-medium transition-colors duration-200 ${
                   isScrolled
-                    ? "text-gray-700 hover:bg-gray-100 hover:text-blue-600"
-                    : "text-gray-700 hover:bg-gray-100 hover:text-blue-600"
+                    ? "text-gray-700 hover:bg-stone-100 hover:text-stone-500"
+                    : "text-gray-700 hover:bg-stone-100 hover:text-stone-500"
                 }`}
                 onClick={() => handleNavigation(item.route)}
                 disabled={!isLoaded}
@@ -169,8 +170,8 @@ export function Header() {
               <button
                 className={`rounded-md px-3 py-2 font-medium transition-colors duration-200 ${
                   isScrolled
-                    ? "text-gray-700 hover:bg-gray-100 hover:text-blue-600"
-                    : "text-gray-700 hover:bg-gray-100 hover:text-blue-600"
+                    ? "text-gray-700 hover:bg-stone-100 hover:text-stone-500"
+                    : "text-gray-700 hover:bg-stone-100 hover:text-stone-500"
                 }`}
                 onClick={() => handleNavigation("/admin-panel")}
                 disabled={!isLoaded}
@@ -204,13 +205,13 @@ export function Header() {
                 onClick={handleOpenNotif}
                 className={`relative rounded-full p-2 transition-colors duration-200 ${
                   isScrolled
-                    ? "bg-gray-100 hover:bg-gray-200"
-                    : "bg-gray-100 hover:bg-gray-200"
+                    ? "bg-stone-100 hover:bg-stone-200"
+                    : "bg-stone-100 hover:bg-stone-200"
                 }`}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className={`h-5 w-5 ${isScrolled ? "text-gray-600" : "text-gray-600"}`}
+                  className={`h-5 w-5 ${isScrolled ? "text-stone-600" : "text-stone-600"}`}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -249,7 +250,11 @@ export function Header() {
                                 : "text-gray-700"
                             }`}
                           >
-                            <p>{notif.message}</p>
+                            {notif.url ? (
+                              <Link href={notif.url}>{notif.message}</Link>
+                            ) : (
+                              <p>{notif.message}</p>
+                            )}
                             <p className="mt-1 text-xs text-gray-500">
                               {new Date(notif.created_at).toLocaleDateString()}
                             </p>
@@ -262,10 +267,10 @@ export function Header() {
                       </li>
                     )}
                   </ul>
-                  <div className="border-t border-gray-100 p-2">
+                  <div className="p-2">
                     <Link
                       href="/notifications"
-                      className="block w-full rounded bg-gray-50 px-4 py-2 text-center text-sm text-blue-600 hover:bg-gray-100"
+                      className="block w-full rounded px-4 py-2 text-center text-sm text-stone-600 underline hover:text-stone-700"
                     >
                       Peržiūrėti visus pranešimus
                     </Link>

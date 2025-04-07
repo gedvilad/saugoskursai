@@ -38,6 +38,7 @@ export async function POST(req: Request) {
       userId: id,
       message: `Jums priskirtas naujas kursas: ${course.name}`,
       createdAt: new Date(),
+      url: "https://pvpwebsite.vercel.app/my-courses/",
     }));
     await db.insert(user_assigned_courses).values(valuesToInsert);
     await db.insert(notifications).values(valuesToInsertNotif);

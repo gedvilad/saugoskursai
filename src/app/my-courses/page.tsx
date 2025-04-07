@@ -115,10 +115,10 @@ export default function MyCourses() {
                     <div className="mt-4">
                       <button
                         onClick={() => handleTakeCourse(course.id)}
-                        className="btn-primary flex w-full items-center justify-center rounded-md border-2 border-gray-200 bg-white px-4 py-2 text-gray-700 transition-all duration-300 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600 hover:shadow-md"
+                        className="btn-primary group flex w-full items-center justify-center rounded-md border-2 border-stone-200 bg-white px-4 py-2 text-gray-700 transition-all duration-300 hover:border-stone-500 hover:bg-stone-50 hover:text-stone-600 hover:shadow-md"
                       >
                         <svg
-                          className="mr-2 h-5 w-5 transition-transform duration-300 hover:rotate-12"
+                          className="mr-2 h-5 w-5 transition-transform duration-300 group-hover:rotate-12"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
