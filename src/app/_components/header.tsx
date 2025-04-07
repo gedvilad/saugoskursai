@@ -48,6 +48,7 @@ export function Header() {
     { name: "Teorija", route: "/teorija" },
     { name: "Testai", route: "/testai" },
     { name: "Mano grupės", route: "/my-groups" },
+    { name: "Kursai", route: "/my-courses" },
   ];
 
   useEffect(() => {

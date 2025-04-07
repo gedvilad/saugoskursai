@@ -20,4 +20,6 @@ TODO:
 [x] Nauja lentele saugot nupirtkus/priskirtus kursus
 [x] Sutvarkyt fetchinima kursu
 [x] Padaryt priskirima nusipirktu kursu
-[ ] Padaryt priskirima kursu grupes nariams
+[x] Padaryt priskirima kursu grupes nariams
+[ ] Priskirtu kursu sprendimas, laiko sekimas, statuso keitimas.
+[ ] Grupes adminas gali matyti rezultatus nariu pagal kursus
