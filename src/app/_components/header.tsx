@@ -295,7 +295,7 @@ export function Header() {
             </SignInButton>
           </SignedOut>
           <SignedIn>
-            <UserButton afterSignOutUrl="/" />
+            <UserButton afterSignOutUrl="/" showName={true} />
           </SignedIn>
         </div>
       </div>

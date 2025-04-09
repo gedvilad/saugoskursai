@@ -1,8 +1,8 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, RedirectToSignIn } from "@clerk/nextjs";
 import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 
 interface Course {
   id: number;
@@ -52,8 +52,6 @@ export default function MyCourses() {
 
     if (isLoaded && isSignedIn) {
       fetchAssignedCourses().catch(console.error);
-    } else if (isLoaded && !isSignedIn) {
-      router.push("/sign-in");
     }
   }, [userId, isLoaded, isSignedIn, router]);
 

@@ -86,20 +86,27 @@ export default function TestPage() {
       }
     };
 
-    fetchQuestions();
+    fetchQuestions().catch((error) =>
+      console.error("Error fetching questions:", error),
+    );
   }, [id]);
 
   // Timer effect
   useEffect(() => {
-    if (!submitted && timeRemaining !== null && timeRemaining > 0) {
-      const timer = setInterval(() => {
-        setTimeRemaining((prev) => (prev !== null ? prev - 1 : null));
-      }, 1000);
+    const handleTimer = async () => {
+      if (!submitted && timeRemaining !== null && timeRemaining > 0) {
+        const timer = setInterval(() => {
+          setTimeRemaining((prev) => (prev !== null ? prev - 1 : null));
+        }, 1000);
 
-      return () => clearInterval(timer);
-    } else if (timeRemaining === 0 && !submitted) {
-      handleSubmit();
-    }
+        return () => clearInterval(timer);
+      } else if (timeRemaining === 0 && !submitted) {
+        await handleSubmit();
+      }
+    };
+    handleTimer().catch((error) =>
+      console.error("Error handling timer:", error),
+    );
   }, [timeRemaining, submitted]);
 
   const handleQuestionSelect = (index: number) => {
