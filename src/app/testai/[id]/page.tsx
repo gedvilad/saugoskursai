@@ -234,7 +234,7 @@ export default function TestPage() {
         return;
       }
 
-      toast.success("Test successfully submitted!");
+      //toast.success("Test successfully submitted!");
       setScore(data.score);
       setSubmitted(true);
     } catch (error) {

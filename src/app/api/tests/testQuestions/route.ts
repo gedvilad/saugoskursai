@@ -1,9 +1,11 @@
 import { db } from "~/server/db";
 import { and, eq } from "drizzle-orm";
 import {
+  courses,
   test_question_choices,
   test_questions,
   tests,
+  user_assigned_courses,
   user_test_answers,
   user_test_responses,
 } from "~/server/db/schema";
@@ -216,6 +218,29 @@ export async function POST(req: Request) {
         );
       }
     }
+    const course = await db
+      .select({
+        id: courses.id,
+      })
+      .from(courses)
+      .where(eq(courses.courseTest, Number(body.testId)));
+    if (!course[0]) {
+      return new Response(
+        JSON.stringify({ message: "Testas nepriklauso jokiam kursui." }),
+        { status: 409, headers: { "Content-Type": "application/json" } },
+      );
+    }
+    await db
+      .update(user_assigned_courses)
+      .set({
+        status: "Atliktas",
+      })
+      .where(
+        and(
+          eq(user_assigned_courses.userId, body.userId),
+          eq(user_assigned_courses.courseId, course[0].id),
+        ),
+      );
 
     return new Response(
       JSON.stringify({

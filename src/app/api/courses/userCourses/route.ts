@@ -1,5 +1,5 @@
-import { group } from "console";
-import { eq } from "drizzle-orm";
+import { error, group } from "console";
+import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "~/server/db";
 import {
@@ -9,6 +9,45 @@ import {
   user_bought_courses,
   users,
 } from "~/server/db/schema";
+
+export async function PUT(req: Request) {
+  const url = new URL(req.url);
+  const userId = url.searchParams.get("userId");
+  const courseId = url.searchParams.get("courseId");
+  if (!userId || !courseId) {
+    return new Response(
+      JSON.stringify({ message: "Nėra vartotojo ar kurso ID" }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+  }
+  try {
+    await db
+      .update(user_assigned_courses)
+      .set({
+        status: "Pradėtas",
+      })
+      .where(
+        and(
+          eq(user_assigned_courses.userId, userId),
+          eq(user_assigned_courses.courseId, Number(courseId)),
+          eq(user_assigned_courses.status, "Priskirtas"),
+        ),
+      );
+  } catch (error) {
+    console.log(error);
+    return;
+  }
+  return new Response(
+    JSON.stringify({ message: "Kurso statusas atnaujintas" }),
+    {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    },
+  );
+}
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
@@ -69,6 +108,7 @@ export async function GET(req: Request) {
     .select({
       id: courses.id,
       name: courses.name,
+      status: user_assigned_courses.status,
       who_assigned_first_name: users.first_name,
       who_assigned_last_name: users.last_name,
     })

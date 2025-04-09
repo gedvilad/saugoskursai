@@ -8,6 +8,7 @@ export async function POST(req: Request) {
       courseId: number;
       userIds: string[];
       groupId: number;
+      assignedById: string;
     };
     if (!body.courseId || !body.userIds) {
       return new Response(
@@ -33,6 +34,7 @@ export async function POST(req: Request) {
       userId: id,
       courseId: body.courseId,
       groupId: body.groupId,
+      assignedById: body.assignedById,
     }));
     const valuesToInsertNotif = userIds.map((id) => ({
       userId: id,

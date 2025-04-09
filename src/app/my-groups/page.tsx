@@ -391,6 +391,7 @@ export default function Home() {
         courseId: selectedCourseId,
         userIds: selectedUsers2,
         groupId: selectedGroup!.id,
+        assignedById: userId,
       }),
     });
     const errorData = (await response.json()) as ErrorResponse;
