@@ -26,3 +26,4 @@ TODO:
 [x] Sutvarkyt auth (padaryt signin ir signup pages)
 [ ] Uzdaryt notification popupa paspaudus sone
 [ ] Priskiriant kursus tikrinti ar jau neturi tokio priskirto (neatlikto).
+[ ] Invoices
