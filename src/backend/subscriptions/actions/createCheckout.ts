@@ -10,11 +10,11 @@ import { db } from "~/server/db";
 import { courses } from "~/server/db/schema";
 import { eq } from "drizzle-orm";
 
-export async function createCheckoutSession(productID: string) {
-  const { userId } = await auth();
+export async function createCheckoutSession(productID: string, userId: string) {
+  /*const { userId } = await auth();
   if (!userId) {
     redirect("/");
-  }
+  }*/
 
   const existingSub = await getStripeSubByUserId(userId);
   if (existingSub) {
@@ -66,7 +66,7 @@ export async function createCheckoutSession(productID: string) {
     session = await stripe.checkout.sessions.create({
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
-      success_url: `https://pvpwebsite.vercel.app/success?userId=${userId}`,
+      success_url: `http://localhost:3000/success?userId=${userId}`,
       cancel_url: "https://pvpwebsite.vercel.app/",
       subscription_data: {
         metadata: {

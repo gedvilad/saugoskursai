@@ -87,6 +87,7 @@ export const notifications = createTable(
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
     status: integer("status").default(1).notNull(),
+    url: varchar("url", { length: 512 }),
   },
   (table) => ({
     notificationIndex: index("notification_idx").on(table.id),
@@ -257,6 +258,7 @@ export const user_assigned_courses = createTable(
     groupId: integer("group_id")
       .notNull()
       .references(() => groups.id),
+    status: varchar("status", { length: 50 }).default("Priskirtas").notNull(),
   },
   (user_assigned_courses) => ({
     nameIndex: index("user_assigned_course_idx").on(user_assigned_courses.id),

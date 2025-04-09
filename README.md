@@ -19,4 +19,8 @@ TODO:
 [x] Stripe API
 [x] Nauja lentele saugot nupirtkus/priskirtus kursus
 [x] Sutvarkyt fetchinima kursu
-[ ] Padaryt priskirima kursu
+[x] Padaryt priskirima nusipirktu kursu
+[x] Padaryt priskirima kursu grupes nariams
+[ ] Priskirtu kursu sprendimas, laiko sekimas, statuso keitimas.
+[ ] Grupes adminas gali matyti rezultatus nariu pagal kursus
+[ ] Sutvarkyt auth (padaryt signin ir signup pages)

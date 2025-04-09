@@ -1,10 +1,13 @@
+import { group } from "console";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "~/server/db";
 import {
   courses,
+  groups,
   user_assigned_courses,
   user_bought_courses,
+  users,
 } from "~/server/db/schema";
 
 export async function GET(req: Request) {
@@ -66,12 +69,16 @@ export async function GET(req: Request) {
     .select({
       id: courses.id,
       name: courses.name,
+      who_assigned_first_name: users.first_name,
+      who_assigned_last_name: users.last_name,
     })
     .from(courses)
     .innerJoin(
       user_assigned_courses,
       eq(courses.id, user_assigned_courses.courseId),
     )
+    .innerJoin(groups, eq(user_assigned_courses.groupId, groups.id))
+    .innerJoin(users, eq(groups.ownerId, users.clerk_id))
     .where(eq(user_assigned_courses.userId, userId));
   return NextResponse.json({
     boughtCourses: boughtCourses,

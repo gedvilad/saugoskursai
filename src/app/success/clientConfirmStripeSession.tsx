@@ -5,6 +5,7 @@ import { useAuth } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 import { triggerStripeSyncForUser } from "~/backend/subscriptions/actions/updateSubTier";
 import { useEffect, useState } from "react";
+import { updateBoughtCourses } from "~/backend/subscriptions/updateBoughtCourses";
 
 type Success<T> = {
   data: T;
@@ -56,6 +57,7 @@ function ClientConfirmStripeSession() {
       // Await both the Stripe sync and the minimum time
       await Promise.all([
         tryCatch(triggerStripeSyncForUser(userId ?? "")),
+        //tryCatch(updateBoughtCourses(userId ?? "")),
         minTimePromise,
       ]);
 

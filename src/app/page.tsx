@@ -47,7 +47,11 @@ export default function Home() {
   }, [userId]);
 
   const handleBuyingCourse = async (productId: string) => {
-    const error = await createCheckoutSession(productId);
+    if (!userId) {
+      toast.error("Prisijunkite, kad galėtumėte pirkti kursus.");
+      return;
+    }
+    const error = await createCheckoutSession(productId, userId);
     if (error) {
       toast.error(error);
     }
@@ -61,10 +65,8 @@ export default function Home() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-gray-100">
+    <div className="flex min-h-screen flex-col bg-stone-50">
       <main className="flex-grow pt-20">
-        {" "}
-        {/* Add padding-top to account for fixed header */}
         {/* Hero Section */}
         <section
           className="py-24 text-white"
@@ -87,29 +89,30 @@ export default function Home() {
               <div className="flex flex-col justify-center gap-4 sm:flex-row">
                 <button
                   onClick={scrollToCourses}
-                  className="rounded-md bg-blue-600 px-8 py-3 font-bold text-white transition duration-300 hover:bg-blue-700"
+                  className="rounded-md bg-stone-600 px-8 py-3 font-bold text-white transition duration-300 hover:bg-stone-700"
                 >
                   Apžvelgti kursus
                 </button>
-                <button className="rounded-md bg-white px-8 py-3 font-bold text-blue-600 transition duration-300 hover:bg-blue-50">
+                <button className="rounded-md bg-white px-8 py-3 font-bold text-stone-600 transition duration-300 hover:bg-stone-100">
                   Sužinoti daugiau
                 </button>
               </div>
             </div>
           </div>
         </section>
+
         {/* About Us Section */}
         <section className="bg-white py-16">
           <div className="container mx-auto px-4">
-            <h2 className="mb-12 text-center text-3xl font-semibold text-gray-800">
+            <h2 className="mb-12 text-center text-3xl font-semibold text-stone-800">
               Apie mus
             </h2>
 
             <div className="grid grid-cols-1 items-center gap-16 md:grid-cols-2">
-              <div className="rounded-lg bg-gray-100 p-6 shadow-md">
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
+              <div className="rounded-lg bg-stone-100 p-6 shadow-md">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-stone-200">
                   <svg
-                    className="h-6 w-6 text-blue-600"
+                    className="h-6 w-6 text-stone-600"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -125,15 +128,17 @@ export default function Home() {
                 <h3 className="mb-2 text-xl font-semibold">
                   Nuotoliniai kursai
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-stone-600">
                   Mokykitės patogiu laiku iš bet kurios vietos. Mūsų virtuali
                   mokymosi aplinka veikia visais įrenginiais.
                 </p>
               </div>
 
               <div>
-                <h3 className="mb-6 text-2xl font-semibold">Ką mes siūlome</h3>
-                <p className="mb-6 text-lg leading-relaxed text-gray-700">
+                <h3 className="mb-6 text-2xl font-semibold text-stone-800">
+                  Ką mes siūlome
+                </h3>
+                <p className="mb-6 text-lg leading-relaxed text-stone-700">
                   Mes siūlome profesionalius mokymo kursus, kurie padės jums
                   įgyti reikalingus įgūdžius ir žinias apie saugą darbe. Mūsų
                   kursai yra pritaikyti įvairioms pramonės šakoms ir parengti
@@ -142,7 +147,7 @@ export default function Home() {
                 <ul className="space-y-4">
                   <li className="flex items-start">
                     <svg
-                      className="mr-2 h-6 w-6 text-blue-600"
+                      className="mr-2 h-6 w-6 text-stone-600"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -154,13 +159,13 @@ export default function Home() {
                         d="M5 13l4 4L19 7"
                       />
                     </svg>
-                    <span className="text-gray-700">
+                    <span className="text-stone-700">
                       Interaktyvūs mokymosi kursai su praktinėmis užduotimis
                     </span>
                   </li>
                   <li className="flex items-start">
                     <svg
-                      className="mr-2 h-6 w-6 text-blue-600"
+                      className="mr-2 h-6 w-6 text-stone-600"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -172,13 +177,13 @@ export default function Home() {
                         d="M5 13l4 4L19 7"
                       />
                     </svg>
-                    <span className="text-gray-700">
+                    <span className="text-stone-700">
                       Sertifikuoti mokytojai su ilgamete patirtimi
                     </span>
                   </li>
                   <li className="flex items-start">
                     <svg
-                      className="mr-2 h-6 w-6 text-blue-600"
+                      className="mr-2 h-6 w-6 text-stone-600"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -190,7 +195,7 @@ export default function Home() {
                         d="M5 13l4 4L19 7"
                       />
                     </svg>
-                    <span className="text-gray-700">
+                    <span className="text-stone-700">
                       Lankstus mokymosi grafikas ir prieinamumas internetu
                     </span>
                   </li>
@@ -199,10 +204,11 @@ export default function Home() {
             </div>
           </div>
         </section>
+
         {/* Courses Section */}
-        <section id="courses-section" className="bg-gray-200 py-16">
+        <section id="courses-section" className="bg-stone-100 py-16">
           <div className="container mx-auto px-4">
-            <h2 className="mb-12 text-center text-3xl font-semibold text-gray-800">
+            <h2 className="mb-12 text-center text-3xl font-semibold text-stone-800">
               Siūlomi kursai
             </h2>
 
@@ -213,9 +219,9 @@ export default function Home() {
                     key={course.productId}
                     className="overflow-hidden rounded-lg bg-white shadow-lg transition-transform hover:scale-105 hover:transform"
                   >
-                    <div className="flex h-40 items-center justify-center bg-blue-100">
+                    <div className="flex h-40 items-center justify-center bg-stone-200">
                       <svg
-                        className="h-16 w-16 text-blue-500"
+                        className="h-16 w-16 text-stone-500"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -229,15 +235,15 @@ export default function Home() {
                       </svg>
                     </div>
                     <div className="p-6">
-                      <h3 className="mb-3 text-xl font-semibold text-gray-800">
+                      <h3 className="mb-3 text-xl font-semibold text-stone-800">
                         {course.name}
                       </h3>
-                      <p className="mb-4 text-gray-600">
+                      <p className="mb-4 text-stone-600">
                         {course.description ||
                           "Sužinokite daugiau apie šį kursą ir įgykite reikalingus įgūdžius saugiam darbui."}
                       </p>
                       <button
-                        className="mt-2 w-full rounded-md bg-blue-600 px-4 py-3 font-medium text-white transition duration-300 hover:bg-blue-700"
+                        className="mt-2 w-full rounded-md bg-stone-600 px-4 py-3 font-medium text-white transition duration-300 hover:bg-stone-700"
                         onClick={() => handleBuyingCourse(course.productId)}
                         disabled={!isLoaded && !isSignedIn && !userId}
                       >
@@ -248,7 +254,7 @@ export default function Home() {
                 ))
               ) : (
                 <div className="col-span-3 py-10 text-center">
-                  <p className="text-gray-600">
+                  <p className="text-stone-600">
                     Šiuo metu kursų nėra arba reikia prisijungti, kad juos
                     pamatytumėte.
                   </p>
