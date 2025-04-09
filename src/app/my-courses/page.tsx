@@ -19,9 +19,12 @@ interface ApiResponseCourses {
   assignedCourses: Course[];
   message: string;
 }
+
 export default function MyCourses() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
   const { userId, isLoaded, isSignedIn } = useAuth();
   const router = useRouter();
 
@@ -55,8 +58,26 @@ export default function MyCourses() {
   }, [userId, isLoaded, isSignedIn, router]);
 
   const handleTakeCourse = (courseId: number) => {
-    router.push(`/course/${courseId}`);
+    setSelectedCourseId(courseId);
+    setShowConfirmation(true);
   };
+
+  const confirmTakeCourse = () => {
+    if (selectedCourseId) {
+      router.push(`/my-courses/${selectedCourseId}`);
+    }
+    setShowConfirmation(false);
+  };
+
+  const cancelTakeCourse = () => {
+    setShowConfirmation(false);
+    setSelectedCourseId(null);
+  };
+
+  // Find the selected course for the modal content
+  const selectedCourse = courses.find(
+    (course) => course.id === selectedCourseId,
+  );
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-100">
@@ -162,6 +183,52 @@ export default function MyCourses() {
           )}
         </div>
       </main>
+
+      {/* Confirmation Modal */}
+      {showConfirmation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-50">
+          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center">
+              <svg
+                className="mr-3 h-8 w-8 text-stone-500"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                />
+              </svg>
+              <h3 className="text-xl font-semibold text-gray-800">
+                Patvirtinimas
+              </h3>
+            </div>
+
+            <p className="text-gray-600">
+              Ar tikrai norite pradėti kursą „{selectedCourse?.name}&ldquo; ?
+            </p>
+            <p className="mb-6 text-gray-500">Kurso kartoti negalėsite.</p>
+
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={cancelTakeCourse}
+                className="rounded-md border border-gray-300 bg-white px-4 py-2 text-gray-700 transition-colors hover:bg-gray-50"
+              >
+                Atšaukti
+              </button>
+              <button
+                onClick={confirmTakeCourse}
+                className="rounded-md bg-stone-500 px-4 py-2 text-white transition-colors hover:bg-stone-600"
+              >
+                Pradėti
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

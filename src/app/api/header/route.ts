@@ -49,6 +49,7 @@ export async function GET(req: Request) {
           message: notifications.message,
           created_at: notifications.createdAt,
           status: notifications.status,
+          url: notifications.url,
         })
         .from(notifications)
         .where(
@@ -64,6 +65,7 @@ export async function GET(req: Request) {
                 message: notifications.message,
                 created_at: notifications.createdAt,
                 status: notifications.status,
+                url: notifications.url,
               })
               .from(notifications)
               .where(

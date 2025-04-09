@@ -46,8 +46,6 @@ export function Header() {
 
   // Navigation items with their display names and corresponding routes
   const navigationItems = [
-    { name: "Teorija", route: "/teorija" },
-    { name: "Testai", route: "/testai" },
     { name: "Mano grupės", route: "/my-groups" },
     { name: "Kursai", route: "/my-courses" },
   ];
@@ -139,66 +137,69 @@ export function Header() {
     >
       <div className="container mx-auto flex items-center justify-between px-6">
         <Link href="/" className="flex items-center space-x-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-600">
             <span className="text-lg font-bold text-white">SM</span>
           </div>
           <span
-            className={`text-xl font-bold ${isScrolled ? "text-white" : "text-gray-800"}`}
+            className={`text-xl font-bold ${
+              isScrolled ? "text-stone-800" : "text-gray-800"
+            }`}
           >
             Saugos Mokymai
           </span>
         </Link>
 
         <div className="flex items-center space-x-6">
-          <nav className="hidden space-x-1 md:flex">
-            {navigationItems.map((item) => (
-              <button
-                key={item.name}
-                className={`rounded-md px-3 py-2 font-medium transition-colors duration-200 ${
-                  isScrolled
-                    ? "text-gray-700 hover:bg-stone-100 hover:text-stone-500"
-                    : "text-gray-700 hover:bg-stone-100 hover:text-stone-500"
-                }`}
-                onClick={() => handleNavigation(item.route)}
-                disabled={!isLoaded}
+          <SignedIn>
+            <nav className="hidden space-x-1 md:flex">
+              {navigationItems.map((item) => (
+                <button
+                  key={item.name}
+                  className={`rounded-md px-3 py-2 font-medium transition-colors duration-200 ${
+                    isScrolled
+                      ? "text-stone-700 hover:bg-stone-100 hover:text-stone-500"
+                      : "text-stone-700 hover:bg-stone-100 hover:text-stone-500"
+                  }`}
+                  onClick={() => handleNavigation(item.route)}
+                  disabled={!isLoaded}
+                >
+                  {item.name}
+                </button>
+              ))}
+
+              {userData?.role === "admin" && (
+                <button
+                  className={`rounded-md px-3 py-2 font-medium transition-colors duration-200 ${
+                    isScrolled
+                      ? "text-stone-700 hover:bg-stone-100 hover:text-stone-500"
+                      : "text-stone-700 hover:bg-stone-100 hover:text-stone-500"
+                  }`}
+                  onClick={() => handleNavigation("/admin-panel")}
+                  disabled={!isLoaded}
+                >
+                  Admin panel
+                </button>
+              )}
+            </nav>
+
+            {/* Mobile menu button - only shown on small screens */}
+            <button className="text-stone-600 md:hidden">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                {item.name}
-              </button>
-            ))}
-
-            {userData?.role === "admin" && (
-              <button
-                className={`rounded-md px-3 py-2 font-medium transition-colors duration-200 ${
-                  isScrolled
-                    ? "text-gray-700 hover:bg-stone-100 hover:text-stone-500"
-                    : "text-gray-700 hover:bg-stone-100 hover:text-stone-500"
-                }`}
-                onClick={() => handleNavigation("/admin-panel")}
-                disabled={!isLoaded}
-              >
-                Admin panel
-              </button>
-            )}
-          </nav>
-
-          {/* Mobile menu button - only shown on small screens */}
-          <button className="text-gray-600 md:hidden">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-          </button>
-
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            </button>
+          </SignedIn>
           <SignedIn>
             <div className="relative">
               <button
@@ -211,7 +212,7 @@ export function Header() {
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className={`h-5 w-5 ${isScrolled ? "text-stone-600" : "text-stone-600"}`}
+                  className="h-5 w-5 text-stone-600"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -233,21 +234,21 @@ export function Header() {
 
               {showNotifications && (
                 <div className="absolute right-0 mt-2 w-80 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                  <div className="border-b border-gray-100 px-4 py-3">
-                    <h3 className="text-sm font-medium text-gray-900">
+                  <div className="border-b border-stone-100 px-4 py-3">
+                    <h3 className="text-sm font-medium text-stone-900">
                       Pranešimai
                     </h3>
                   </div>
-                  <ul className="max-h-60 divide-y divide-gray-100 overflow-y-auto">
+                  <ul className="max-h-60 divide-y divide-stone-100 overflow-y-auto">
                     {[...newNotifications, ...notifications].length > 0 ? (
                       [...newNotifications, ...notifications].map(
                         (notif, index) => (
                           <li
                             key={index}
-                            className={`px-4 py-3 text-sm hover:bg-gray-50 ${
+                            className={`px-4 py-3 text-sm hover:bg-stone-50 ${
                               newNotifications.includes(notif)
-                                ? "bg-blue-50 font-medium"
-                                : "text-gray-700"
+                                ? "bg-stone-100 font-medium"
+                                : "text-stone-700"
                             }`}
                           >
                             {notif.url ? (
@@ -255,14 +256,14 @@ export function Header() {
                             ) : (
                               <p>{notif.message}</p>
                             )}
-                            <p className="mt-1 text-xs text-gray-500">
+                            <p className="mt-1 text-xs text-stone-500">
                               {new Date(notif.created_at).toLocaleDateString()}
                             </p>
                           </li>
                         ),
                       )
                     ) : (
-                      <li className="px-4 py-3 text-sm text-gray-500">
+                      <li className="px-4 py-3 text-sm text-stone-500">
                         Neturite pranešimų
                       </li>
                     )}
@@ -280,24 +281,22 @@ export function Header() {
             </div>
           </SignedIn>
 
-          <ClerkProvider>
-            <SignedOut>
-              <SignInButton>
-                <button
-                  className={`rounded-md px-4 py-2 font-medium transition-colors duration-200 ${
-                    isScrolled
-                      ? "bg-blue-600 text-white hover:bg-blue-700"
-                      : "bg-blue-600 text-white hover:bg-blue-700"
-                  }`}
-                >
-                  Prisijungti
-                </button>
-              </SignInButton>
-            </SignedOut>
-            <SignedIn>
-              <UserButton afterSignOutUrl="/" />
-            </SignedIn>
-          </ClerkProvider>
+          <SignedOut>
+            <SignInButton>
+              <button
+                className={`rounded-md px-4 py-2 font-medium transition-colors duration-200 ${
+                  isScrolled
+                    ? "bg-stone-600 text-white hover:bg-stone-700"
+                    : "bg-stone-600 text-white hover:bg-stone-700"
+                }`}
+              >
+                Prisijungti
+              </button>
+            </SignInButton>
+          </SignedOut>
+          <SignedIn>
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
         </div>
       </div>
     </div>
