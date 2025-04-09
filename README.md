@@ -24,3 +24,4 @@ TODO:
 [ ] Priskirtu kursu sprendimas, laiko sekimas, statuso keitimas.
 [ ] Grupes adminas gali matyti rezultatus nariu pagal kursus
 [ ] Sutvarkyt auth (padaryt signin ir signup pages)
+[ ] Uzdaryt notification popupa paspaudus sone
