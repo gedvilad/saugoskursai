@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 interface Course {
   id: number;
+  assignedId: number;
   name: string;
   status: string;
   who_assigned_first_name: string;
@@ -25,6 +26,9 @@ export default function MyCourses() {
   const [loading, setLoading] = useState(true);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
+  const [selectedAssignedId, setSelectedAssignedId] = useState<number | null>(
+    null,
+  );
   const { userId, isLoaded, isSignedIn } = useAuth();
   const router = useRouter();
 
@@ -60,8 +64,9 @@ export default function MyCourses() {
     }
   }, [userId, isLoaded, isSignedIn, router]);
 
-  const handleTakeCourse = (courseId: number) => {
+  const handleTakeCourse = (courseId: number, assignedId: number) => {
     setSelectedCourseId(courseId);
+    setSelectedAssignedId(assignedId);
     setShowConfirmation(true);
   };
 
@@ -80,7 +85,9 @@ export default function MyCourses() {
         toast.error(errorData.message);
         return;
       }
-      router.push(`/my-courses/${selectedCourseId}`);
+      router.push(
+        `/my-courses/${selectedCourseId}?assignedId=${selectedAssignedId}`,
+      );
     }
     setShowConfirmation(false);
   };
@@ -91,8 +98,8 @@ export default function MyCourses() {
   };
 
   // Continue course directly without confirmation
-  const handleContinueCourse = (courseId: number) => {
-    router.push(`/my-courses/${courseId}`);
+  const handleContinueCourse = (courseId: number, assignedId: number) => {
+    router.push(`/my-courses/${courseId}?assignedId=${assignedId}`);
   };
 
   // Find the selected course for the modal content
@@ -182,7 +189,9 @@ export default function MyCourses() {
                     <div className="mt-4">
                       {course.status === "Priskirtas" ? (
                         <button
-                          onClick={() => handleTakeCourse(course.id)}
+                          onClick={() =>
+                            handleTakeCourse(course.id, course.assignedId)
+                          }
                           className="btn-primary group flex w-full items-center justify-center rounded-md border-2 border-stone-200 bg-white px-4 py-2 text-gray-700 transition-all duration-300 hover:border-stone-500 hover:bg-stone-50 hover:text-stone-600 hover:shadow-md"
                         >
                           <svg
@@ -202,7 +211,9 @@ export default function MyCourses() {
                         </button>
                       ) : (
                         <button
-                          onClick={() => handleContinueCourse(course.id)}
+                          onClick={() =>
+                            handleContinueCourse(course.id, course.assignedId)
+                          }
                           className="btn-primary group flex w-full items-center justify-center rounded-md border-2 border-stone-500 bg-stone-50 px-4 py-2 text-stone-600 transition-all duration-300 hover:bg-stone-100 hover:shadow-md"
                         >
                           <svg

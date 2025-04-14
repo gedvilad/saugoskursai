@@ -175,6 +175,9 @@ export const user_test_responses = createTable(
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
+    assignedCourse: integer("assigned_course")
+      .notNull()
+      .references(() => user_assigned_courses.id),
   },
   (table) => ({
     userTestResponseIndex: index("user_test_response_index").on(table.id),

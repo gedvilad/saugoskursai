@@ -38,3 +38,19 @@ export interface ApiResponseCourses {
   assignedCourses: Course[];
   message: string;
 }
+export interface CourseResult {
+  id: number;
+  userId: string;
+  courseId: number;
+  groupId: number;
+  status: string;
+  testId: number;
+  startTime: string;
+  endTime: string;
+  score: number;
+}
+
+export interface ApiResponseCourseResults {
+  results: CourseResult[];
+  message: string;
+}

@@ -4,6 +4,8 @@ import { type Group, type Course } from "./types";
 import UsersTab from "../_groupPage/_tabs/UsersTab";
 import SettingsTab from "../_groupPage/_tabs/SettingsTab";
 import CoursesTab from "../_groupPage/_tabs/CoursesTab";
+import CourseResultsTab from "./_tabs/ResultTab";
+import ResultTab from "./_tabs/ResultTab";
 
 interface GroupContentProps {
   selectedGroup: Group;
@@ -71,6 +73,9 @@ export default function GroupContent({
             userId={userId}
             courses={courses}
           />
+        )}
+        {activeTab === "results" && (
+          <ResultTab selectedGroup={selectedGroup} courses={courses} />
         )}
       </div>
     </main>

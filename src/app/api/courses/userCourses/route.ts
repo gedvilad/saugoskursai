@@ -107,6 +107,7 @@ export async function GET(req: Request) {
   const assignedCourses = await db
     .select({
       id: courses.id,
+      assignedId: user_assigned_courses.id,
       name: courses.name,
       status: user_assigned_courses.status,
       who_assigned_first_name: users.first_name,

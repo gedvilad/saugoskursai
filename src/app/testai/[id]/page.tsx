@@ -1,6 +1,6 @@
 "use client";
 import { useAuth } from "@clerk/nextjs";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import {
@@ -43,6 +43,8 @@ interface ApiTestSubmitResponse {
 export default function TestPage() {
   const params = useParams();
   const id = Number(params.id);
+  const searchParams = useSearchParams();
+  const assignedCourseId = Number(searchParams.get("assignedId"));
   const { userId } = useAuth();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -221,6 +223,7 @@ export default function TestPage() {
           testId: id,
           answers: answersArray,
           userId,
+          assignedCourseId,
         }),
       });
 
@@ -339,7 +342,7 @@ export default function TestPage() {
 
               <div className="flex flex-col items-center justify-center space-y-4 p-6">
                 <div className="text-6xl font-bold text-stone-800">
-                  {score.toFixed(0)}
+                  {score ? score.toFixed(0) : "0"}
                 </div>
                 <div className="text-stone-500">iš 100 taškų</div>
 

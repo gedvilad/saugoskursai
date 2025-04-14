@@ -30,12 +30,12 @@ export default function CoursesTab({
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        //setIsLoadingUsers(true);
+        setIsLoadingUsers(true);
         const res = await fetch(`/api/groups?groupId=${selectedGroup.id}`);
         if (!res.ok) throw new Error("Failed to fetch users");
 
         const data = (await res.json()) as ApiResponseUsers;
-        //setTimeout(() => setIsLoadingUsers(false), 700);
+        setTimeout(() => setIsLoadingUsers(false), 700);
         setUsers(data.users);
 
         const filtered = data.users

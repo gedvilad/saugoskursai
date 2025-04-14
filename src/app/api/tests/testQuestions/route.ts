@@ -70,6 +70,7 @@ export async function POST(req: Request) {
         choiceId: number;
         answer: string;
       }[];
+      assignedCourseId: number;
     };
 
     if (!body.userId) {
@@ -158,12 +159,25 @@ export async function POST(req: Request) {
       }
     }
     const overallScore = (score / correctAnswers.length) * 100;
+    const course = await db
+      .select({
+        id: courses.id,
+      })
+      .from(courses)
+      .where(eq(courses.courseTest, Number(body.testId)));
+    if (!course[0]) {
+      return new Response(
+        JSON.stringify({ message: "Testas nepriklauso jokiam kursui." }),
+        { status: 409, headers: { "Content-Type": "application/json" } },
+      );
+    }
     const [userTestResponse] = await db
       .insert(user_test_responses)
       .values({
         userId: body.userId,
         testId: body.testId,
         score: overallScore.toFixed(2),
+        assignedCourse: body.assignedCourseId,
       })
       .returning();
 
@@ -218,18 +232,7 @@ export async function POST(req: Request) {
         );
       }
     }
-    const course = await db
-      .select({
-        id: courses.id,
-      })
-      .from(courses)
-      .where(eq(courses.courseTest, Number(body.testId)));
-    if (!course[0]) {
-      return new Response(
-        JSON.stringify({ message: "Testas nepriklauso jokiam kursui." }),
-        { status: 409, headers: { "Content-Type": "application/json" } },
-      );
-    }
+
     await db
       .update(user_assigned_courses)
       .set({
