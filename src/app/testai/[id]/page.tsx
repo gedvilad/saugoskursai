@@ -215,7 +215,7 @@ export default function TestPage() {
         .flat();
 
       const response = await fetch("/api/tests/testQuestions", {
-        method: "POST",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },

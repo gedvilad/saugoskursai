@@ -112,6 +112,7 @@ export async function GET(req: Request) {
       status: user_assigned_courses.status,
       who_assigned_first_name: users.first_name,
       who_assigned_last_name: users.last_name,
+      testId: courses.courseTest,
     })
     .from(courses)
     .innerJoin(

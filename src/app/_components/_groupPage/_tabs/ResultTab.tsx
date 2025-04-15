@@ -169,7 +169,10 @@ export default function CourseResultsTab({
     return `${hours > 0 ? `${hours}h ` : ""}${minutes > 0 ? `${minutes}m ` : ""}${remainingSeconds}s`;
   };
   const validScores = filteredResults
-    .filter((result) => result.status !== "Priskirtas")
+    .filter(
+      (result) =>
+        result.status !== "Priskirtas" && result.status !== "Pradėtas",
+    )
     .map((result) => Number(result.score));
 
   console.log(validScores);
@@ -179,9 +182,30 @@ export default function CourseResultsTab({
       ? validScores.reduce((sum, score) => sum + score, 0) / validScores.length
       : 0
   ).toFixed(2);
+  const validResults = filteredResults.filter(
+    (result) => result.status === "Atliktas",
+  );
+  const timeDifferences: number[] = validResults.map((result) => {
+    const startTime = new Date(result.startTime).getTime();
+    const endTime = new Date(result.endTime).getTime();
+    return endTime - startTime; // Time difference in milliseconds
+  });
 
-  console.log("Average Score:", averageScore);
+  const totalTimeDifference = timeDifferences.reduce(
+    (sum, timeDiff) => sum + timeDiff,
+    0,
+  );
+  const averageTimeMs =
+    validResults.length > 0 ? totalTimeDifference / validResults.length : 0;
 
+  const totalSeconds = Math.floor(averageTimeMs / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  const formattedMinutes = String(minutes).padStart(2, "0");
+  const formattedSeconds = String(seconds).padStart(2, "0");
+
+  const formattedAverageTime = `${formattedMinutes}:${formattedSeconds}`;
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -387,7 +411,7 @@ export default function CourseResultsTab({
                 <tr>
                   <th className="px-6 py-3">Narys</th>
                   <th className="px-6 py-3">Kursas</th>
-                  <th className="px-6 py-3">Data</th>
+                  <th className="px-6 py-3">Atlikimo Data</th>
                   <th className="px-6 py-3">Rezultatas</th>
                   <th className="px-6 py-3">Trukmė</th>
                   <th className="px-6 py-3">Statusas</th>
@@ -423,24 +447,56 @@ export default function CourseResultsTab({
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      {/* {formatDuration(result.time_spent_seconds)} */}
-                      time spent seconds
+                      {(() => {
+                        if (
+                          result.status === "Pradėtas" ||
+                          result.status === "Priskirtas"
+                        ) {
+                          return "--:--"; // Or return "–" if you want to show a placeholder
+                        }
+
+                        const startTime = new Date(result.startTime).getTime();
+                        const endTime = new Date(result.endTime).getTime();
+                        const timeDiffMs = endTime - startTime;
+
+                        if (isNaN(timeDiffMs)) {
+                          return "Invalid Date"; // Handle invalid date strings
+                        }
+
+                        const totalSeconds = Math.floor(timeDiffMs / 1000);
+                        const minutes = Math.floor(totalSeconds / 60);
+                        const seconds = totalSeconds % 60;
+
+                        const formattedMinutes = String(minutes).padStart(
+                          2,
+                          "0",
+                        );
+                        const formattedSeconds = String(seconds).padStart(
+                          2,
+                          "0",
+                        );
+
+                        return `${formattedMinutes}:${formattedSeconds}`;
+                      })()}
                     </td>
+
                     <td className="px-6 py-4">
                       <span
                         className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-                          result.score == null
+                          result.status === "Pradėtas" || result.score == null
                             ? "bg-gray-100 text-gray-800"
                             : result.score >= 70
                               ? "bg-green-100 text-green-800"
                               : "bg-red-100 text-red-800"
                         }`}
                       >
-                        {result.score == null
-                          ? "Neatlikta"
-                          : result.score >= 70
-                            ? "Išlaikyta"
-                            : "Neišlaikyta"}
+                        {result.status === "Pradėtas"
+                          ? "Pradėtas"
+                          : result.score == null
+                            ? "Neatlikta"
+                            : result.score >= 70
+                              ? "Išlaikyta"
+                              : "Neišlaikyta"}
                       </span>
                     </td>
                   </tr>
@@ -470,17 +526,26 @@ export default function CourseResultsTab({
             <p className="mt-2 text-2xl font-semibold text-stone-800">
               {filteredResults.filter(
                 (result) =>
-                  result.score >= 70 && result.status !== "Priskirtas",
+                  result.score >= 70 &&
+                  result.status !== "Priskirtas" &&
+                  result.status !== "Pradėtas",
               ).length > 0 &&
-              filteredResults.filter((result) => result.status !== "Priskirtas")
-                .length > 0
+              filteredResults.filter(
+                (result) =>
+                  result.status !== "Priskirtas" &&
+                  result.status !== "Pradėtas",
+              ).length > 0
                 ? Math.round(
                     (filteredResults.filter(
                       (result) =>
-                        result.score >= 70 && result.status !== "Priskirtas",
+                        result.score >= 70 &&
+                        result.status !== "Priskirtas" &&
+                        result.status !== "Pradėtas",
                     ).length /
                       filteredResults.filter(
-                        (result) => result.status !== "Priskirtas",
+                        (result) =>
+                          result.status !== "Priskirtas" &&
+                          result.status !== "Pradėtas",
                       ).length) *
                       100,
                   )
@@ -494,15 +559,7 @@ export default function CourseResultsTab({
               Vidutinė trukmė
             </h3>
             <p className="mt-2 text-2xl font-semibold text-stone-800">
-              {/* {formatDuration(
-                Math.round(
-                  filteredResults.reduce(
-                    (sum, result) => sum + result.time_spent_seconds,
-                    0,
-                  ) / filteredResults.length,
-                ),
-              )} */}
-              time spent seconds
+              {formattedAverageTime}
             </p>
           </div>
         </div>

@@ -59,34 +59,107 @@ export async function GET(req: Request) {
     );
   }
 }
-
 export async function POST(req: Request) {
   try {
     const body = (await req.json()) as {
       testId: number;
       userId: string;
-      answers: {
-        questionId: number;
-        choiceId: number;
-        answer: string;
-      }[];
       assignedCourseId: number;
     };
-
     if (!body.userId) {
       return new Response(
         JSON.stringify({ message: "Vartotojo ID privalomas!" }),
         { status: 400, headers: { "Content-Type": "application/json" } },
       );
     }
-    // Check if the userId is a string (or validate as needed)
-    if (typeof body.userId !== "string") {
+    if (!body.testId) {
       return new Response(
-        JSON.stringify({ message: "Netinkamas vartotojo ID formatas!" }),
+        JSON.stringify({
+          message: "Privalomas testo ID!",
+        }),
         { status: 400, headers: { "Content-Type": "application/json" } },
       );
     }
+    if (!body.assignedCourseId) {
+      return new Response(
+        JSON.stringify({
+          message: "Privalomas priskirto kurso ID!",
+        }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
+    const existingResponse = await db
+      .select()
+      .from(user_test_responses)
+      .where(eq(user_test_responses.assignedCourse, body.assignedCourseId));
+    console.log(existingResponse[0]);
+    if (existingResponse.length === 0) {
+      const overallScore = 0;
+      await db.insert(user_test_responses).values({
+        userId: body.userId,
+        testId: body.testId,
+        score: overallScore.toFixed(2),
+        assignedCourse: body.assignedCourseId,
+        startTime: new Date(),
+      });
 
+      return new Response(
+        JSON.stringify({
+          message: "Sukurtas atsakymas su pradiniu laiku.",
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    }
+  } catch (error) {
+    console.error("Error inserting user_test_responses:", error);
+    return new Response(
+      JSON.stringify({ message: "Serverio klaida apdorojant užklausą!" }),
+      { status: 500, headers: { "Content-Type": "application/json" } },
+    );
+  }
+}
+export async function PUT(req: Request) {
+  const body = (await req.json()) as {
+    testId: number;
+    userId: string;
+    answers: {
+      questionId: number;
+      choiceId: number;
+      answer: string;
+    }[];
+    assignedCourseId: number;
+  };
+
+  if (!body.userId) {
+    return new Response(
+      JSON.stringify({ message: "Vartotojo ID privalomas!" }),
+      { status: 400, headers: { "Content-Type": "application/json" } },
+    );
+  }
+  if (typeof body.userId !== "string") {
+    return new Response(
+      JSON.stringify({ message: "Netinkamas vartotojo ID formatas!" }),
+      { status: 400, headers: { "Content-Type": "application/json" } },
+    );
+  }
+  if (!body.testId) {
+    return new Response(
+      JSON.stringify({
+        message: "Privalomas testo ID!",
+      }),
+      { status: 400, headers: { "Content-Type": "application/json" } },
+    );
+  }
+  if (!body.assignedCourseId) {
+    return new Response(
+      JSON.stringify({
+        message: "Privalomas priskirto kurso ID!",
+      }),
+      { status: 400, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
+  try {
     if (!body.testId || !body.answers || !Array.isArray(body.answers)) {
       return new Response(
         JSON.stringify({
@@ -159,6 +232,7 @@ export async function POST(req: Request) {
       }
     }
     const overallScore = (score / correctAnswers.length) * 100;
+
     const course = await db
       .select({
         id: courses.id,
@@ -171,14 +245,14 @@ export async function POST(req: Request) {
         { status: 409, headers: { "Content-Type": "application/json" } },
       );
     }
+
     const [userTestResponse] = await db
-      .insert(user_test_responses)
-      .values({
-        userId: body.userId,
-        testId: body.testId,
+      .update(user_test_responses)
+      .set({
         score: overallScore.toFixed(2),
-        assignedCourse: body.assignedCourseId,
+        endTime: new Date(),
       })
+      .where(eq(user_test_responses.assignedCourse, body.assignedCourseId))
       .returning();
 
     if (!userTestResponse) {

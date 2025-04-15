@@ -11,6 +11,7 @@ interface Course {
   status: string;
   who_assigned_first_name: string;
   who_assigned_last_name: string;
+  testId: number;
 }
 
 interface ApiResponseCourses {
@@ -83,6 +84,23 @@ export default function MyCourses() {
       const errorData = (await response.json()) as ErrorResponse;
       if (!response.ok) {
         toast.error(errorData.message);
+        return;
+      }
+      const res = await fetch("/api/tests/testQuestions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          testId: selectedCourse?.testId,
+          userId: userId,
+          assignedCourseId: selectedAssignedId,
+        }),
+      });
+      const error = (await res.json()) as ErrorResponse;
+      if (!response.ok) {
+        console.error("Failed to submit test:", error.message);
+        toast.error(error.message);
         return;
       }
       router.push(
