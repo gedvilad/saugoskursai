@@ -168,6 +168,19 @@ export default function CourseResultsTab({
 
     return `${hours > 0 ? `${hours}h ` : ""}${minutes > 0 ? `${minutes}m ` : ""}${remainingSeconds}s`;
   };
+  const validScores = filteredResults
+    .filter((result) => result.status !== "Priskirtas")
+    .map((result) => Number(result.score));
+
+  console.log(validScores);
+
+  const averageScore = (
+    validScores.length > 0
+      ? validScores.reduce((sum, score) => sum + score, 0) / validScores.length
+      : 0
+  ).toFixed(2);
+
+  console.log("Average Score:", averageScore);
 
   return (
     <div className="space-y-6">
@@ -388,15 +401,13 @@ export default function CourseResultsTab({
                       {getCourseName(result.courseId)}
                     </td>
                     <td className="px-6 py-4">
-                      {/* {format(
-                        new Date(result.completed_at),
-                        "yyyy-MM-dd HH:mm",
-                      )} */}
-                      data
+                      {result.updatedAt
+                        ? format(new Date(result.updatedAt), "yyyy-MM-dd HH:mm")
+                        : "—"}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <span>{result.score}%</span>
+                        <span>{result.score ?? "0.00"}%</span>
                         <div className="h-2 w-20 rounded-full bg-stone-200">
                           <div
                             className={`h-2 rounded-full ${
@@ -406,7 +417,7 @@ export default function CourseResultsTab({
                                   ? "bg-yellow-500"
                                   : "bg-red-500"
                             }`}
-                            style={{ width: `${result.score}%` }}
+                            style={{ width: `${result.score ?? 0.0}%` }}
                           ></div>
                         </div>
                       </div>
@@ -418,12 +429,18 @@ export default function CourseResultsTab({
                     <td className="px-6 py-4">
                       <span
                         className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-                          result.score >= 70
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
+                          result.score == null
+                            ? "bg-gray-100 text-gray-800"
+                            : result.score >= 70
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
                         }`}
                       >
-                        {result.score >= 70 ? "Išlaikyta" : "Neišlaikyta"}
+                        {result.score == null
+                          ? "Neatlikta"
+                          : result.score >= 70
+                            ? "Išlaikyta"
+                            : "Neišlaikyta"}
                       </span>
                     </td>
                   </tr>
@@ -442,11 +459,7 @@ export default function CourseResultsTab({
               Vidutinis rezultatas
             </h3>
             <p className="mt-2 text-2xl font-semibold text-stone-800">
-              {Math.round(
-                filteredResults.reduce((sum, result) => sum + result.score, 0) /
-                  filteredResults.length,
-              )}
-              %
+              {averageScore}%
             </p>
           </div>
 
@@ -455,11 +468,23 @@ export default function CourseResultsTab({
               Išlaikymo santykis
             </h3>
             <p className="mt-2 text-2xl font-semibold text-stone-800">
-              {Math.round(
-                (filteredResults.filter((result) => result.score >= 70).length /
-                  filteredResults.length) *
-                  100,
-              )}
+              {filteredResults.filter(
+                (result) =>
+                  result.score >= 70 && result.status !== "Priskirtas",
+              ).length > 0 &&
+              filteredResults.filter((result) => result.status !== "Priskirtas")
+                .length > 0
+                ? Math.round(
+                    (filteredResults.filter(
+                      (result) =>
+                        result.score >= 70 && result.status !== "Priskirtas",
+                    ).length /
+                      filteredResults.filter(
+                        (result) => result.status !== "Priskirtas",
+                      ).length) *
+                      100,
+                  )
+                : 0.0}
               %
             </p>
           </div>

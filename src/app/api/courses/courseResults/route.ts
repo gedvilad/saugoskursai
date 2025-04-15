@@ -50,14 +50,16 @@ export async function GET(req: Request) {
         startTime: user_test_responses.startTime,
         endTime: user_test_responses.endTime,
         score: user_test_responses.score,
+        updatedAt: user_test_responses.createdAt,
       })
       .from(user_assigned_courses)
       .innerJoin(courses, eq(user_assigned_courses.courseId, courses.id))
-      .innerJoin(
+      .leftJoin(
         user_test_responses,
         eq(user_assigned_courses.id, user_test_responses.assignedCourse),
       )
       .where(eq(user_assigned_courses.groupId, Number(groupId)));
+
     return new Response(JSON.stringify({ results: courseResults }), {
       status: 200,
       headers: { "Content-Type": "application/json" },

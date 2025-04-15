@@ -14,7 +14,7 @@ TODO:
 [x] Sufixint eslinto errorus del deploymento
 [ ] Padaryt laiko skaiciavimo kiek truko padaryt testa
 }
-[ ] Pradet daryt dashboardo fronta
+[x] Pradet daryt dashboardo fronta
 [x] Pradet daryt paslaugu pirkimo logika
 [x] Stripe API
 [x] Nauja lentele saugot nupirtkus/priskirtus kursus
@@ -27,3 +27,5 @@ TODO:
 [ ] Uzdaryt notification popupa paspaudus sone
 [ ] Priskiriant kursus tikrinti ar jau neturi tokio priskirto (neatlikto).
 [ ] Invoices
+[ ] Rezultatu atvaizdavimas => sutvarkyt datas ir laikus, istestuot
+[ ] Perdaryt testu score skaiciavima, ivertinti neteisingus pasirinkimus multi choice klausime
