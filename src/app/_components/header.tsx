@@ -9,7 +9,7 @@ import {
 } from "@clerk/nextjs";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface User {
   id: number;
@@ -27,7 +27,7 @@ interface ApiResponse {
 interface Notification {
   message: string;
   created_at: string;
-  status: string;
+  status: number; // Changed to number
   url: string;
 }
 
@@ -43,6 +43,8 @@ export function Header() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const notifRef = useRef<HTMLDivElement | null>(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
 
   // Navigation items with their display names and corresponding routes
   const navigationItems = [
@@ -109,16 +111,54 @@ export function Header() {
     };
   }, [userId, isLoaded, isSignedIn]);
 
-  const handleOpenNotif = async () => {
-    setShowNotifications(!showNotifications);
-    if (showNotifications === true) {
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        notifRef.current &&
+        !notifRef.current.contains(event.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
+        setShowNotifications(false);
+        markNotificationsAsRead(); // Call function to mark as read on close
+      }
+    };
+
+    if (showNotifications) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showNotifications]);
+
+  const markNotificationsAsRead = async () => {
+    try {
       const res = await fetch("/api/header?userId=" + userId, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
       });
+      if (!res.ok) {
+        throw new Error(`HTTP error! Status: ${res.status}`);
+      }
       const data = (await res.json()) as ApiResponseNotification;
+      // Optimistically update the notifications state
       setNotifications(data.data);
       setNewNotifications([]);
+    } catch (error) {
+      console.error("Failed to update notifications:", error);
+    }
+  };
+
+  const handleOpenNotif = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if (showNotifications) {
+      setShowNotifications(false);
+      markNotificationsAsRead(); // Also mark as read if closing by clicking the button
+    } else {
+      setShowNotifications(true);
     }
   };
 
@@ -209,6 +249,7 @@ export function Header() {
                     ? "bg-stone-100 hover:bg-stone-200"
                     : "bg-stone-100 hover:bg-stone-200"
                 }`}
+                ref={buttonRef}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -233,7 +274,10 @@ export function Header() {
               </button>
 
               {showNotifications && (
-                <div className="absolute right-0 mt-2 w-80 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                <div
+                  className="absolute right-0 mt-2 w-80 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                  ref={notifRef}
+                >
                   <div className="border-b border-stone-100 px-4 py-3">
                     <h3 className="text-sm font-medium text-stone-900">
                       Pranešimai
@@ -246,7 +290,7 @@ export function Header() {
                           <li
                             key={index}
                             className={`px-4 py-3 text-sm hover:bg-stone-50 ${
-                              newNotifications.includes(notif)
+                              notif.status === 1
                                 ? "bg-stone-100 font-medium"
                                 : "text-stone-700"
                             }`}

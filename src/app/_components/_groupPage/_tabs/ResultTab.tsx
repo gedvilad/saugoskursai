@@ -199,13 +199,16 @@ export default function CourseResultsTab({
     validResults.length > 0 ? totalTimeDifference / validResults.length : 0;
 
   const totalSeconds = Math.floor(averageTimeMs / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
 
+  const formattedHours = String(hours).padStart(2, "0");
   const formattedMinutes = String(minutes).padStart(2, "0");
   const formattedSeconds = String(seconds).padStart(2, "0");
 
-  const formattedAverageTime = `${formattedMinutes}:${formattedSeconds}`;
+  const formattedAverageTime = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -452,7 +455,7 @@ export default function CourseResultsTab({
                           result.status === "Pradėtas" ||
                           result.status === "Priskirtas"
                         ) {
-                          return "--:--"; // Or return "–" if you want to show a placeholder
+                          return "--:--:--"; // Updated placeholder to match HH:MM:SS format
                         }
 
                         const startTime = new Date(result.startTime).getTime();
@@ -460,13 +463,15 @@ export default function CourseResultsTab({
                         const timeDiffMs = endTime - startTime;
 
                         if (isNaN(timeDiffMs)) {
-                          return "Invalid Date"; // Handle invalid date strings
+                          return "Invalid Date";
                         }
 
                         const totalSeconds = Math.floor(timeDiffMs / 1000);
-                        const minutes = Math.floor(totalSeconds / 60);
+                        const hours = Math.floor(totalSeconds / 3600);
+                        const minutes = Math.floor((totalSeconds % 3600) / 60);
                         const seconds = totalSeconds % 60;
 
+                        const formattedHours = String(hours).padStart(2, "0");
                         const formattedMinutes = String(minutes).padStart(
                           2,
                           "0",
@@ -476,7 +481,7 @@ export default function CourseResultsTab({
                           "0",
                         );
 
-                        return `${formattedMinutes}:${formattedSeconds}`;
+                        return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
                       })()}
                     </td>
 

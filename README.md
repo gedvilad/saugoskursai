@@ -27,5 +27,7 @@ TODO:
 [ ] Uzdaryt notification popupa paspaudus sone
 [ ] Priskiriant kursus tikrinti ar jau neturi tokio priskirto (neatlikto).
 [ ] Invoices
-[ ] Rezultatu atvaizdavimas => sutvarkyt datas ir laikus, istestuot
+[x] Rezultatu atvaizdavimas => sutvarkyt datas ir laikus
+[ ] Istestuot pilnai kursu rezus
+[x] padaryt kad laika rodytu ir valandom
 [ ] Perdaryt testu score skaiciavima, ivertinti neteisingus pasirinkimus multi choice klausime
