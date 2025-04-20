@@ -25,7 +25,7 @@ TODO:
 [x] Grupes adminas gali matyti rezultatus nariu pagal kursus
 [x] Sutvarkyt auth (padaryt signin ir signup pages)
 [x] Uzdaryt notification popupa paspaudus sone
-[ ] Priskiriant kursus tikrinti ar jau neturi tokio priskirto (neatlikto).
+[x] Priskiriant kursus tikrinti ar jau neturi tokio priskirto (neatlikto).
 [ ] Invoices
 [x] Rezultatu atvaizdavimas => sutvarkyt datas ir laikus
 [ ] Istestuot pilnai kursu rezus
