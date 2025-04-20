@@ -192,46 +192,78 @@ export async function PUT(req: Request) {
 
     const correctAnswers = await db
       .select({
-        test_question_choices_is_correct: test_question_choices.isCorrect,
-        test_question: test_questions.question,
-        test_question_choice: test_question_choices.choice,
+        isCorrect: test_question_choices.isCorrect,
+        question: test_questions.question,
+        choice: test_question_choices.choice,
+        questionId: test_questions.id,
+        choiceId: test_question_choices.id,
       })
       .from(test_question_choices)
       .innerJoin(
         test_questions,
         eq(test_questions.id, test_question_choices.testQuestionId),
       )
-      .where(
-        and(
-          eq(test_questions.testId, body.testId),
-          eq(test_question_choices.isCorrect, true),
-        ),
-      );
+      .where(eq(test_questions.testId, body.testId));
 
-    // Calculate score (This is a placeholder - improve as needed)
-    let score = 0;
-    for (const answer of body.answers) {
-      try {
-        // Fetch the correct choice to check `isCorrect`
-        const correctChoice = await db.query.test_question_choices.findFirst({
-          where: (tqc, { eq }) => eq(tqc.id, answer.choiceId),
-        });
+    // Build maps of correct choices and all choices per question
+    const correctChoicesMap = new Map(); // Map<questionId, Set<correctChoiceIds>>
+    const allChoicesMap = new Map(); // Map<questionId, Set<allChoiceIds>>
 
-        if (correctChoice?.isCorrect) {
-          score++;
-        }
-      } catch (choiceError) {
-        console.error("Error fetching choice:", choiceError);
-        // Handle the error, e.g., log and continue, or return an error
-        return new Response(
-          JSON.stringify({
-            message: `Klaida gaunant pasirinkimą su ID ${answer.choiceId}`,
-          }),
-          { status: 500, headers: { "Content-Type": "application/json" } },
-        );
+    for (const ca of correctAnswers) {
+      if (!correctChoicesMap.has(ca.questionId)) {
+        correctChoicesMap.set(ca.questionId, new Set());
+        allChoicesMap.set(ca.questionId, new Set());
       }
+      if (ca.isCorrect) {
+        correctChoicesMap.get(ca.questionId).add(ca.choiceId);
+      }
+      allChoicesMap.get(ca.questionId).add(ca.choiceId);
     }
-    const overallScore = (score / correctAnswers.length) * 100;
+
+    // Group user answers per question
+    const userAnswersByQuestion = new Map(); // Map<questionId, Set<selectedChoiceIds>>
+    for (const answer of body.answers) {
+      if (!userAnswersByQuestion.has(answer.questionId)) {
+        userAnswersByQuestion.set(answer.questionId, new Set());
+      }
+      userAnswersByQuestion.get(answer.questionId).add(answer.choiceId);
+    }
+
+    let totalScore = 0;
+    let totalQuestions = correctChoicesMap.size;
+
+    for (const [questionId, correctChoiceSet] of correctChoicesMap.entries()) {
+      const userChoiceSet = userAnswersByQuestion.get(questionId) || new Set();
+      const totalCorrect = correctChoiceSet.size;
+      const totalSelected = userChoiceSet.size;
+
+      let correctSelected = 0;
+      let incorrectSelected = 0;
+
+      for (const choiceId of userChoiceSet) {
+        if (correctChoiceSet.has(choiceId)) {
+          correctSelected++;
+        } else {
+          incorrectSelected++;
+        }
+      }
+
+      let questionScore = 0;
+
+      if (totalCorrect === 1) {
+        // Single-choice question
+        questionScore = correctSelected === 1 ? 1 : 0;
+      } else {
+        // Multi-choice question — partial credit, penalize incorrect picks
+        questionScore =
+          correctSelected / totalCorrect - incorrectSelected / totalCorrect;
+        questionScore = Math.max(0, Math.min(1, questionScore)); // Clamp between 0 and 1
+      }
+
+      totalScore += questionScore;
+    }
+
+    const overallScore = (totalScore / totalQuestions) * 100;
 
     const course = await db
       .select({

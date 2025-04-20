@@ -103,7 +103,7 @@ export default function TestPage() {
 
         return () => clearInterval(timer);
       } else if (timeRemaining === 0 && !submitted) {
-        await handleSubmit();
+        //await handleSubmit();
       }
     };
     handleTimer().catch((error) =>
@@ -266,12 +266,12 @@ export default function TestPage() {
           Testo klausimai
         </div>
 
-        {timeRemaining !== null && !submitted && (
+        {/* {timeRemaining !== null && !submitted && (
           <div className="mb-4 flex items-center justify-center rounded-md bg-stone-100 p-2 text-stone-700">
             <Clock size={18} className="mr-2" />
             <span className="font-medium">{formatTime(timeRemaining)}</span>
           </div>
-        )}
+        )} */}
 
         <div className="mb-4 text-sm text-stone-500">
           {getAnsweredQuestionsCount()}/{questions.length} atsakytų klausimų

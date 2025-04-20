@@ -12,7 +12,7 @@ TODO:
 [x] Sutvarkyt testo rezultato skaičiavimo logika
 [x] Sutvarkyt tikrinant atsakymus ivertinti, kad gali buti keli teisingi
 [x] Sufixint eslinto errorus del deploymento
-[ ] Padaryt laiko skaiciavimo kiek truko padaryt testa
+[x] Padaryt laiko skaiciavimo kiek truko padaryt testa
 }
 [x] Pradet daryt dashboardo fronta
 [x] Pradet daryt paslaugu pirkimo logika
@@ -22,12 +22,14 @@ TODO:
 [x] Padaryt priskirima nusipirktu kursu
 [x] Padaryt priskirima kursu grupes nariams
 [ ] Priskirtu kursu sprendimas, laiko sekimas, statuso keitimas.
-[ ] Grupes adminas gali matyti rezultatus nariu pagal kursus
+[x] Grupes adminas gali matyti rezultatus nariu pagal kursus
 [x] Sutvarkyt auth (padaryt signin ir signup pages)
-[ ] Uzdaryt notification popupa paspaudus sone
+[x] Uzdaryt notification popupa paspaudus sone
 [ ] Priskiriant kursus tikrinti ar jau neturi tokio priskirto (neatlikto).
 [ ] Invoices
 [x] Rezultatu atvaizdavimas => sutvarkyt datas ir laikus
 [ ] Istestuot pilnai kursu rezus
 [x] padaryt kad laika rodytu ir valandom
-[ ] Perdaryt testu score skaiciavima, ivertinti neteisingus pasirinkimus multi choice klausime
+[x] Perdaryt testu score skaiciavima, ivertinti neteisingus pasirinkimus multi choice klausime
+[ ] Padaryt rezultatu filtravima
+[x] Teste esanti timeri arba sutvarkyt arba pasalint
