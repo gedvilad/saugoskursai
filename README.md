@@ -21,7 +21,7 @@ TODO:
 [x] Sutvarkyt fetchinima kursu
 [x] Padaryt priskirima nusipirktu kursu
 [x] Padaryt priskirima kursu grupes nariams
-[ ] Priskirtu kursu sprendimas, laiko sekimas, statuso keitimas.
+[x] Priskirtu kursu sprendimas, laiko sekimas, statuso keitimas.
 [x] Grupes adminas gali matyti rezultatus nariu pagal kursus
 [x] Sutvarkyt auth (padaryt signin ir signup pages)
 [x] Uzdaryt notification popupa paspaudus sone

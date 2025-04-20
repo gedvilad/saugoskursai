@@ -120,7 +120,9 @@ export function Header() {
         !buttonRef.current.contains(event.target as Node)
       ) {
         setShowNotifications(false);
-        markNotificationsAsRead(); // Call function to mark as read on close
+        markNotificationsAsRead().catch((error) =>
+          console.error("Error marking notifications as read:", error),
+        );
       }
     };
 
@@ -156,7 +158,9 @@ export function Header() {
 
     if (showNotifications) {
       setShowNotifications(false);
-      markNotificationsAsRead(); // Also mark as read if closing by clicking the button
+      markNotificationsAsRead().catch((error) =>
+        console.error("Error marking notifications as read:", error),
+      );
     } else {
       setShowNotifications(true);
     }
