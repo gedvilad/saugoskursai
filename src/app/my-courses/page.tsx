@@ -1,22 +1,24 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useAuth, RedirectToSignIn } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
 import toast from "react-hot-toast";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 interface Course {
   id: number;
+  assignedId: number;
   name: string;
+  status: string;
   who_assigned_first_name: string;
   who_assigned_last_name: string;
+  testId: number;
 }
 
-interface ApiResponse {
-  courses: Course[];
-  message: string;
-}
 interface ApiResponseCourses {
   assignedCourses: Course[];
+  message: string;
+}
+interface ErrorResponse {
   message: string;
 }
 
@@ -25,6 +27,9 @@ export default function MyCourses() {
   const [loading, setLoading] = useState(true);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
+  const [selectedAssignedId, setSelectedAssignedId] = useState<number | null>(
+    null,
+  );
   const { userId, isLoaded, isSignedIn } = useAuth();
   const router = useRouter();
 
@@ -41,7 +46,12 @@ export default function MyCourses() {
           return;
         }
 
-        setCourses(data.assignedCourses);
+        // Filter courses to only show "Priskirtas" or "Pradėtas" status
+        const filteredCourses = data.assignedCourses.filter(
+          (course) =>
+            course.status === "Priskirtas" || course.status === "Pradėtas",
+        );
+        setCourses(filteredCourses);
       } catch (error) {
         console.error("Error fetching assigned courses:", error);
         toast.error("Įvyko klaida gaunant kursų sąrašą");
@@ -55,14 +65,47 @@ export default function MyCourses() {
     }
   }, [userId, isLoaded, isSignedIn, router]);
 
-  const handleTakeCourse = (courseId: number) => {
+  const handleTakeCourse = (courseId: number, assignedId: number) => {
     setSelectedCourseId(courseId);
+    setSelectedAssignedId(assignedId);
     setShowConfirmation(true);
   };
 
-  const confirmTakeCourse = () => {
+  const confirmTakeCourse = async () => {
     if (selectedCourseId) {
-      router.push(`/my-courses/${selectedCourseId}`);
+      const response = await fetch(
+        `/api/courses/userCourses?userId=${userId}&courseId=${selectedCourseId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+
+      const errorData = (await response.json()) as ErrorResponse;
+      if (!response.ok) {
+        toast.error(errorData.message);
+        return;
+      }
+      const res = await fetch("/api/tests/testQuestions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          testId: selectedCourse?.testId,
+          userId: userId,
+          assignedCourseId: selectedAssignedId,
+        }),
+      });
+      const error = (await res.json()) as ErrorResponse;
+      if (!response.ok) {
+        console.error("Failed to submit test:", error.message);
+        toast.error(error.message);
+        return;
+      }
+      router.push(
+        `/my-courses/${selectedCourseId}?assignedId=${selectedAssignedId}`,
+      );
     }
     setShowConfirmation(false);
   };
@@ -70,6 +113,11 @@ export default function MyCourses() {
   const cancelTakeCourse = () => {
     setShowConfirmation(false);
     setSelectedCourseId(null);
+  };
+
+  // Continue course directly without confirmation
+  const handleContinueCourse = (courseId: number, assignedId: number) => {
+    router.push(`/my-courses/${courseId}?assignedId=${assignedId}`);
   };
 
   // Find the selected course for the modal content
@@ -126,18 +174,10 @@ export default function MyCourses() {
                           {course.who_assigned_last_name}
                         </span>
                       </div>
-                    </div>
 
-                    {/* Divider to separate button from content */}
-                    <div className="my-4 border-t border-gray-100"></div>
-
-                    <div className="mt-4">
-                      <button
-                        onClick={() => handleTakeCourse(course.id)}
-                        className="btn-primary group flex w-full items-center justify-center rounded-md border-2 border-stone-200 bg-white px-4 py-2 text-gray-700 transition-all duration-300 hover:border-stone-500 hover:bg-stone-50 hover:text-stone-600 hover:shadow-md"
-                      >
+                      <div className="mt-2 flex items-center text-sm">
                         <svg
-                          className="mr-2 h-5 w-5 transition-transform duration-300 group-hover:rotate-12"
+                          className="mr-2 h-4 w-4 text-gray-500"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -146,11 +186,76 @@ export default function MyCourses() {
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             strokeWidth={2}
-                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                           />
                         </svg>
-                        Pradėti kursą
-                      </button>
+                        <span
+                          className={
+                            course.status === "Pradėtas"
+                              ? "text-green-600"
+                              : "text-gray-600"
+                          }
+                        >
+                          Statusas: {course.status}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Divider to separate button from content */}
+                    <div className="my-4 border-t border-gray-100"></div>
+
+                    <div className="mt-4">
+                      {course.status === "Priskirtas" ? (
+                        <button
+                          onClick={() =>
+                            handleTakeCourse(course.id, course.assignedId)
+                          }
+                          className="btn-primary group flex w-full items-center justify-center rounded-md border-2 border-stone-200 bg-white px-4 py-2 text-gray-700 transition-all duration-300 hover:border-stone-500 hover:bg-stone-50 hover:text-stone-600 hover:shadow-md"
+                        >
+                          <svg
+                            className="mr-2 h-5 w-5 transition-transform duration-300 group-hover:rotate-12"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                            />
+                          </svg>
+                          Pradėti kursą
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() =>
+                            handleContinueCourse(course.id, course.assignedId)
+                          }
+                          className="btn-primary group flex w-full items-center justify-center rounded-md border-2 border-stone-500 bg-stone-50 px-4 py-2 text-stone-600 transition-all duration-300 hover:bg-stone-100 hover:shadow-md"
+                        >
+                          <svg
+                            className="mr-2 h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                            />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                          Tęsti kursą
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -206,7 +311,7 @@ export default function MyCourses() {
             </div>
 
             <p className="text-gray-600">
-              Ar tikrai norite pradėti kursą „{selectedCourse?.name}&ldquo; ?
+              Ar tikrai norite pradėti kursą „{selectedCourse?.name}&ldquo;?
             </p>
             <p className="mb-6 text-gray-500">Kurso kartoti negalėsite.</p>
 

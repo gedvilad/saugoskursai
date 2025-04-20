@@ -1,6 +1,6 @@
 "use client";
 import { useAuth } from "@clerk/nextjs";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import {
@@ -43,6 +43,8 @@ interface ApiTestSubmitResponse {
 export default function TestPage() {
   const params = useParams();
   const id = Number(params.id);
+  const searchParams = useSearchParams();
+  const assignedCourseId = Number(searchParams.get("assignedId"));
   const { userId } = useAuth();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -101,7 +103,7 @@ export default function TestPage() {
 
         return () => clearInterval(timer);
       } else if (timeRemaining === 0 && !submitted) {
-        await handleSubmit();
+        //await handleSubmit();
       }
     };
     handleTimer().catch((error) =>
@@ -213,7 +215,7 @@ export default function TestPage() {
         .flat();
 
       const response = await fetch("/api/tests/testQuestions", {
-        method: "POST",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
@@ -221,6 +223,7 @@ export default function TestPage() {
           testId: id,
           answers: answersArray,
           userId,
+          assignedCourseId,
         }),
       });
 
@@ -234,7 +237,7 @@ export default function TestPage() {
         return;
       }
 
-      toast.success("Test successfully submitted!");
+      //toast.success("Test successfully submitted!");
       setScore(data.score);
       setSubmitted(true);
     } catch (error) {
@@ -263,12 +266,12 @@ export default function TestPage() {
           Testo klausimai
         </div>
 
-        {timeRemaining !== null && !submitted && (
+        {/* {timeRemaining !== null && !submitted && (
           <div className="mb-4 flex items-center justify-center rounded-md bg-stone-100 p-2 text-stone-700">
             <Clock size={18} className="mr-2" />
             <span className="font-medium">{formatTime(timeRemaining)}</span>
           </div>
-        )}
+        )} */}
 
         <div className="mb-4 text-sm text-stone-500">
           {getAnsweredQuestionsCount()}/{questions.length} atsakytų klausimų
@@ -339,7 +342,7 @@ export default function TestPage() {
 
               <div className="flex flex-col items-center justify-center space-y-4 p-6">
                 <div className="text-6xl font-bold text-stone-800">
-                  {score.toFixed(0)}
+                  {score ? score.toFixed(0) : "0"}
                 </div>
                 <div className="text-stone-500">iš 100 taškų</div>
 

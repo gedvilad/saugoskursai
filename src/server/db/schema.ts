@@ -175,6 +175,9 @@ export const user_test_responses = createTable(
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
+    assignedCourse: integer("assigned_course")
+      .notNull()
+      .references(() => user_assigned_courses.id),
   },
   (table) => ({
     userTestResponseIndex: index("user_test_response_index").on(table.id),
@@ -249,7 +252,7 @@ export const user_assigned_courses = createTable(
   "user_assigned_courses",
   {
     id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-    userId: varchar("user_id", { length: 50 })
+    userId: varchar("user_id", { length: 256 })
       .notNull()
       .references(() => users.clerk_id),
     courseId: integer("course_id")
@@ -259,6 +262,7 @@ export const user_assigned_courses = createTable(
       .notNull()
       .references(() => groups.id),
     status: varchar("status", { length: 50 }).default("Priskirtas").notNull(),
+    assignedById: varchar("assigned_by_id", { length: 256 }).notNull(),
   },
   (user_assigned_courses) => ({
     nameIndex: index("user_assigned_course_idx").on(user_assigned_courses.id),

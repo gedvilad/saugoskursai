@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import toast from "react-hot-toast";
 
@@ -18,7 +18,8 @@ export default function CourseDetail() {
   const params = useParams();
   const id = Number(params.id);
   const courseId = id;
-
+  const searchParams = useSearchParams();
+  const assignedCourseId = Number(searchParams.get("assignedId"));
   // State for interactive elements
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -78,7 +79,7 @@ export default function CourseDetail() {
       //toast.error("Nepavyko rasti testo ID");
       return;
     }
-    router.push(`/testai/${test?.id}`);
+    router.push(`/testai/${test?.id}?assignedId=${assignedCourseId}`);
   };
 
   return (
