@@ -126,6 +126,7 @@ export default function CourseDetail() {
                 ir perkėlimą naudojant kėlimo įrangą. Štai pagrindinės rigerio
                 atsakomybės:
               </p>
+
               <ul className="mb-6 list-inside list-disc space-y-2 text-gray-700">
                 <li>
                   <strong>Krovinio patikrinimas</strong> - įvertinti krovinio

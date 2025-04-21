@@ -9,11 +9,11 @@ import {
 } from "~/server/db/schema";
 
 export async function POST(req: Request) {
-  const { userId } = await auth();
+  /*const { userId } = await auth();
   if (!userId) return new Response("Unauthorized", { status: 401 });
   const user = await db.query.users.findFirst({
     where: (users, { eq }) => eq(users.clerk_id, userId),
-  });
+  });*/
 
   try {
     // Parse the request body
