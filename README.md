@@ -33,3 +33,4 @@ TODO:
 [x] Perdaryt testu score skaiciavima, ivertinti neteisingus pasirinkimus multi choice klausime
 [ ] Padaryt rezultatu filtravima
 [x] Teste esanti timeri arba sutvarkyt arba pasalint
+[ ] kursu priskirimas, rezultatai tik adminam
