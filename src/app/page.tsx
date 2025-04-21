@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useAuth } from "@clerk/nextjs";
 import { createCheckoutSession } from "~/backend/subscriptions/actions/createCheckout";
+import { useRouter } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,7 @@ interface ApiResponseCourses {
 export default function Home() {
   const [courses, setCourses] = useState<Course[]>([]);
   const { userId, isLoaded, isSignedIn } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -244,7 +246,7 @@ export default function Home() {
                       </p>
                       <button
                         className="mt-2 w-full rounded-md bg-stone-600 px-4 py-3 font-medium text-white transition duration-300 hover:bg-stone-700"
-                        onClick={() => handleBuyingCourse(course.productId)}
+                        onClick={() => router.push(`/courses/${course.id}`)}
                         disabled={!isLoaded && !isSignedIn && !userId}
                       >
                         Plačiau
