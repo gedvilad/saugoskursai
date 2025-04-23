@@ -82,7 +82,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen bg-white">
+    <div className="flex min-h-screen bg-white">
       <Sidebar
         groups={groups}
         selectedGroup={selectedGroup}

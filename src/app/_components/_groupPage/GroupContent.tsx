@@ -71,7 +71,7 @@ export default function GroupContent({
   }
 
   return (
-    <main className="flex-1 overflow-y-auto bg-stone-50/30 p-8">
+    <main className="flex-1 bg-stone-50/30 p-8">
       <div className="mb-6 border-b border-stone-100 pb-4">
         <h1 className="text-2xl font-bold text-stone-800">
           Grupė: {selectedGroup?.name}
