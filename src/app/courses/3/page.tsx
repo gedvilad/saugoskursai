@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 const riggingCourse = {
   id: 1,
   name: "Saugus darbas su kėlimo įranga",
-  productId: "prod_rigging101",
+  productId: "prod_S3CSk3xJ8baugm",
   description:
     "Išsamus kursas apie saugų darbą su kėlimo įranga ir krovinių tvirtinimą",
   fullDescription:
@@ -56,10 +56,10 @@ export default function CourseDetail() {
       return;
     }
 
-    if (!course) {
-      toast.error("Kurso informacija nerasta.");
-      return;
-    }
+    // if (!course) {
+    //   toast.error("Kurso informacija nerasta.");
+    //   return;
+    // }
 
     const error = await createCheckoutSession(riggingCourse.productId, userId);
     if (error) {
@@ -183,11 +183,11 @@ export default function CourseDetail() {
             {/* Call to Action */}
             <div className="rounded-lg bg-stone-100 p-8 text-center shadow-md">
               <h2 className="mb-4 text-2xl font-bold text-stone-800">
-                Pasiruošę pradėti mokytis?
+                Įsigykite šį kursą dabar
               </h2>
+              <p className="mb-2 text-stone-600">50 eur/mėn</p>
               <p className="mb-6 text-stone-600">
-                Įsigykite šį kursą dabar ir pradėkite savo kelią į saugesnį
-                darbą su kėlimo įranga
+                Neribotas darbuotojų skaičius
               </p>
               <button
                 onClick={handleBuyCourse}

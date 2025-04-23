@@ -35,3 +35,4 @@ TODO:
 [x] Teste esanti timeri arba sutvarkyt arba pasalint
 [x] kursu priskirimas, rezultatai tik adminam
 [ ] Visur sudet validationus backe, veikia tik padeploynus del clerk webhooko
+[ ] kurso informacija saugot db, sutvarkyt about course page
