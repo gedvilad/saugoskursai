@@ -29,9 +29,13 @@ export default function Sidebar({
   const [newGroupName, setNewGroupName] = useState("");
   const [isOpen, setIsOpen] = useState(true);
   const [courses, setCourses] = useState<Course[]>([]);
+  const [isLoadingCourses, setIsLoadingCourses] = useState(true);
 
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+      setTimeout(() => setIsLoadingCourses(true), 500);
+      return;
+    }
     const fetchUserBoughtCourses = async () => {
       try {
         const res = await fetch(`/api/courses/userCourses?userId=${userId}`);
@@ -41,6 +45,7 @@ export default function Sidebar({
           return;
         }
         setCourses(data.boughtCourses);
+        setTimeout(() => setIsLoadingCourses(true), 500);
       } catch (error) {
         console.error("Error fetching courses:", error);
       }
@@ -51,12 +56,12 @@ export default function Sidebar({
   }, [userId]);
 
   const handleCreateGroup = () => {
-    if (courses.length === 0) {
-      toast.error(
-        "Norint sukurti grupę turite būti nusipirkę bent vieną kursą",
-      );
-      return;
-    }
+    // if (courses.length === 0) {
+    //   toast.error(
+    //     "Norint sukurti grupę turite būti nusipirkę bent vieną kursą",
+    //   );
+    //   return;
+    // }
     if (!isOpen) {
       setIsOpen(true);
     }
@@ -119,11 +124,15 @@ export default function Sidebar({
               <h2 className="mb-5 text-lg font-semibold text-stone-800">
                 Jūsų grupės
               </h2>
-              {courses.length === 0 && doesHaveGroup() === true && (
-                <div className="text-sm text-red-600">
-                  Neturite aktyvių kursų, todėl negalite naudotis savo grupėmis.
-                </div>
-              )}
+              {isLoadingCourses
+                ? null
+                : courses.length === 0 &&
+                  doesHaveGroup() === true && (
+                    <div className="text-sm text-red-600">
+                      Neturite aktyvių kursų, todėl negalite naudotis savo
+                      grupėmis.
+                    </div>
+                  )}
               <div className="space-y-3">
                 {isLoadingGroups
                   ? Array.from({ length: 3 }).map((_, i) => (

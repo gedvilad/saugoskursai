@@ -247,7 +247,10 @@ export default function Home() {
                       <button
                         className="mt-2 w-full rounded-md bg-stone-600 px-4 py-3 font-medium text-white transition duration-300 hover:bg-stone-700"
                         onClick={() => router.push(`/courses/${course.id}`)}
-                        disabled={!isLoaded && !isSignedIn && !userId}
+                        disabled={
+                          (!isLoaded && !isSignedIn && !userId) ||
+                          course.id !== 3
+                        }
                       >
                         Plačiau
                       </button>
