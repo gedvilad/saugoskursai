@@ -1,6 +1,11 @@
 "use client";
-import { useState } from "react";
-import { type Group, type ErrorResponse } from "./types";
+import { useEffect, useState } from "react";
+import {
+  type Group,
+  type ErrorResponse,
+  type ApiResponseCourses,
+  type Course,
+} from "./types";
 import toast from "react-hot-toast";
 
 interface SidebarProps {
@@ -23,8 +28,35 @@ export default function Sidebar({
   const [isCreating, setIsCreating] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [isOpen, setIsOpen] = useState(true);
+  const [courses, setCourses] = useState<Course[]>([]);
+
+  useEffect(() => {
+    if (!userId) return;
+    const fetchUserBoughtCourses = async () => {
+      try {
+        const res = await fetch(`/api/courses/userCourses?userId=${userId}`);
+        const data = (await res.json()) as ApiResponseCourses;
+        if (!res.ok) {
+          toast.error(data.message);
+          return;
+        }
+        setCourses(data.boughtCourses);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      }
+    };
+    fetchUserBoughtCourses().catch((error) =>
+      console.error("Error fetching courses:", error),
+    );
+  }, [userId]);
 
   const handleCreateGroup = () => {
+    if (courses.length === 0) {
+      toast.error(
+        "Norint sukurti grupę turite būti nusipirkę bent vieną kursą",
+      );
+      return;
+    }
     if (!isOpen) {
       setIsOpen(true);
     }

@@ -185,7 +185,7 @@ export default function CourseDetail() {
               <h2 className="mb-4 text-2xl font-bold text-stone-800">
                 Įsigykite šį kursą dabar
               </h2>
-              <p className="mb-2 text-stone-600">50 eur/mėn</p>
+              <h3 className="mb-2 font-bold text-stone-600">50 eur/mėn</h3>
               <p className="mb-6 text-stone-600">
                 Neribotas darbuotojų skaičius
               </p>
