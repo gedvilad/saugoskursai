@@ -96,6 +96,8 @@ export async function GET(req: Request) {
     .select({
       id: courses.id,
       name: courses.name,
+      testId: courses.courseTest,
+      purchaseDate: user_bought_courses.createdAt,
     })
     .from(courses)
     .innerJoin(

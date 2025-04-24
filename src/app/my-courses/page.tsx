@@ -12,29 +12,42 @@ interface Course {
   who_assigned_first_name: string;
   who_assigned_last_name: string;
   testId: number;
+  completedDate?: string;
+}
+
+interface BoughtCourse {
+  id: number;
+  purchaseId: number; // Unique identifier for the purchase
+  name: string;
+  purchaseDate: string;
+  testId: number;
 }
 
 interface ApiResponseCourses {
   assignedCourses: Course[];
+  boughtCourses: BoughtCourse[];
   message: string;
 }
+
 interface ErrorResponse {
   message: string;
 }
 
 export default function MyCourses() {
-  const [courses, setCourses] = useState<Course[]>([]);
+  const [assignedCourses, setAssignedCourses] = useState<Course[]>([]);
+  const [boughtCourses, setBoughtCourses] = useState<BoughtCourse[]>([]);
   const [loading, setLoading] = useState(true);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
   const [selectedAssignedId, setSelectedAssignedId] = useState<number | null>(
     null,
   );
+  const [activeTab, setActiveTab] = useState("assigned"); // "assigned", "completed", "purchased"
   const { userId, isLoaded, isSignedIn } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    const fetchAssignedCourses = async () => {
+    const fetchUserCourses = async () => {
       if (!userId) return;
       try {
         setLoading(true);
@@ -46,14 +59,11 @@ export default function MyCourses() {
           return;
         }
 
-        // Filter courses to only show "Priskirtas" or "Pradėtas" status
-        const filteredCourses = data.assignedCourses.filter(
-          (course) =>
-            course.status === "Priskirtas" || course.status === "Pradėtas",
-        );
-        setCourses(filteredCourses);
+        // Store all courses
+        setAssignedCourses(data.assignedCourses);
+        setBoughtCourses(data.boughtCourses || []);
       } catch (error) {
-        console.error("Error fetching assigned courses:", error);
+        console.error("Error fetching user courses:", error);
         toast.error("Įvyko klaida gaunant kursų sąrašą");
       } finally {
         setLoading(false);
@@ -61,7 +71,7 @@ export default function MyCourses() {
     };
 
     if (isLoaded && isSignedIn) {
-      fetchAssignedCourses().catch(console.error);
+      fetchUserCourses().catch(console.error);
     }
   }, [userId, isLoaded, isSignedIn, router]);
 
@@ -115,15 +125,26 @@ export default function MyCourses() {
     setSelectedCourseId(null);
   };
 
-  // Continue course directly without confirmation
-  const handleContinueCourse = (courseId: number, assignedId: number) => {
+  const handleViewAssignedCourse = (courseId: number, assignedId: number) => {
     router.push(`/my-courses/${courseId}?assignedId=${assignedId}`);
   };
 
+  const handleViewBoughtCourse = (courseId: number, purchaseId: number) => {
+    router.push(`/my-courses/${courseId}?purchaseId=${purchaseId}`);
+  };
+
   // Find the selected course for the modal content
-  const selectedCourse = courses.find(
+  const selectedCourse = assignedCourses.find(
     (course) => course.id === selectedCourseId,
   );
+
+  // Filter assigned courses based on active tab
+  const filteredAssignedCourses = assignedCourses.filter((course) => {
+    if (activeTab === "assigned")
+      return course.status === "Priskirtas" || course.status === "Pradėtas";
+    if (activeTab === "completed") return course.status === "Atliktas";
+    return false;
+  });
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-100">
@@ -132,23 +153,163 @@ export default function MyCourses() {
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-800">Mano kursai</h1>
             <p className="mt-2 text-gray-600">
-              Žemiau pateikti visi jums priskirti kursai.
+              Žemiau pateikti visi jūsų kursai.
             </p>
+          </div>
+
+          {/* Tabs */}
+          <div className="mb-6 flex flex-wrap border-b border-gray-200">
+            <button
+              onClick={() => setActiveTab("assigned")}
+              className={`mr-4 py-2 text-lg font-medium ${
+                activeTab === "assigned"
+                  ? "border-b-2 border-stone-500 text-stone-600"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Aktyvūs kursai
+            </button>
+            <button
+              onClick={() => setActiveTab("completed")}
+              className={`mr-4 py-2 text-lg font-medium ${
+                activeTab === "completed"
+                  ? "border-b-2 border-stone-500 text-stone-600"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Baigti kursai
+            </button>
+            <button
+              onClick={() => setActiveTab("purchased")}
+              className={`py-2 text-lg font-medium ${
+                activeTab === "purchased"
+                  ? "border-b-2 border-stone-500 text-stone-600"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Nupirkti kursai
+            </button>
           </div>
 
           {loading ? (
             <div className="flex h-64 items-center justify-center">
               <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
             </div>
-          ) : courses.length > 0 ? (
+          ) : activeTab === "purchased" ? (
+            // Display bought courses
+            boughtCourses.length > 0 ? (
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {boughtCourses.map((course) => (
+                  <div
+                    key={`purchased-${course.purchaseId || course.id}-${course.purchaseDate}`}
+                    className="course-card overflow-hidden rounded-lg bg-white shadow-lg hover:shadow-xl"
+                  >
+                    <div className="h-2 bg-green-500 transition-colors duration-300"></div>
+                    <div className="p-6">
+                      <div className="mb-4">
+                        <h2 className="line-clamp-2 text-xl font-semibold text-gray-800 transition-colors duration-300">
+                          {course.name}
+                        </h2>
+                        <div className="mt-3 flex items-center text-sm text-gray-600">
+                          <svg
+                            className="mr-2 h-4 w-4 text-gray-500"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            />
+                          </svg>
+                          <span>
+                            Pirkimo data:{" "}
+                            {new Date(course.purchaseDate).toLocaleDateString(
+                              "lt-LT",
+                            )}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="my-4 border-t border-gray-100"></div>
+
+                      <div className="mt-4">
+                        <button
+                          onClick={() =>
+                            handleViewBoughtCourse(
+                              course.id,
+                              course.purchaseId || 0,
+                            )
+                          }
+                          className="btn-primary group flex w-full items-center justify-center rounded-md border-2 border-green-500 bg-green-50 px-4 py-2 text-green-600 transition-all duration-300 hover:bg-green-100 hover:shadow-md"
+                        >
+                          <svg
+                            className="mr-2 h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                            />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                            />
+                          </svg>
+                          Peržiūrėti kursą
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex h-64 flex-col items-center justify-center rounded-lg bg-white p-6 shadow-md">
+                <svg
+                  className="mb-4 h-16 w-16 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <h3 className="text-xl font-medium text-gray-700">
+                  Nėra nupirktų kursų
+                </h3>
+                <p className="mt-2 text-center text-gray-500">
+                  Šiuo metu jūs neturite nupirktų kursų.
+                </p>
+              </div>
+            )
+          ) : filteredAssignedCourses.length > 0 ? (
+            // Display assigned/completed courses
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {courses.map((course) => (
+              {filteredAssignedCourses.map((course) => (
                 <div
-                  key={course.id}
+                  key={`assigned-${course.assignedId}`}
                   className="course-card overflow-hidden rounded-lg bg-white shadow-lg hover:shadow-xl"
                 >
-                  {/* Course header with color accent that changes on hover */}
-                  <div className="h-2 bg-stone-500 transition-colors duration-300"></div>
+                  {/* Course header with color accent that changes based on status */}
+                  <div
+                    className={`h-2 transition-colors duration-300 ${
+                      course.status === "Atliktas"
+                        ? "bg-blue-500"
+                        : "bg-stone-500"
+                    }`}
+                  ></div>
 
                   <div className="p-6">
                     <div className="mb-4">
@@ -193,15 +354,40 @@ export default function MyCourses() {
                           className={
                             course.status === "Pradėtas"
                               ? "text-green-600"
-                              : "text-gray-600"
+                              : course.status === "Atliktas"
+                                ? "text-blue-600"
+                                : "text-gray-600"
                           }
                         >
                           Statusas: {course.status}
                         </span>
                       </div>
+
+                      {course.completedDate && (
+                        <div className="mt-2 flex items-center text-sm">
+                          <svg
+                            className="mr-2 h-4 w-4 text-gray-500"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            />
+                          </svg>
+                          <span className="text-gray-600">
+                            Baigimo data:{" "}
+                            {new Date(course.completedDate).toLocaleDateString(
+                              "lt-LT",
+                            )}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
-                    {/* Divider to separate button from content */}
                     <div className="my-4 border-t border-gray-100"></div>
 
                     <div className="mt-4">
@@ -230,9 +416,16 @@ export default function MyCourses() {
                       ) : (
                         <button
                           onClick={() =>
-                            handleContinueCourse(course.id, course.assignedId)
+                            handleViewAssignedCourse(
+                              course.id,
+                              course.assignedId,
+                            )
                           }
-                          className="btn-primary group flex w-full items-center justify-center rounded-md border-2 border-stone-500 bg-stone-50 px-4 py-2 text-stone-600 transition-all duration-300 hover:bg-stone-100 hover:shadow-md"
+                          className={`btn-primary group flex w-full items-center justify-center rounded-md border-2 px-4 py-2 transition-all duration-300 hover:shadow-md ${
+                            course.status === "Atliktas"
+                              ? "border-blue-500 bg-blue-50 text-blue-600 hover:bg-blue-100"
+                              : "border-stone-500 bg-stone-50 text-stone-600 hover:bg-stone-100"
+                          }`}
                         >
                           <svg
                             className="mr-2 h-5 w-5"
@@ -240,20 +433,25 @@ export default function MyCourses() {
                             viewBox="0 0 24 24"
                             stroke="currentColor"
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
+                            {course.status === "Atliktas" ? (
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                              />
+                            ) : (
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
+                            )}
                           </svg>
-                          Tęsti kursą
+                          {course.status === "Atliktas"
+                            ? "Peržiūrėti kursą"
+                            : "Tęsti kursą"}
                         </button>
                       )}
                     </div>
@@ -277,10 +475,14 @@ export default function MyCourses() {
                 />
               </svg>
               <h3 className="text-xl font-medium text-gray-700">
-                Nėra priskirtų kursų
+                {activeTab === "assigned"
+                  ? "Nėra aktyvių kursų"
+                  : "Nėra baigtų kursų"}
               </h3>
               <p className="mt-2 text-center text-gray-500">
-                Šiuo metu jums nėra priskirtų kursų.
+                {activeTab === "assigned"
+                  ? "Šiuo metu jums nėra priskirtų arba pradėtų kursų."
+                  : "Dar nesate baigę jokių kursų."}
               </p>
             </div>
           )}
@@ -311,7 +513,7 @@ export default function MyCourses() {
             </div>
 
             <p className="text-gray-600">
-              Ar tikrai norite pradėti kursą „{selectedCourse?.name}&ldquo;?
+              Ar tikrai norite pradėti kursą „{selectedCourse?.name}"?
             </p>
             <p className="mb-6 text-gray-500">Kurso kartoti negalėsite.</p>
 

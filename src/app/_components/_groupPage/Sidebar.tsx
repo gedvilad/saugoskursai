@@ -110,7 +110,7 @@ export default function Sidebar({
   };
 
   return (
-    <div className="relative flex h-full">
+    <div className="relative flex min-h-full">
       {/* Main sidebar */}
       <div
         className={`transition-all duration-300 ${isOpen ? "w-96" : "w-12"}`}
