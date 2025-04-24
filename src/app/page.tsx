@@ -28,7 +28,7 @@ export default function Home() {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const res = await fetch(`/api/courses?userId=${userId}`);
+        const res = await fetch(`/api/courses`);
         const data = (await res.json()) as ApiResponseCourses;
 
         if (!res.ok) {
@@ -42,11 +42,10 @@ export default function Home() {
       }
     };
 
-    if (!userId) return;
     fetchCourses().catch((error) =>
       console.error("Error fetching courses:", error),
     );
-  }, [userId]);
+  }, []);
 
   const handleBuyingCourse = async (productId: string) => {
     if (!userId) {
@@ -247,10 +246,7 @@ export default function Home() {
                       <button
                         className="mt-2 w-full rounded-md bg-stone-600 px-4 py-3 font-medium text-white transition duration-300 hover:bg-stone-700"
                         onClick={() => router.push(`/courses/${course.id}`)}
-                        disabled={
-                          (!isLoaded && !isSignedIn && !userId) ||
-                          course.id !== 3
-                        }
+                        disabled={!isLoaded || course.id !== 3}
                       >
                         Plačiau
                       </button>
