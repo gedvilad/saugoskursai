@@ -59,9 +59,28 @@ export default function MyCourses() {
           return;
         }
 
-        // Store all courses
+        // Store assigned courses (no need to filter these as they're in progress)
         setAssignedCourses(data.assignedCourses);
-        setBoughtCourses(data.boughtCourses || []);
+
+        // Process bought courses to only show the most recent purchase of each course
+        const courseMap = new Map<number, BoughtCourse>();
+
+        // Sort by purchase date (most recent first) then iterate to keep only the most recent
+        const sortedCourses = [...(data.boughtCourses || [])].sort(
+          (a, b) =>
+            new Date(b.purchaseDate).getTime() -
+            new Date(a.purchaseDate).getTime(),
+        );
+
+        // For each course ID, keep only the most recent purchase
+        sortedCourses.forEach((course) => {
+          if (!courseMap.has(course.id)) {
+            courseMap.set(course.id, course);
+          }
+        });
+
+        // Convert map values back to array
+        setBoughtCourses(Array.from(courseMap.values()));
       } catch (error) {
         console.error("Error fetching user courses:", error);
         toast.error("Įvyko klaida gaunant kursų sąrašą");
@@ -139,12 +158,34 @@ export default function MyCourses() {
   );
 
   // Filter assigned courses based on active tab
-  const filteredAssignedCourses = assignedCourses.filter((course) => {
+  let filteredAssignedCourses = assignedCourses.filter((course) => {
     if (activeTab === "assigned")
       return course.status === "Priskirtas" || course.status === "Pradėtas";
     if (activeTab === "completed") return course.status === "Atliktas";
     return false;
   });
+
+  // For completed courses tab, ensure we only display one instance of each course
+  if (activeTab === "completed") {
+    // Sort by completion date (most recent first)
+    filteredAssignedCourses.sort((a, b) => {
+      const dateA = a.completedDate ? new Date(a.completedDate).getTime() : 0;
+      const dateB = b.completedDate ? new Date(b.completedDate).getTime() : 0;
+      return dateB - dateA;
+    });
+
+    // Create a map of courses by their ID to keep only the most recent completion
+    const completedCoursesMap = new Map<number, Course>();
+
+    filteredAssignedCourses.forEach((course) => {
+      if (!completedCoursesMap.has(course.id)) {
+        completedCoursesMap.set(course.id, course);
+      }
+    });
+
+    // Convert map values back to array
+    filteredAssignedCourses = Array.from(completedCoursesMap.values());
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-gray-100">
@@ -201,10 +242,10 @@ export default function MyCourses() {
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {boughtCourses.map((course) => (
                   <div
-                    key={`purchased-${course.purchaseId || course.id}-${course.purchaseDate}`}
+                    key={`purchased-${course.id}`}
                     className="course-card overflow-hidden rounded-lg bg-white shadow-lg hover:shadow-xl"
                   >
-                    <div className="h-2 bg-green-500 transition-colors duration-300"></div>
+                    <div className="h-2 bg-green-400 transition-colors duration-300"></div>
                     <div className="p-6">
                       <div className="mb-4">
                         <h2 className="line-clamp-2 text-xl font-semibold text-gray-800 transition-colors duration-300">
@@ -299,14 +340,18 @@ export default function MyCourses() {
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {filteredAssignedCourses.map((course) => (
                 <div
-                  key={`assigned-${course.assignedId}`}
+                  key={
+                    activeTab === "completed"
+                      ? `completed-${course.id}`
+                      : `assigned-${course.assignedId}`
+                  }
                   className="course-card overflow-hidden rounded-lg bg-white shadow-lg hover:shadow-xl"
                 >
                   {/* Course header with color accent that changes based on status */}
                   <div
                     className={`h-2 transition-colors duration-300 ${
                       course.status === "Atliktas"
-                        ? "bg-blue-500"
+                        ? "bg-blue-400"
                         : "bg-stone-500"
                     }`}
                   ></div>
@@ -513,7 +558,7 @@ export default function MyCourses() {
             </div>
 
             <p className="text-gray-600">
-              Ar tikrai norite pradėti kursą „{selectedCourse?.name}"?
+              Ar tikrai norite pradėti kursą „{selectedCourse?.name}&ldquo;?
             </p>
             <p className="mb-6 text-gray-500">Kurso kartoti negalėsite.</p>
 
