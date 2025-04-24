@@ -94,6 +94,15 @@ export default function Sidebar({
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
+  const doesHaveGroup = () => {
+    return groups.some((element) => element.role === "Administratorius");
+  };
+  const isUserGroupAdmin = (groupId: number) => {
+    return groups.some(
+      (element) =>
+        element.id === groupId && element.role === "Administratorius",
+    );
+  };
 
   return (
     <div className="relative flex h-full">
@@ -110,6 +119,11 @@ export default function Sidebar({
               <h2 className="mb-5 text-lg font-semibold text-stone-800">
                 Jūsų grupės
               </h2>
+              {courses.length === 0 && doesHaveGroup() === true && (
+                <div className="text-sm text-red-600">
+                  Neturite aktyvių kursų, todėl negalite naudotis savo grupėmis.
+                </div>
+              )}
               <div className="space-y-3">
                 {isLoadingGroups
                   ? Array.from({ length: 3 }).map((_, i) => (
@@ -127,6 +141,10 @@ export default function Sidebar({
                             : "border border-stone-200 bg-white text-stone-800 hover:bg-stone-100"
                         }`}
                         onClick={() => onGroupSelect(group)}
+                        disabled={
+                          courses.length === 0 &&
+                          isUserGroupAdmin(group.id) === true
+                        }
                       >
                         <span className="font-medium">{group.name}</span>
                         <span
