@@ -1,27 +1,30 @@
 // pages/api/courses/validate-access.ts
 
-import { NextApiRequest, NextApiResponse } from "next";
 import { and, eq } from "drizzle-orm";
 import { db } from "~/server/db";
 import { user_assigned_courses, user_bought_courses } from "~/server/db/schema";
 import { getUserByClerkId } from "~/server/user-queries";
 import { NextResponse } from "next/server";
 
-export async function GET(req: Request, res: NextApiResponse) {
+export async function GET(req: Request) {
   const url = new URL(req.url);
   const userId = url.searchParams.get("userId");
   const requestedCourseId = url.searchParams.get("requestedCourseId");
   const requestType = url.searchParams.get("requestType");
 
   if (!userId || !requestedCourseId || !requestType) {
-    return res
-      .status(400)
-      .json({ message: "Missing required query parameters." });
+    return new Response(JSON.stringify({ message: "Trūksta duomenų" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   const user = await getUserByClerkId(userId);
   if (!user) {
-    return res.status(401).json({ message: "User not found." });
+    return new Response(
+      JSON.stringify({ message: "Neegzistuoja toks vartotojas." }),
+      { status: 400, headers: { "Content-Type": "application/json" } },
+    );
   }
 
   try {
@@ -38,7 +41,10 @@ export async function GET(req: Request, res: NextApiResponse) {
         .limit(1);
 
       if (course.length === 0) {
-        return NextResponse.json({ message: "Access denied." });
+        return new Response(JSON.stringify({ message: "Neturite prieeigos" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
       }
 
       return NextResponse.json({ accessStatus: course[0]?.status });
@@ -57,15 +63,26 @@ export async function GET(req: Request, res: NextApiResponse) {
         .limit(1);
 
       if (boughtCourse.length === 0) {
-        return res.status(403).json({ message: "Access denied." });
+        return new Response(JSON.stringify({ message: "Neturite prieeigos" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
       }
-
-      return res.status(200).json({ accessStatus: "purchased-active" });
+      return new Response(
+        JSON.stringify({ accessStatus: "purchased-active" }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
     }
 
-    return res.status(400).json({ message: "Invalid status type." });
+    return new Response(JSON.stringify({ message: "Netinkamas statusas" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("Error validating course access:", error);
-    return res.status(500).json({ message: "Internal server error." });
+    return new Response(JSON.stringify({ message: "Įvyko klaida" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
