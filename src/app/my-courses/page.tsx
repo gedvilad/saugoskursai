@@ -133,7 +133,7 @@ export default function MyCourses() {
         return;
       }
       router.push(
-        `/my-courses/${selectedCourseId}?assignedId=${selectedAssignedId}`,
+        `/my-courses/${selectedCourseId}?assignedId=${selectedAssignedId}&request=assigned`,
       );
     }
     setShowConfirmation(false);
@@ -144,12 +144,28 @@ export default function MyCourses() {
     setSelectedCourseId(null);
   };
 
-  const handleViewAssignedCourse = (courseId: number, assignedId: number) => {
-    router.push(`/my-courses/${courseId}?assignedId=${assignedId}`);
+  const handleViewAssignedCourse = (
+    courseId: number,
+    assignedId: number,
+    status: string,
+  ) => {
+    if (status === "Atliktas") {
+      router.push(
+        `/my-courses/${courseId}?assignedId=${assignedId}&request=done`,
+      );
+      return;
+    } else {
+      router.push(
+        `/my-courses/${courseId}?assignedId=${assignedId}&request=assigned`,
+      );
+      return;
+    }
   };
 
   const handleViewBoughtCourse = (courseId: number, purchaseId: number) => {
-    router.push(`/my-courses/${courseId}?purchaseId=${purchaseId}`);
+    router.push(
+      `/my-courses/${courseId}?purchaseId=${purchaseId}&request=purchased-active`,
+    );
   };
 
   // Find the selected course for the modal content
@@ -464,6 +480,7 @@ export default function MyCourses() {
                             handleViewAssignedCourse(
                               course.id,
                               course.assignedId,
+                              course.status,
                             )
                           }
                           className={`btn-primary group flex w-full items-center justify-center rounded-md border-2 px-4 py-2 transition-all duration-300 hover:shadow-md ${

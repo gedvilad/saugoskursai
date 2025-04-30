@@ -36,5 +36,6 @@ TODO:
 [x] kursu priskirimas, rezultatai tik adminam
 [ ] Visur sudet validationus backe, veikia tik padeploynus del clerk webhooko
 [ ] kurso informacija saugot db, sutvarkyt about course page
-[ ] galimybe matyt atliktus kursus (nedubliuoti), tik informacijos perziurejimui
-[ ] rodyti nusipirktus kursus
+[x] galimybe matyt atliktus kursus (nedubliuoti), tik informacijos perziurejimui
+[ ] sutvarkyti perziura atliktu ir pirktu kursu
+[x] rodyti nusipirktus kursus
