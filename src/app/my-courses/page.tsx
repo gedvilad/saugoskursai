@@ -163,8 +163,9 @@ export default function MyCourses() {
   };
 
   const handleViewBoughtCourse = (courseId: number, purchaseId: number) => {
+    console.log("handleViewBoughtCourse", courseId, purchaseId);
     router.push(
-      `/my-courses/${courseId}?purchaseId=${purchaseId}&request=purchased-active`,
+      `/my-courses/${courseId}?assignedId=${purchaseId}&request=purchased`,
     );
   };
 
@@ -295,10 +296,7 @@ export default function MyCourses() {
                       <div className="mt-4">
                         <button
                           onClick={() =>
-                            handleViewBoughtCourse(
-                              course.id,
-                              course.purchaseId || 0,
-                            )
+                            handleViewBoughtCourse(course.id, course.id)
                           }
                           className="btn-primary group flex w-full items-center justify-center rounded-md border-2 border-green-500 bg-green-50 px-4 py-2 text-green-600 transition-all duration-300 hover:bg-green-100 hover:shadow-md"
                         >

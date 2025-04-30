@@ -35,14 +35,13 @@ export async function GET(req: Request) {
         .where(
           and(
             eq(user_assigned_courses.userId, userId),
-            eq(user_assigned_courses.courseId, Number(requestedCourseId)),
+            eq(user_assigned_courses.id, Number(requestedCourseId)),
           ),
         )
         .limit(1);
-
       if (course.length === 0) {
-        return new Response(JSON.stringify({ message: "Neturite prieeigos" }), {
-          status: 400,
+        return new Response(JSON.stringify({ message: "Neturite prieigos" }), {
+          status: 402,
           headers: { "Content-Type": "application/json" },
         });
       }
@@ -61,9 +60,9 @@ export async function GET(req: Request) {
           ),
         )
         .limit(1);
-
+      console.log("boughtCourse", requestedCourseId);
       if (boughtCourse.length === 0) {
-        return new Response(JSON.stringify({ message: "Neturite prieeigos" }), {
+        return new Response(JSON.stringify({ message: "Neturite prieigos" }), {
           status: 400,
           headers: { "Content-Type": "application/json" },
         });

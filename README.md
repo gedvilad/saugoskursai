@@ -39,3 +39,4 @@ TODO:
 [x] galimybe matyt atliktus kursus (nedubliuoti), tik informacijos perziurejimui
 [ ] sutvarkyti perziura atliktu ir pirktu kursu
 [x] rodyti nusipirktus kursus
+[ ] sutvarkyt dashboardo tekstus nu ir kitur jei yr
