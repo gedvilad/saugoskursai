@@ -56,12 +56,12 @@ export default function Sidebar({
   }, [userId]);
 
   const handleCreateGroup = () => {
-    // if (courses.length === 0) {
-    //   toast.error(
-    //     "Norint sukurti grupę turite būti nusipirkę bent vieną kursą",
-    //   );
-    //   return;
-    // }
+    if (courses.length === 0) {
+      toast.error(
+        "Norint sukurti grupę turite būti nusipirkę bent vieną kursą",
+      );
+      return;
+    }
     if (!isOpen) {
       setIsOpen(true);
     }
