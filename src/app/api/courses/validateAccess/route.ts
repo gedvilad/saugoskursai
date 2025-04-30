@@ -40,7 +40,7 @@ export async function GET(req: Request) {
         )
         .limit(1);
       if (course.length === 0) {
-        return new Response(JSON.stringify({ message: "Neturite prieeigos" }), {
+        return new Response(JSON.stringify({ message: "Neturite prieigos" }), {
           status: 402,
           headers: { "Content-Type": "application/json" },
         });
@@ -60,9 +60,9 @@ export async function GET(req: Request) {
           ),
         )
         .limit(1);
-
+      console.log("boughtCourse", requestedCourseId);
       if (boughtCourse.length === 0) {
-        return new Response(JSON.stringify({ message: "Neturite prieeigos" }), {
+        return new Response(JSON.stringify({ message: "Neturite prieigos" }), {
           status: 400,
           headers: { "Content-Type": "application/json" },
         });

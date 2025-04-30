@@ -26,6 +26,7 @@ export default function CourseDetail() {
   const courseId = id;
   const searchParams = useSearchParams();
   const assignedCourseId = Number(searchParams.get("assignedId"));
+  console.log("assignedCourseId", assignedCourseId);
   const requestType = searchParams.get("request");
   // State for interactive elements
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -36,6 +37,7 @@ export default function CourseDetail() {
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [completedItems, setCompletedItems] = useState<string[]>([]);
   const [test, setTest] = useState<Test | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const validateAccess = async () => {
@@ -47,14 +49,15 @@ export default function CourseDetail() {
 
         if (!res.ok) {
           toast.error(data.message);
+          router.push("/");
           return;
         }
-
+        setIsLoading(false);
         console.log("Access granted:", data.accessStatus);
         // handle accessStatus here
       } catch (err) {
         console.error("Validation error:", err);
-        toast.error("Failed to validate access.");
+        toast.error("Įvyko klaida tikrinant prieiga");
       }
     };
 
@@ -76,6 +79,7 @@ export default function CourseDetail() {
     if (!userId) return;
     if (!requestType) {
       toast.error("Neturite prieigos prie kurso medžiagos");
+      router.push("/");
       return;
     }
     validateAccess().catch((error) =>
@@ -117,7 +121,13 @@ export default function CourseDetail() {
     }
     router.push(`/testai/${test?.id}?assignedId=${assignedCourseId}`);
   };
-
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+      </div>
+    );
+  }
   return (
     <div className="flex min-h-screen flex-col bg-gray-100">
       <main className="flex-grow pt-24">
