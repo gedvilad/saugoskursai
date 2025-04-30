@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useAuth } from "@clerk/nextjs";
 import { createCheckoutSession } from "~/backend/subscriptions/actions/createCheckout";
+import { useRouter } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -22,11 +23,12 @@ interface ApiResponseCourses {
 export default function Home() {
   const [courses, setCourses] = useState<Course[]>([]);
   const { userId, isLoaded, isSignedIn } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const res = await fetch(`/api/courses?userId=${userId}`);
+        const res = await fetch(`/api/courses`);
         const data = (await res.json()) as ApiResponseCourses;
 
         if (!res.ok) {
@@ -40,11 +42,10 @@ export default function Home() {
       }
     };
 
-    if (!userId) return;
     fetchCourses().catch((error) =>
       console.error("Error fetching courses:", error),
     );
-  }, [userId]);
+  }, []);
 
   const handleBuyingCourse = async (productId: string) => {
     if (!userId) {
@@ -244,8 +245,8 @@ export default function Home() {
                       </p>
                       <button
                         className="mt-2 w-full rounded-md bg-stone-600 px-4 py-3 font-medium text-white transition duration-300 hover:bg-stone-700"
-                        onClick={() => handleBuyingCourse(course.productId)}
-                        disabled={!isLoaded && !isSignedIn && !userId}
+                        onClick={() => router.push(`/courses/${course.id}`)}
+                        disabled={!isLoaded || course.id !== 3}
                       >
                         Plačiau
                       </button>

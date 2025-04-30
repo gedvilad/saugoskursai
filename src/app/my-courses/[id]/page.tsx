@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import toast from "react-hot-toast";
+import { useAuth } from "@clerk/nextjs";
 
 interface Test {
   id: number;
@@ -13,13 +14,19 @@ interface ApiResponse {
   message: string;
 }
 
+interface ApiResponseValidateAccess {
+  accessStatus: string;
+  message: string;
+}
 export default function CourseDetail() {
+  const { userId } = useAuth();
   const router = useRouter();
   const params = useParams();
   const id = Number(params.id);
   const courseId = id;
   const searchParams = useSearchParams();
   const assignedCourseId = Number(searchParams.get("assignedId"));
+  const requestType = searchParams.get("request");
   // State for interactive elements
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -31,6 +38,26 @@ export default function CourseDetail() {
   const [test, setTest] = useState<Test | null>(null);
 
   useEffect(() => {
+    const validateAccess = async () => {
+      try {
+        const res = await fetch(
+          `/api/courses/validateAccess?userId=${userId}&requestedCourseId=${assignedCourseId}&requestType=${requestType}`,
+        );
+        const data = (await res.json()) as ApiResponseValidateAccess;
+
+        if (!res.ok) {
+          toast.error(data.message);
+          return;
+        }
+
+        console.log("Access granted:", data.accessStatus);
+        // handle accessStatus here
+      } catch (err) {
+        console.error("Validation error:", err);
+        toast.error("Failed to validate access.");
+      }
+    };
+
     const fetchTest = async () => {
       try {
         const res = await fetch(`/api/courses/courseTest?courseId=${courseId}`);
@@ -45,8 +72,17 @@ export default function CourseDetail() {
         console.error("Error fetching test:", error);
       }
     };
+
+    if (!userId) return;
+    if (!requestType) {
+      toast.error("Neturite prieigos prie kurso medžiagos");
+      return;
+    }
+    validateAccess().catch((error) =>
+      console.error("Error validating access:", error),
+    );
     fetchTest().catch((error) => console.error("Error fetching test:", error));
-  }, [courseId]);
+  }, [courseId, userId, requestType]);
 
   // Handle quiz answer selection
   const handleOptionSelect = (option: string) => {
@@ -90,63 +126,71 @@ export default function CourseDetail() {
           <div className="mb-8 rounded-lg bg-white p-6 shadow-md">
             <div className="mb-2 h-2 bg-stone-500"></div>
             <h1 className="text-3xl font-bold text-gray-800">
-              Kranų saugos kursas rigeriams
+              Taisyklingas krovinių kelimas
             </h1>
             <p className="mt-2 text-gray-600">
-              Šiame kurse išmoksite esminius kranų darbo saugos principus,
-              rizikos vertinimą ir tinkamas rigerio pareigų atlikimo procedūras.
+              Šiame kurse išmoksite esmines taisykles dirbat su kranais, rizikos
+              vertinimą ir tinkamas stropuotojo pareigų atlikimo procedūras.
             </p>
-            <div className="mt-4 flex items-center text-sm text-gray-600">
-              <svg
-                className="mr-2 h-4 w-4 text-gray-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                />
-              </svg>
-              <span>Dėstytojas: Tomas Pavardenis</span>
-            </div>
           </div>
 
           {/* Integrated Course Content */}
           <div className="mb-8 rounded-lg bg-white p-6 shadow-md">
             <h2 className="mb-6 text-2xl font-semibold text-gray-800">
-              Pagrindinės rigerio pareigos ir atsakomybės
+              Pagrindinės stropuotojo pareigos ir atsakomybės
             </h2>
 
             <div className="mb-8">
               <p className="mb-4 text-gray-700">
-                Rigeris yra atsakingas už saugų krovinių prikabinimą, nukreipimą
-                ir perkėlimą naudojant kėlimo įrangą. Štai pagrindinės rigerio
-                atsakomybės:
+                Stropuotojas yra atsakingas už saugų krovinių prikabinimą,
+                nukreipimą ir perkėlimą nurodant krovinio kryptį ženklais krano
+                operatoriui. Štai pagrindinės stropuotojo atsakomybės:
               </p>
               <ul className="mb-6 list-inside list-disc space-y-2 text-gray-700">
                 <li>
-                  <strong>Krovinio patikrinimas</strong> - įvertinti krovinio
-                  svorį, formą ir svorio centrą.
+                  <strong>Darbo zonos stebėjimas</strong>
                 </li>
+                <p>
+                  - Krovinių kėlimo vieta ir visa kėlimo kranų darbo zona turi
+                  būti gerai apšviesta. Kai kėlimo krano darbo zonos apšvietimas
+                  nėra pakankamas (tamsus paros metas, tirštas rūkas, stiprus
+                  lietus, snygis bei kt.) ir kranininkas negali aiškiai matyti
+                  stropuotojo duodamų signalų arba krovinio, kėlimo krano darbas
+                  sustabdomas.
+                </p>
+                <p>
+                  - Kėlimo krano veikimo zonos turi būti pažymėtos
+                  įspėjamaisiais ženklais ir užtikrinta, kad jose nebūtų
+                  pašalinių asmenų atliekant krovinių kėlimo darbus.
+                </p>
+                <p>
+                  - Prieš keliant krovinį ir viso krovinio judėjimo metu
+                  užtikrinti, kad nėra pašalinių kliučių galinčių kliudyti
+                  krovinį ir/ar kraną.
+                </p>
                 <li>
-                  <strong>Įrangos parinkimas</strong> - parinkti tinkamas
-                  stropas, grandines ir kėlimo priedus.
+                  <strong>Krovinio patikrinimas</strong>
                 </li>
+                <p>- Įvertinti krovinio svorį, formą ir svorio centrą.</p>
+                <p>- Įsitikinti, kad krovinis yra stabilus, neapgadintas.</p>
                 <li>
-                  <strong>Signalizavimas</strong> - perduoti aiškius signalus
-                  krano operatoriui.
+                  <strong>Įrangos parinkimas</strong>
                 </li>
+                <p>
+                  - Įvertinus krovinį pasirinkti tinkamus stropus, grandines ir
+                  stropavimo būdą.
+                </p>
                 <li>
-                  <strong>Darbo zonos stebėjimas</strong> - užtikrinti, kad
-                  darbo zona būtų saugi ir be kliūčių.
+                  <strong>Signalizavimas</strong>
                 </li>
+                <p>
+                  - Krovinio kėlimo metu perduoti aiškius signalus krano
+                  operatoriui, kol krovinys bus saugiai padėtas.
+                </p>
               </ul>
 
               {/* Image integrated with theory */}
-              <div className="mb-8 overflow-hidden rounded-lg bg-gray-50 shadow-md">
+              {/* <div className="mb-8 overflow-hidden rounded-lg bg-gray-50 shadow-md">
                 <div className="relative h-64 w-full">
                   <Image
                     src="/api/placeholder/800/500"
@@ -160,7 +204,7 @@ export default function CourseDetail() {
                     Standartiniai rigerio rankiniai signalai krano operatoriui
                   </p>
                 </div>
-              </div>
+              </div> */}
 
               {/* Interactive Quiz after theory and image */}
               <div className="mb-8 rounded-lg border border-gray-200 p-6">
@@ -209,6 +253,19 @@ export default function CourseDetail() {
                 )}
               </div>
             </div>
+            <div className="mb-6 h-px bg-gray-200"></div>
+
+            {/* Second section with different content types */}
+            <h2 className="mb-6 text-2xl font-semibold text-gray-800">
+              Signalizavimas krano operatoriui
+            </h2>
+
+            <div className="mb-8">
+              <p className="mb-4 text-gray-700">
+                Norint komunikuoti su krano operatoriumi, būtina žinoti signalus
+                ir jų reikšmes
+              </p>
+            </div>
 
             <div className="mb-6 h-px bg-gray-200"></div>
 
@@ -220,7 +277,7 @@ export default function CourseDetail() {
             <div className="mb-8">
               <p className="mb-4 text-gray-700">
                 Prieš pradedant darbą su kėlimo įranga, būtina atlikti išsamų
-                patikrinimą.
+                kėlimo įrangos patikrinimą.
               </p>
 
               {/* Video integrated within the content */}
@@ -254,23 +311,14 @@ export default function CourseDetail() {
                 </div>
               </div>
 
-              <p className="mb-4 text-gray-700">
-                Kiekvieną kartą prieš naudojant, reikia patikrinti šiuos kėlimo
-                įrangos komponentus:
-              </p>
-
               <ol className="mb-6 list-inside list-decimal space-y-2 text-gray-700">
                 <li>
-                  <strong>Stropos ir grandinės</strong> - patikrinti, ar nėra
+                  <strong>Stropai ir grandinės</strong> - patikrinti, ar nėra
                   nusidėvėjimo, įtrūkimų ar deformacijų.
                 </li>
                 <li>
                   <strong>Kabliai</strong> - įsitikinti, kad kablių apsauginės
-                  sklendės veikia, o kabliai nėra išsiplėtę.
-                </li>
-                <li>
-                  <strong>Virvės ir lynai</strong> - patikrinti, ar nėra
-                  nutrūkusių gijų, susipynimų ar kitų pažeidimų.
+                  sklendės veikia tinkamai.
                 </li>
                 <li>
                   <strong>Jungimo įranga</strong> - patikrinti, ar visos
@@ -377,8 +425,8 @@ export default function CourseDetail() {
             <div className="mb-8">
               <p className="mb-4 text-gray-700">
                 Kiekvienas krovinys yra unikalus ir reikalauja atidaus vertinimo
-                prieš kėlimą. Rigeris turi sugebėti įvertinti galimas rizikas ir
-                pavojus.
+                prieš kėlimą. Stropuotojas turi sugebėti įvertinti galimas
+                rizikas ir pavojus.
               </p>
 
               <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -421,6 +469,24 @@ export default function CourseDetail() {
                   <p className="text-gray-700">
                     Įvertinti vėjo greitį, matomumą ir kitus aplinkos faktorius,
                     kurie gali paveikti kėlimo operacijos saugumą.
+                  </p>
+                </div>
+                <div className="rounded-md border border-gray-200 p-4">
+                  <h3 className="mb-2 font-medium text-gray-800">
+                    Smulkūs kroviniai
+                  </h3>
+                  <p className="text-gray-700">
+                    Smulkūs kroviniai turi būti keliami bei perkeliami
+                    specialioje taroje ir sukrauti taip, kad neiškristų.
+                  </p>
+                </div>
+                <div className="rounded-md border border-gray-200 p-4">
+                  <h3 className="mb-2 font-medium text-gray-800">
+                    Kranų kabliai
+                  </h3>
+                  <p className="text-gray-700">
+                    Kėlimo kranų kabliai turi būti tokie, kad krovinys negalėtų
+                    savaime atsikabinti.
                   </p>
                 </div>
               </div>
@@ -519,19 +585,25 @@ export default function CourseDetail() {
 
             <div className="mb-8">
               <p className="mb-4 text-gray-700">
-                Rigeris turi žinoti, kaip elgtis avarinių situacijų metu. Greiti
-                ir tinkami sprendimai gali išvengti rimtų nelaimingų atsitikimų.
+                Stropuotojas turi žinoti, kaip elgtis avarinių situacijų metu.
+                Greiti ir tinkami sprendimai gali išvengti rimtų nelaimingų
+                atsitikimų.
               </p>
 
               <div className="mb-6 rounded-lg bg-red-50 p-4 text-red-800">
                 <h3 className="mb-2 font-semibold">
-                  SVARBU: Avarinės situacijos valdymas
+                  SVARBU: Avarinės situacijos išvengimas
                 </h3>
                 <ul className="list-inside list-disc space-y-1">
                   <li>Niekada nestovėkite po kabančiu kroviniu.</li>
-                  <li>Visada turėkite aiškų pabėgimo kelią.</li>
-                  <li>Žinokite, kur yra avarinis krano išjungimo mygtukas.</li>
-                  <li>Susipažinkite su darbo vietos evakuacijos planais.</li>
+                  <li>
+                    Visada turėkite aiškų pasitraukimo nuo krovinio kelią.
+                  </li>
+                  <li>
+                    Įsitikinkite, kad darbų zonoje nebūtų pašalinių asmenų ir
+                    kliučių.
+                  </li>
+                  <li>Nestovėkite po automobilinio krano svoriu.</li>
                 </ul>
               </div>
 
@@ -543,8 +615,8 @@ export default function CourseDetail() {
                   <ul className="list-inside list-disc space-y-1 text-gray-700">
                     <li>Neįprastas krovinio svyravimas</li>
                     <li>Stropų įtempimo netolygumas</li>
-                    <li>Garsai, rodantys krovinio dalių judėjimą</li>
-                    <li>Krano persvirimas ar nestabilumas</li>
+                    <li>Garsai, įspėjantys apie krovinio dalių judėjimą</li>
+                    <li>Krovinio pasvyrimas</li>
                   </ul>
                 </div>
 
@@ -556,7 +628,7 @@ export default function CourseDetail() {
                     <li>Duoti signalą operatoriui sustoti</li>
                     <li>Evakuoti žmones iš pavojingos zonos</li>
                     <li>Jei įmanoma, nuleisti krovinį</li>
-                    <li>Pranešti vadovui apie situaciją</li>
+                    <li>Pranešti atsakingam asmeniui apie situaciją</li>
                   </ol>
                 </div>
               </div>

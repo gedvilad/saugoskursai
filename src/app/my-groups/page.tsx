@@ -29,7 +29,7 @@ export default function Home() {
         const data = (await res.json()) as ApiResponse;
         if (data.groups && data.groups.length > 0) {
           setGroups(data.groups);
-          setSelectedGroup(data.groups[0]!);
+          setSelectedGroup(null);
         } else {
           setSelectedGroup(null);
         }
@@ -82,7 +82,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen bg-white">
+    <div className="flex min-h-screen bg-white">
       <Sidebar
         groups={groups}
         selectedGroup={selectedGroup}

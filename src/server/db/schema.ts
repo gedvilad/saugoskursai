@@ -243,6 +243,9 @@ export const user_bought_courses = createTable(
     courseId: integer("course_id")
       .notNull()
       .references(() => courses.id),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
   },
   (user_bought_courses) => ({
     nameIndex: index("user_bought_course_idx").on(user_bought_courses.id),

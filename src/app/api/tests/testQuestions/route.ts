@@ -92,7 +92,6 @@ export async function POST(req: Request) {
       .select()
       .from(user_test_responses)
       .where(eq(user_test_responses.assignedCourse, body.assignedCourseId));
-    console.log(existingResponse[0]);
     if (existingResponse.length === 0) {
       const overallScore = 0;
       await db.insert(user_test_responses).values({
@@ -108,6 +107,13 @@ export async function POST(req: Request) {
           message: "Sukurtas atsakymas su pradiniu laiku.",
         }),
         { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    } else {
+      return new Response(
+        JSON.stringify({
+          message: "Įvyko klaida, prašome kreiptis į administratorių.",
+        }),
+        { status: 409, headers: { "Content-Type": "application/json" } },
       );
     }
   } catch (error) {

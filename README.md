@@ -28,9 +28,14 @@ TODO:
 [x] Priskiriant kursus tikrinti ar jau neturi tokio priskirto (neatlikto).
 [ ] Invoices
 [x] Rezultatu atvaizdavimas => sutvarkyt datas ir laikus
-[ ] Istestuot pilnai kursu rezus
+[x] Istestuot pilnai kursu rezus
 [x] padaryt kad laika rodytu ir valandom
 [x] Perdaryt testu score skaiciavima, ivertinti neteisingus pasirinkimus multi choice klausime
-[ ] Padaryt rezultatu filtravima
+[x] Padaryt rezultatu filtravima
 [x] Teste esanti timeri arba sutvarkyt arba pasalint
-[ ] kursu priskirimas, rezultatai tik adminam
+[x] kursu priskirimas, rezultatai tik adminam
+[ ] Visur sudet validationus backe, veikia tik padeploynus del clerk webhooko
+[ ] kurso informacija saugot db, sutvarkyt about course page
+[x] galimybe matyt atliktus kursus (nedubliuoti), tik informacijos perziurejimui
+[ ] sutvarkyti perziura atliktu ir pirktu kursu
+[x] rodyti nusipirktus kursus

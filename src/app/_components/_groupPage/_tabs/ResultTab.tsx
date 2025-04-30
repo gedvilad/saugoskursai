@@ -87,22 +87,22 @@ export default function CourseResultsTab({
       }
 
       // Filter by date range
-      /*if (dateRange.startDate) {
+      if (dateRange.startDate) {
         const startDate = new Date(dateRange.startDate);
-        const completedDate = new Date(result.completed_at);
+        const completedDate = new Date(result.endTime);
         if (completedDate < startDate) {
           return false;
         }
-      }*/
+      }
 
-      /*if (dateRange.endDate) {
+      if (dateRange.endDate) {
         const endDate = new Date(dateRange.endDate);
         endDate.setHours(23, 59, 59); // Set to end of day
-        const completedDate = new Date(result.completed_at);
+        const completedDate = new Date(result.endTime);
         if (completedDate > endDate) {
           return false;
         }
-      }*/
+      }
 
       // Filter by score range
       if (result.score < scoreRange.min || result.score > scoreRange.max) {
@@ -110,12 +110,12 @@ export default function CourseResultsTab({
       }
 
       // Filter by search term (user name or course name)
-      /*if (searchTerm) {
+      if (searchTerm) {
         const resultUser = users.find(
-          (user) => user.clerk_id === result.user_id,
+          (user) => user.clerk_id === result.userId,
         );
         const resultCourse = courses.find(
-          (course) => course.id === result.course_id,
+          (course) => course.id === result.courseId,
         );
 
         const userFullName = resultUser
@@ -123,12 +123,12 @@ export default function CourseResultsTab({
           : "";
 
         const searchString =
-          `${userFullName} ${resultCourse?.name || ""}`.toLowerCase();
+          `${userFullName} ${resultCourse?.name ?? ""}`.toLowerCase();
 
         if (!searchString.includes(searchTerm.toLowerCase())) {
           return false;
         }
-      }*/
+      }
 
       return true;
     });
@@ -136,8 +136,10 @@ export default function CourseResultsTab({
     courseResults,
     selectedCourseId,
     selectedUserId,
-    dateRange,
-    scoreRange,
+    dateRange.startDate,
+    dateRange.endDate,
+    scoreRange.min,
+    scoreRange.max,
     searchTerm,
     users,
     courses,
@@ -174,8 +176,6 @@ export default function CourseResultsTab({
         result.status !== "Priskirtas" && result.status !== "Pradėtas",
     )
     .map((result) => Number(result.score));
-
-  console.log(validScores);
 
   const averageScore = (
     validScores.length > 0
@@ -429,7 +429,7 @@ export default function CourseResultsTab({
                     </td>
                     <td className="px-6 py-4">
                       {result.updatedAt
-                        ? format(new Date(result.updatedAt), "yyyy-MM-dd HH:mm")
+                        ? format(new Date(result.endTime), "yyyy-MM-dd HH:mm")
                         : "—"}
                     </td>
                     <td className="px-6 py-4">
