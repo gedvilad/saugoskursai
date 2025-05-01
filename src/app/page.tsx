@@ -142,8 +142,8 @@ export default function Home() {
                 <p className="mb-6 text-lg leading-relaxed text-stone-700">
                   Mes siūlome profesionalius mokymo kursus, kurie padės jums
                   įgyti reikalingus įgūdžius ir žinias apie saugą darbe. Mūsų
-                  kursai yra pritaikyti įvairioms pramonės šakoms ir parengti
-                  ekspertų.
+                  kursai yra pritaikyti įvairioms pramonės šakoms ir skirtingoms
+                  darbo vietoms.
                 </p>
                 <ul className="space-y-4">
                   <li className="flex items-start">
@@ -179,7 +179,7 @@ export default function Home() {
                       />
                     </svg>
                     <span className="text-stone-700">
-                      Sertifikuoti mokytojai su ilgamete patirtimi
+                      Išklausyto kurso medžiaga prieinama bet kuriuo metu
                     </span>
                   </li>
                   <li className="flex items-start">
@@ -248,7 +248,9 @@ export default function Home() {
                         onClick={() => router.push(`/courses/${course.id}`)}
                         disabled={!isLoaded || course.id !== 3}
                       >
-                        Plačiau
+                        {course.id === 3
+                          ? "Plačiau"
+                          : "Bus prieinama greitu metu"}
                       </button>
                     </div>
                   </div>

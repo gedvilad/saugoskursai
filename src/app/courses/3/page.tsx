@@ -11,27 +11,25 @@ export const dynamic = "force-dynamic";
 // Hardcoded rigging course data
 const riggingCourse = {
   id: 1,
-  name: "Saugus darbas su kėlimo įranga",
+  name: "Saugus darbas keliant krovinius su kranu",
   productId: "prod_S3CSk3xJ8baugm",
   description:
     "Išsamus kursas apie saugų darbą su kėlimo įranga ir krovinių tvirtinimą",
   fullDescription:
-    "Šis profesionalus kursas apie saugų darbą su kėlimo įranga (rigging) yra skirtas visiems, kurie dirba su krovinių kėlimu, perkėlimu ir tvirtinimu. Kursas apima visus saugos aspektus, reikalavimus ir technikas, kurios padės jums užtikrinti saugų darbą su kėlimo įranga. Kursas parengtas pagal naujausius reikalavimus ir geriausias pramonės praktikas. Baigę šį kursą jūs turėsite visas reikalingas žinias, kad galėtumėte saugiai ir efektyviai dirbti su kėlimo įranga.",
+    "Šis kursas apie saugų darbą su kėlimo įranga yra skirtas visiems, kurie dirba su krovinių kėlimu, perkėlimu ir tvirtinimu. Kursas apima visus saugos aspektus, reikalavimus ir technikas, kurios padės jums užtikrinti saugų darbą su kėlimo įranga. Kursas parengtas pagal naujausius reikalavimus ir geriausias pramonės praktikas. Baigę šį kursą jūs turėsite visas reikalingas žinias, kad galėtumėte saugiai ir efektyviai dirbti su kėlimo įranga.",
   features: [
     "Kėlimo įrangos tipai ir jų saugus naudojimas",
     "Krovinių tvirtinimo technikos ir metodai",
     "Kėlimo operacijų planavimas ir rizikos vertinimas",
-    "Signalizavimo ir komunikacijos protokolai kėlimo operacijose",
+    "Komunikacijos protokolai kėlimo operacijose",
     "Kėlimo įrangos patikra ir priežiūra",
     "Darbo saugos taisyklės ir reglamentai",
     "Kritinių situacijų valdymas ir prevencija",
   ],
   benefits: [
-    "Oficialus sertifikatas, pripažįstamas visoje Lietuvoje",
-    "Praktiniai užsiėmimai su profesionalia įranga",
     "Nuolatinė prieiga prie mokymosi medžiagos",
-    "Instruktorių konsultacijos",
     "Atnaujinimai apie naujausius saugos reikalavimus",
+    "Interaktyvios užduotys, leidžiančios lengviau įtvirtinti medžiagą",
   ],
 };
 

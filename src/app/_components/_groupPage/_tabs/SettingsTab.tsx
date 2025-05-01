@@ -81,11 +81,8 @@ export default function SettingsTab({
 
       <div className="rounded-lg border border-red-100 bg-red-50 p-6">
         <h3 className="mb-2 text-lg font-medium text-red-800">
-          Pavojinga zona
+          Šio veiksmo atkurti negalėsite !
         </h3>
-        <p className="mb-4 text-sm text-red-600">
-          Šio veiksmo negalėsite atšaukti. Prašome būti atidiems.
-        </p>
         <button
           onClick={() => setShowDeleteConfirm(true)}
           className="rounded-lg bg-white px-4 py-2 text-sm text-red-600 transition duration-200 hover:bg-red-600 hover:text-white"
