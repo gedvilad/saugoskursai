@@ -4,6 +4,11 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { useAuth } from "@clerk/nextjs";
+import EmergencyScenarioQuiz from "~/app/_components/_safeRiggingCourse/SingleChoiceQuiz";
+import RiskQuiz from "~/app/_components/_safeRiggingCourse/RiskQuiz";
+import SingleChoiceQuiz from "~/app/_components/_safeRiggingCourse/SingleChoiceQuiz";
+import DragDropQuiz from "~/app/_components/_safeRiggingCourse/dragDropQuiz";
+import ImageDragDropQuiz from "~/app/_components/_safeRiggingCourse/imageDragDropQuiz";
 
 interface Test {
   id: number;
@@ -121,6 +126,64 @@ export default function CourseDetail() {
     }
     router.push(`/testai/${test?.id}?assignedId=${assignedCourseId}`);
   };
+  const emergencyQuizData = {
+    title: "Avarinis scenarijus: Ką daryti?",
+    question:
+      "Jūs dirbate kaip rigeris ir pastebite, kad keliant sunkų metalo lakštą, viena stropas pradeda slysti. Krovinys dar nėra pakeltas aukštai. Pasirinkite teisingą veiksmų seką:",
+    options: [
+      {
+        id: "A",
+        text: "Bandyti pataisyti stropą, kol krovinys kabo, kad išvengtumėte operacijos nutraukimo.",
+      },
+      {
+        id: "B",
+        text: "Signalizuoti operatoriui nedelsiant sustoti, įspėti darbuotojus pasišalinti ir nuleisti krovinį ant žemės.",
+      },
+      {
+        id: "C",
+        text: "Duoti signalą operatoriui skubiai užbaigti kėlimą, kad krovinys būtų greičiau nuleistas į galutinę vietą.",
+      },
+      {
+        id: "D",
+        text: "Paprašyti kito darbuotojo palaikyti krovinį, kol pats pataisysite stropą.",
+      },
+    ],
+    correctAnswer: "B",
+    correctFeedback:
+      "Signalizuoti operatoriui sustoti ir įspėti aplinkinius darbuotojus yra teisingas veiksmas šioje situacijoje.",
+    incorrectFeedback:
+      "Saugiausia yra nedelsiant sustabdyti operaciją, įspėti darbuotojus ir nuleisti krovinį ant žemės saugiai.",
+    successMessage: "Teisingai! Saugumas visada pirmiausia.",
+    failureMessage: "Neteisingas atsakymas. Teisingas atsakymas yra",
+  };
+  const quizData1 = {
+    title: "Patikrinkite savo žinias",
+    question: "Kas nėra rigerio atsakomybė?",
+    options: [
+      {
+        id: "A",
+        text: "Signalų perdavimas krano operatoriui",
+      },
+      {
+        id: "B",
+        text: "Krovinio stropavimas",
+      },
+      {
+        id: "C",
+        text: "Tiesioginis krano valdymas",
+      },
+      {
+        id: "D",
+        text: "Darbo zonos stebėjimas ir saugumo joje užtikrinimas",
+      },
+    ],
+    correctAnswer: "C",
+    correctFeedback: "",
+    incorrectFeedback: "Už krano valdymą atsakingas krano operatorius.",
+    successMessage: "Teisingai! Už krano valdymą atsakingas krano operatorius.",
+    failureMessage: "Neteisingas atsakymas. Teisingas atsakymas yra",
+  };
+
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -136,7 +199,7 @@ export default function CourseDetail() {
           <div className="mb-8 rounded-lg bg-white p-6 shadow-md">
             <div className="mb-2 h-2 bg-stone-500"></div>
             <h1 className="text-3xl font-bold text-gray-800">
-              Taisyklingas krovinių kelimas
+              Taisyklingas krovinių kelimas su kranu
             </h1>
             <p className="mt-2 text-gray-600">
               Šiame kurse išmoksite esmines taisykles dirbat su kranais, rizikos
@@ -183,6 +246,14 @@ export default function CourseDetail() {
                 </li>
                 <p>- Įvertinti krovinio svorį, formą ir svorio centrą.</p>
                 <p>- Įsitikinti, kad krovinis yra stabilus, neapgadintas.</p>
+                <p>
+                  - Nekabinti krovinių, kurių svoris didesnis už kėlimo krano
+                  keliamąją galią.
+                </p>
+                <p>
+                  - Patikrinti stropavimo teisingumą, kranininkui krovinį
+                  pakėlus į 0,2 - 0,3 m aukštį
+                </p>
                 <li>
                   <strong>Įrangos parinkimas</strong>
                 </li>
@@ -191,11 +262,37 @@ export default function CourseDetail() {
                   stropavimo būdą.
                 </p>
                 <li>
+                  <strong>Įrangos patikrinimas</strong>
+                </li>
+                <p>
+                  - Prieš pradėdamas darbą su kėlimo kranu, apžiūrėti ir
+                  patikrinti kėlimo reikmenų ženklinimą, jų techninę būklę.
+                </p>
+                <li>
                   <strong>Signalizavimas</strong>
                 </li>
                 <p>
                   - Krovinio kėlimo metu perduoti aiškius signalus krano
                   operatoriui, kol krovinys bus saugiai padėtas.
+                </p>
+                <li>
+                  <strong>Stropuotojui draudžiama</strong>
+                </li>
+                <p>
+                  - Būti prie dirbančio strėlinio ar bokštinio kėlimo krano, kur
+                  galima patekti tarp sukamųjų ir nejudamųjų kėlimo krano dalių
+                  arba sukamųjų kėlimo krano dalių ir kitų nejudamų daiktų
+                  (krovinių, statinių, įrenginių ir kitų).
+                </p>
+                <p>
+                  - Leisti kelti užpiltus žemėmis ar prišalusius, apkrautus
+                  kitais kroviniais, pritvirtintus varžtais, užpiltus betonu
+                  krovinius arba kitaip prie nekeliamo pagrindo pritvirtintus
+                  krovinius;
+                </p>
+                <p>
+                  - Nukreipti keliamą ar perkeliamą krovinį savo svoriu ir
+                  taisyti netinkamai uždėtus stropus esant pakeltam kroviniui.
                 </p>
               </ul>
 
@@ -217,54 +314,69 @@ export default function CourseDetail() {
               </div> */}
 
               {/* Interactive Quiz after theory and image */}
-              <div className="mb-8 rounded-lg border border-gray-200 p-6">
-                <h3 className="mb-4 text-xl font-medium text-gray-800">
-                  Patikrinkite savo žinias
-                </h3>
-                <p className="mb-4 text-gray-700">
-                  Kas nėra rigerio atsakomybė?
-                </p>
-
-                <div className="space-y-2">
-                  {[
-                    "Signalų perdavimas krano operatoriui",
-                    "Krano mechaninių dalių remontas",
-                    "Darbo zonos stebėjimas",
-                    "Tinkamų stropų parinkimas",
-                  ].map((option) => (
-                    <button
-                      key={option}
-                      onClick={() => handleOptionSelect(option)}
-                      className={`w-full rounded-md border p-3 text-left transition-colors ${
-                        selectedOption === option
-                          ? selectedOption === "Krano mechaninių dalių remontas"
-                            ? "border-green-500 bg-green-50"
-                            : "border-red-500 bg-red-50"
-                          : "border-gray-200 hover:bg-gray-50"
-                      }`}
-                    >
-                      {option}
-                    </button>
-                  ))}
-                </div>
-
-                {showFeedback && (
-                  <div
-                    className={`mt-4 rounded-md p-4 ${
-                      selectedOption === "Krano mechaninių dalių remontas"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    {selectedOption === "Krano mechaninių dalių remontas"
-                      ? "Teisingai! Krano mechaninių dalių remontas yra techninio personalo, ne rigerio atsakomybė."
-                      : `Neteisingai. Teisingas atsakymas yra "Krano mechaninių dalių remontas". Tai yra techninio personalo, ne rigerio atsakomybė.`}
-                  </div>
-                )}
-              </div>
+              <SingleChoiceQuiz quizData={quizData1} />
             </div>
             <div className="mb-6 h-px bg-gray-200"></div>
 
+            {/* Second section with different content types */}
+            <h2 className="mb-6 text-2xl font-semibold text-gray-800">
+              Automobilinio kėlimo krano pastatymas
+            </h2>
+
+            <div className="mb-8">
+              <p className="mb-4 text-gray-700">
+                Prieš atliekant bet kokius kėlimo darbus reikalinga taisyklingai
+                pastatyti kraną.
+              </p>
+              <ul className="mb-6 list-inside list-disc space-y-2 text-gray-700">
+                <li>
+                  Kėlimo krano savininkas ir kiti asmenys, atliekantys
+                  montavimo, demontavimo ir kitus darbus su kėlimo kranu, turi
+                  vadovautis gamintojo techniniuose dokumentuose nustatytais
+                  reikalavimais
+                </li>
+                <li>
+                  Turi būti saugūs atstumai nuo inžinerinių tinklų, elektros
+                  tinklų ir elektros perdavimo linijų, miesto transporto ir
+                  pėsčiųjų judėjimo vietų, nepavojingi kėlimo krano priartėjimo
+                  prie
+                </li>
+                <li>
+                  Norint montuoti kėlimo kranus statiniuose (ant statinio
+                  konstrukcijų), reikia numatyti ir apskaičiuoti, kokį poveikį
+                  jie turės statinio konstrukcijoms, ypač kai jie bus bandomi su
+                  bandomuoju kroviniu arba naudojant specialų bandymo įtaisą.
+                </li>
+                <li>
+                  Kėlimo kranai turi būti sumontuoti taip, kad pakeltas krovinys
+                  būtų gabenamas ne žemiau kaip 0,5 m virš statinio, įrenginių,
+                  krovinių rietuvių, automobilių bortų ir kitų daiktų.
+                </li>
+                <li>
+                  Kranininkui, valdančiam kėlimo kraną nuo žemės, turi būti
+                  paliktas praėjimo takas. Kranininkui, valdančiam kėlimo kraną
+                  iš kabinos, turi būti paliktas saugus laisvas praėjimas
+                  patekti į kabiną. Jeigu reikia, turi būti įrengti avariniai
+                  evakuaciniai išėjimai bei įrengiami kėlimo krano remontui
+                  skirti praėjimai, aikštelės ir laiptai. Praėjimo plotis turi
+                  būti ne mažesnis kaip 0,5 m, jo aukštis nuo pagrindo iki
+                  žemiausiai išsikišusių daiktų – ne mažesnis kaip 1,8 m.
+                  Įlipimo laiptai turi būti neslidūs, pasvirę į horizontalę ne
+                  didesniu kaip 60°–75° kampu, su turėklais. Turi būti numatyta
+                  išvengti prispaudimo pavojaus tarp judančių kėlimo krano dalių
+                  ir nejudančių konstrukcijų, skirtų įlipimui į kabiną. Visos
+                  durys, liukai ir kiti elementai, dėl kurių netikėto atidarymo
+                  gali kilti pavojus, turi būti su automatiniais blokavimo
+                  įtaisais. Mechaninės durys ir vartai turi funkcionuoti taip,
+                  kad nekeltų pavojaus darbuotojams. Jų avarinio atidarymo ir
+                  uždarymo įtaisai turi būti tinkamai pažymėti ir lengvai
+                  randami. Kai nutrūkus elektros energijos tiekimui mechaninės
+                  durys ir vartai lieka uždaryti, turi būti galimybė juos
+                  atidaryti rankomis.
+                </li>
+              </ul>
+            </div>
+            <div className="mb-6 h-px bg-gray-200"></div>
             {/* Second section with different content types */}
             <h2 className="mb-6 text-2xl font-semibold text-gray-800">
               Signalizavimas krano operatoriui
@@ -276,7 +388,23 @@ export default function CourseDetail() {
                 ir jų reikšmes
               </p>
             </div>
-
+            {/* Image integrated with theory */}
+            <div className="mb-8 overflow-hidden rounded-lg bg-gray-50 shadow-md">
+              <div className="relative h-[600px] w-full">
+                <Image
+                  src="/images/stropuotoju-signalai.png"
+                  alt="Stropuotojo rankiniai signalai"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+              <div className="p-4">
+                <p className="text-center text-sm text-gray-600">
+                  Standartiniai stropuotojo rankiniai signalai krano operatoriui
+                </p>
+              </div>
+            </div>
+            <ImageDragDropQuiz />
             <div className="mb-6 h-px bg-gray-200"></div>
 
             {/* Second section with different content types */}
@@ -291,7 +419,7 @@ export default function CourseDetail() {
               </p>
 
               {/* Video integrated within the content */}
-              <div className="mx-auto mb-8 max-w-3xl overflow-hidden rounded-lg shadow-lg">
+              {/* <div className="mx-auto mb-8 max-w-3xl overflow-hidden rounded-lg shadow-lg">
                 <div className="relative aspect-video w-full bg-black">
                   <Image
                     src="/api/placeholder/1280/720"
@@ -319,7 +447,7 @@ export default function CourseDetail() {
                     Kėlimo įrangos patikrinimas: žingsnis po žingsnio
                   </h3>
                 </div>
-              </div>
+              </div> */}
 
               <ol className="mb-6 list-inside list-decimal space-y-2 text-gray-700">
                 <li>
@@ -342,9 +470,9 @@ export default function CourseDetail() {
 
               {/* Image illustrating concepts */}
               <div className="mb-8 overflow-hidden rounded-lg bg-gray-50 shadow-md">
-                <div className="relative h-64 w-full">
+                <div className="relative h-[600px] w-full">
                   <Image
-                    src="/api/placeholder/800/500"
+                    src="/images/pazeistas-stropas.png"
                     alt="Stropų pažeidimai"
                     fill
                     className="object-cover"
@@ -359,70 +487,7 @@ export default function CourseDetail() {
               </div>
 
               {/* Interactive Drag and Drop */}
-              <div className="rounded-lg border border-gray-200 p-6">
-                <h3 className="mb-4 text-xl font-medium text-gray-800">
-                  Sudėliokite kėlimo įrangos patikrinimo veiksmus tinkama tvarka
-                </h3>
-
-                <div className="flex flex-col space-y-4 md:flex-row md:space-x-6 md:space-y-0">
-                  {/* Draggable items */}
-                  <div className="flex-1">
-                    <h4 className="mb-2 text-lg font-medium text-gray-700">
-                      Veiksmai:
-                    </h4>
-                    <div className="space-y-2">
-                      {[
-                        "Atlikti vizualinį patikrinimą",
-                        "Patikrinti apkrovos žymėjimus",
-                        "Užpildyti patikros dokumentus",
-                        "Pranešti apie problemas vadovui",
-                      ].map((item) => (
-                        <div
-                          key={item}
-                          draggable={!completedItems.includes(item)}
-                          onDragStart={() => handleDragStart(item)}
-                          className={`cursor-grab rounded-md p-3 transition-colors ${
-                            completedItems.includes(item)
-                              ? "bg-gray-100 text-gray-400"
-                              : "border border-stone-300 bg-white hover:bg-stone-50"
-                          }`}
-                        >
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Drop area */}
-                  <div className="flex-1">
-                    <h4 className="mb-2 text-lg font-medium text-gray-700">
-                      Teisinga tvarka:
-                    </h4>
-                    <div
-                      onDrop={handleDrop}
-                      onDragOver={handleDragOver}
-                      className="min-h-40 rounded-md border-2 border-dashed border-stone-300 bg-stone-50 p-4"
-                    >
-                      {completedItems.length > 0 ? (
-                        <div className="space-y-2">
-                          {completedItems.map((item, index) => (
-                            <div
-                              key={item}
-                              className="rounded-md bg-stone-200 p-3"
-                            >
-                              {index + 1}. {item}
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-center text-gray-500">
-                          Vilkite veiksmus čia
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <DragDropQuiz />
             </div>
 
             <div className="mb-6 h-px bg-gray-200"></div>
@@ -502,7 +567,7 @@ export default function CourseDetail() {
               </div>
 
               {/* Image related to load inspection */}
-              <div className="mb-8 overflow-hidden rounded-lg bg-gray-50 shadow-md">
+              {/* <div className="mb-8 overflow-hidden rounded-lg bg-gray-50 shadow-md">
                 <div className="relative h-64 w-full">
                   <Image
                     src="/api/placeholder/800/500"
@@ -517,73 +582,10 @@ export default function CourseDetail() {
                     taškai
                   </p>
                 </div>
-              </div>
+              </div> */}
 
               {/* Simple interactive task */}
-              <div className="rounded-lg border border-gray-200 p-6">
-                <h3 className="mb-4 text-xl font-medium text-gray-800">
-                  Praktinė užduotis: Rizikos vertinimas
-                </h3>
-                <p className="mb-4 text-gray-700">
-                  Įsivaizduokite, kad ruošiatės kelti metalinį konteinerį.
-                  Patikrinkite, kurie teiginiai yra teisingi:
-                </p>
-
-                <div className="space-y-3">
-                  <div className="flex items-start">
-                    <input
-                      type="checkbox"
-                      id="check1"
-                      className="mt-1 h-4 w-4 rounded border-gray-300"
-                    />
-                    <label htmlFor="check1" className="ml-2 text-gray-700">
-                      Jei konteinerio tikslus svoris nežinomas, galima remtis
-                      panašių konteinerių svoriu ir pradėti kėlimą.
-                    </label>
-                  </div>
-
-                  <div className="flex items-start">
-                    <input
-                      type="checkbox"
-                      id="check2"
-                      className="mt-1 h-4 w-4 rounded border-gray-300"
-                    />
-                    <label htmlFor="check2" className="ml-2 text-gray-700">
-                      Prieš keliant reikia patikrinti, ar konteinerio turinys
-                      yra tolygiai paskirstytas ir saugiai pritvirtintas viduje.
-                    </label>
-                  </div>
-
-                  <div className="flex items-start">
-                    <input
-                      type="checkbox"
-                      id="check3"
-                      className="mt-1 h-4 w-4 rounded border-gray-300"
-                    />
-                    <label htmlFor="check3" className="ml-2 text-gray-700">
-                      Jei vėjo greitis viršija nustatytą ribą, kėlimo operaciją
-                      galima tęsti, bet reikia būti atsargesniems.
-                    </label>
-                  </div>
-
-                  <div className="flex items-start">
-                    <input
-                      type="checkbox"
-                      id="check4"
-                      className="mt-1 h-4 w-4 rounded border-gray-300"
-                    />
-                    <label htmlFor="check4" className="ml-2 text-gray-700">
-                      Stropos turi būti tvirtinamos prie specialiai tam skirtų
-                      kėlimo taškų arba taip, kad būtų užtikrintas tolygus
-                      svorio pasiskirstymas.
-                    </label>
-                  </div>
-                </div>
-
-                <button className="mt-4 rounded-md bg-stone-500 px-4 py-2 text-white hover:bg-stone-600">
-                  Patikrinti atsakymus
-                </button>
-              </div>
+              <RiskQuiz />
             </div>
 
             <div className="mb-6 h-px bg-gray-200"></div>
@@ -639,6 +641,7 @@ export default function CourseDetail() {
                     <li>Evakuoti žmones iš pavojingos zonos</li>
                     <li>Jei įmanoma, nuleisti krovinį</li>
                     <li>Pranešti atsakingam asmeniui apie situaciją</li>
+                    <li>Jei įmanoma aptverti atsiradusias pavojingas zonas.</li>
                   </ol>
                 </div>
               </div>
@@ -661,70 +664,7 @@ export default function CourseDetail() {
               </div>
 
               {/* Interactive scenario */}
-              <div className="rounded-lg border border-gray-200 p-6">
-                <h3 className="mb-4 text-xl font-medium text-gray-800">
-                  Avarinis scenarijus: Ką daryti?
-                </h3>
-                <p className="mb-6 text-gray-700">
-                  Jūs dirbate kaip rigeris ir pastebite, kad keliant sunkų
-                  metalo lakštą, viena stropa pradeda slysti. Krovinys dar nėra
-                  pakeltas aukštai. Pasirinkite teisingą veiksmų seką:
-                </p>
-
-                <div className="space-y-3">
-                  <div className="cursor-pointer rounded-md border border-gray-200 p-3 hover:bg-stone-50">
-                    <div className="flex items-center">
-                      <div className="mr-3 flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-gray-700">
-                        A
-                      </div>
-                      <span>
-                        Bandyti pataisyti stropą, kol krovinys kabo, kad
-                        išvengtumėte operacijos nutraukimo.
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="cursor-pointer rounded-md border border-gray-200 p-3 hover:bg-stone-50">
-                    <div className="flex items-center">
-                      <div className="mr-3 flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-gray-700">
-                        B
-                      </div>
-                      <span>
-                        Signalizuoti operatoriui nedelsiant sustoti, įspėti
-                        darbuotojus pasišalinti ir nuleisti krovinį ant žemės.
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="cursor-pointer rounded-md border border-gray-200 p-3 hover:bg-stone-50">
-                    <div className="flex items-center">
-                      <div className="mr-3 flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-gray-700">
-                        C
-                      </div>
-                      <span>
-                        Duoti signalą operatoriui skubiai užbaigti kėlimą, kad
-                        krovinys būtų greičiau nuleistas į galutinę vietą.
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="cursor-pointer rounded-md border border-gray-200 p-3 hover:bg-stone-50">
-                    <div className="flex items-center">
-                      <div className="mr-3 flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-gray-700">
-                        D
-                      </div>
-                      <span>
-                        Paprašyti kito darbuotojo palaikyti krovinį, kol pats
-                        pataisysite stropą.
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <button className="mt-4 rounded-md bg-stone-500 px-4 py-2 text-white hover:bg-stone-600">
-                  Pasirinkti atsakymą
-                </button>
-              </div>
+              <SingleChoiceQuiz quizData={emergencyQuizData} />
             </div>
           </div>
 
