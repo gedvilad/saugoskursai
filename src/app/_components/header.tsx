@@ -182,14 +182,14 @@ export function Header() {
       <div className="container mx-auto flex items-center justify-between px-6">
         <Link href="/" className="flex items-center space-x-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-600">
-            <span className="text-lg font-bold text-white">SM</span>
+            <span className="text-lg font-bold text-white">SK</span>
           </div>
           <span
             className={`text-xl font-bold ${
               isScrolled ? "text-stone-800" : "text-gray-800"
             }`}
           >
-            Saugos Mokymai
+            Saugos Kursai
           </span>
         </Link>
 
