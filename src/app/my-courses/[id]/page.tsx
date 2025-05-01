@@ -669,27 +669,29 @@ export default function CourseDetail() {
           </div>
 
           {/* Test Button */}
-          <div className="mt-8 flex justify-center">
-            <button
-              onClick={handleTakeTest}
-              className="group flex items-center rounded-md bg-stone-500 px-6 py-3 text-white transition-all duration-300 hover:bg-stone-600 hover:shadow-lg"
-            >
-              <svg
-                className="mr-2 h-5 w-5 transition-transform duration-300 group-hover:rotate-12"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+          {requestType === "assigned" && (
+            <div className="mt-8 flex justify-center">
+              <button
+                onClick={handleTakeTest}
+                className="group flex items-center rounded-md bg-stone-500 px-6 py-3 text-white transition-all duration-300 hover:bg-stone-600 hover:shadow-lg"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                />
-              </svg>
-              Laikyti kurso testą
-            </button>
-          </div>
+                <svg
+                  className="mr-2 h-5 w-5 transition-transform duration-300 group-hover:rotate-12"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                  />
+                </svg>
+                Laikyti kurso testą
+              </button>
+            </div>
+          )}
         </div>
       </main>
     </div>
