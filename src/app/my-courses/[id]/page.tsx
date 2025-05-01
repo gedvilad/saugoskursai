@@ -475,7 +475,7 @@ export default function CourseDetail() {
                     src="/images/pazeistas-stropas.png"
                     alt="Stropų pažeidimai"
                     fill
-                    className="object-cover"
+                    className="object-fill"
                   />
                 </div>
                 <div className="p-4">
@@ -648,17 +648,17 @@ export default function CourseDetail() {
 
               {/* Image related to emergency procedures */}
               <div className="mb-8 overflow-hidden rounded-lg bg-gray-50 shadow-md">
-                <div className="relative h-64 w-full">
+                <div className="relative ml-auto mr-auto flex h-[350px] w-[1000px]">
                   <Image
-                    src="/api/placeholder/800/500"
-                    alt="Avarinės situacijos schema"
+                    src="/images/avarine-situacija.png"
+                    alt="Avarinė situacija"
                     fill
-                    className="object-cover"
+                    className="object-fill object-center"
                   />
                 </div>
                 <div className="p-4">
                   <p className="text-center text-sm text-gray-600">
-                    Evakuacijos zonos ir saugūs atstumai krano darbų metu
+                    Avarinė situacija
                   </p>
                 </div>
               </div>
