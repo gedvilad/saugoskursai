@@ -8,7 +8,7 @@ import {
   tests,
   userGroups,
 } from "~/server/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 export type CourseResult = {
   id: number;
@@ -58,7 +58,8 @@ export async function GET(req: Request) {
         user_test_responses,
         eq(user_assigned_courses.id, user_test_responses.assignedCourse),
       )
-      .where(eq(user_assigned_courses.groupId, Number(groupId)));
+      .where(eq(user_assigned_courses.groupId, Number(groupId)))
+      .orderBy(desc(user_test_responses.endTime)); // Add this line
 
     return new Response(JSON.stringify({ results: courseResults }), {
       status: 200,
