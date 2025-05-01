@@ -19,7 +19,7 @@ export default function UsersTab({ selectedGroup, userId }: UsersTabProps) {
   const [users, setUsers] = useState<User[]>([]);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [showUserList, setShowUserList] = useState(false);
+  const [showUserList, setShowUserList] = useState(true);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [showUserDeleteConfirm, setShowUserDeleteConfirm] = useState(false);
@@ -125,7 +125,8 @@ export default function UsersTab({ selectedGroup, userId }: UsersTabProps) {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    setShowUserList(e.target.value.length > 0);
+    //setShowUserList(e.target.value.length > 0);
+    setShowUserList(true);
     setSelectedUser(null); // Clear selected user when search changes
   };
 
@@ -140,6 +141,7 @@ export default function UsersTab({ selectedGroup, userId }: UsersTabProps) {
       <div className="mb-5 flex items-center gap-3">
         {/* Search Input */}
         <UserSearchInput
+          allUsers={allUsers}
           searchTerm={searchTerm}
           onSearchChange={handleSearchChange}
           showUserList={showUserList}

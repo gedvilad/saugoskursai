@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { type User } from "../types";
 
 interface UserSearchInputProps {
@@ -6,14 +7,23 @@ interface UserSearchInputProps {
   showUserList: boolean;
   filteredUsers: User[];
   onSelectUser: (user: User) => void;
+  allUsers: User[];
 }
+
 export default function UserSearchInput({
   searchTerm,
   onSearchChange,
   showUserList,
-  filteredUsers,
+  filteredUsers = [],
   onSelectUser,
+  allUsers = [],
 }: UserSearchInputProps) {
+  const [isFocused, setIsFocused] = useState(false);
+
+  const isOnlyWhitespace = searchTerm.trim() === "" && searchTerm !== "";
+  const displayUsers =
+    searchTerm === "" ? allUsers : isOnlyWhitespace ? [] : filteredUsers;
+
   return (
     <div className="relative flex-1">
       <input
@@ -22,6 +32,8 @@ export default function UserSearchInput({
         className="w-full rounded-lg border border-stone-300 p-2 pl-10 text-sm shadow-sm transition duration-200 focus:border-stone-500 focus:outline-none focus:ring-1 focus:ring-stone-500"
         value={searchTerm}
         onChange={onSearchChange}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
       />
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -39,15 +51,15 @@ export default function UserSearchInput({
       </svg>
 
       {/* Dropdown List */}
-      {showUserList && (
+      {showUserList && isFocused && (
         <div className="absolute z-10 w-full rounded-lg border border-stone-200 bg-white shadow-lg">
-          {filteredUsers.length > 0 ? (
+          {displayUsers && displayUsers.length > 0 ? (
             <ul className="max-h-64 overflow-y-auto py-1 text-sm">
-              {filteredUsers.map((user) => (
+              {displayUsers.map((user) => (
                 <li
                   key={user.id}
                   className="cursor-pointer px-4 py-3 hover:bg-stone-50"
-                  onClick={() => onSelectUser(user)}
+                  onMouseDown={() => onSelectUser(user)} // prevents blur before click
                 >
                   <div className="font-medium text-stone-800">
                     {user.first_name} {user.last_name}
