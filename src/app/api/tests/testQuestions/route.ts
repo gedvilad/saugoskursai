@@ -283,7 +283,7 @@ export async function PUT(req: Request) {
       );
     }
 
-    for (const answer of body.answers) {
+    /*for (const answer of body.answers) {
       try {
         const question = await db.query.test_questions.findFirst({
           where: (tq, { eq }) => eq(tq.id, answer.questionId),
@@ -319,7 +319,7 @@ export async function PUT(req: Request) {
           { status: 500, headers: { "Content-Type": "application/json" } },
         );
       }
-    }
+    }*/
 
     await db
       .update(user_assigned_courses)
