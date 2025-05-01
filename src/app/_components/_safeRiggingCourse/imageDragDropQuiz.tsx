@@ -32,58 +32,58 @@ interface ImageDragDropQuizProps {
 }
 
 export default function ImageDragDropQuiz({
-  title = "Drag and drop images to their correct locations",
+  title = "Praktinė užduotis",
   imageItems = [
     {
       id: "img1",
       src: "/images/aukstyn.png",
-      alt: "Safety Helmet",
+      alt: "",
       correctZoneId: "zone1",
     },
     {
       id: "img2",
-      src: "/api/placeholder/150/150",
-      alt: "Safety Gloves",
+      src: "/images/isskleisti-strele.png",
+      alt: "",
       correctZoneId: "zone2",
     },
     {
       id: "img3",
-      src: "/api/placeholder/150/150",
-      alt: "Safety Boots",
+      src: "/images/avarinis-stabdymas.png",
+      alt: "",
       correctZoneId: "zone3",
     },
     {
       id: "img4",
-      src: "/api/placeholder/150/150",
-      alt: "Safety Vest",
+      src: "/images/strele-zemyn.png",
+      alt: "",
       correctZoneId: "zone4",
     },
   ],
   dropZones = [
     {
       id: "zone1",
-      label: "Head Protection",
-      description: "Wear on your head to protect from falling objects",
+      label: "Signalas rodantis kelti krovinį aukštyn",
+      description: "",
     },
     {
       id: "zone2",
-      label: "Hand Protection",
-      description: "Wear on your hands to protect from cuts and abrasions",
+      label: "Signalas rodantis išskleisti strėlę",
+      description: "",
     },
     {
       id: "zone3",
-      label: "Foot Protection",
-      description: "Wear on your feet to protect from heavy objects",
+      label: "Signalas reiškiantis avarinį stabdymą",
+      description: "",
     },
     {
       id: "zone4",
-      label: "Visibility Protection",
-      description: "Wear to ensure you're visible in low light conditions",
+      label: "Signalas rodantis nuleisti strelę",
+      description: "",
     },
   ],
-  instructionsText = "Drag the safety equipment to their correct descriptions",
-  imagesLabel = "Safety Equipment:",
-  zonesLabel = "Descriptions:",
+  instructionsText = "Nutempk nuotraukas į teisingą vietą",
+  imagesLabel = "",
+  zonesLabel = "",
 }: ImageDragDropQuizProps) {
   const [placedImages, setPlacedImages] = useState<PlacedImagesMap>({});
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
@@ -203,7 +203,7 @@ export default function ImageDragDropQuiz({
                   className={`h-24 w-24 rounded-md border-2 ${
                     isImagePlaced(item.id)
                       ? "border-gray-200"
-                      : "border-blue-300 hover:border-blue-500"
+                      : "border-stone-300 hover:border-stone-500"
                   } object-cover transition-all`}
                 />
                 <div className="mt-1 text-center text-sm text-gray-600">
@@ -229,7 +229,7 @@ export default function ImageDragDropQuiz({
                   onDrop={() => handleDrop(zone.id)}
                   className={`flex flex-col rounded-lg border-2 ${
                     imageInZone
-                      ? "border-green-300"
+                      ? "border-stone-400"
                       : "border-dashed border-gray-300"
                   } p-4 transition-colors`}
                 >
@@ -238,7 +238,7 @@ export default function ImageDragDropQuiz({
 
                   <div
                     className={`mt-4 flex h-28 min-h-28 items-center justify-center rounded-md ${
-                      imageInZone ? "bg-green-50" : "bg-gray-50"
+                      imageInZone ? "bg-stone-50" : "bg-gray-50"
                     }`}
                   >
                     {imageInZone ? (
@@ -257,7 +257,9 @@ export default function ImageDragDropQuiz({
                         </button>
                       </div>
                     ) : (
-                      <p className="text-sm text-gray-400">Drop item here</p>
+                      <p className="text-sm text-gray-400">
+                        Įtempkite nuotrauką čia
+                      </p>
                     )}
                   </div>
                 </div>
@@ -270,13 +272,13 @@ export default function ImageDragDropQuiz({
         {results && (
           <div
             className={`mt-4 rounded-md p-4 ${
-              results.isAllCorrect ? "bg-green-100" : "bg-yellow-100"
+              results.isAllCorrect ? "bg-green-100" : "bg-red-100"
             }`}
           >
             <p className="font-medium">
               {results.isAllCorrect
-                ? "Perfect! All items are correctly placed."
-                : `You got ${results.correct} out of ${results.total} correct. Try again!`}
+                ? "Teisingai !"
+                : `${results.correct} iš ${results.total} teisingai. Bandyk vėl !`}
             </p>
           </div>
         )}
