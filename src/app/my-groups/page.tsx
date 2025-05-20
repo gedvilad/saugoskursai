@@ -12,21 +12,16 @@ import {
   type ApiResponseCourses,
 } from "../_components/_groupPage/types";
 import { useRouter } from "next/navigation";
+import { is } from "drizzle-orm";
 export const dynamic = "force-dynamic";
 
 export default function Home() {
-  const { userId, isSignedIn, isLoaded } = useAuth();
+  const { userId } = useAuth();
   const [groups, setGroups] = useState<Group[]>([]);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [isLoadingGroups, setIsLoadingGroups] = useState(true);
   const [courses, setCourses] = useState<Course[]>([]);
-  const router = useRouter();
-  useEffect(() => {
-    if (isLoaded && !isSignedIn) {
-      toast.error("Prašome prisijungti");
-      router.push("/");
-    }
-  }, [isLoaded, isSignedIn, router]);
+
   useEffect(() => {
     setIsLoadingGroups(true);
     if (!userId) return;
@@ -66,7 +61,7 @@ export default function Home() {
     fetchCourses().catch((error) =>
       console.error("Error fetching courses:", error),
     );
-    setIsLoadingGroups(false);
+    setTimeout(() => setIsLoadingGroups(false), 300);
   }, [userId]);
 
   const handleGroupSelect = (group: Group) => {

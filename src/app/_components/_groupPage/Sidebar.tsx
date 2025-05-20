@@ -7,6 +7,7 @@ import {
   type Course,
 } from "./types";
 import toast from "react-hot-toast";
+import { is } from "drizzle-orm";
 
 interface SidebarProps {
   groups: Group[];
@@ -33,7 +34,6 @@ export default function Sidebar({
 
   useEffect(() => {
     if (!userId) {
-      setTimeout(() => setIsLoadingCourses(true), 500);
       return;
     }
     const fetchUserBoughtCourses = async () => {
@@ -45,7 +45,7 @@ export default function Sidebar({
           return;
         }
         setCourses(data.boughtCourses);
-        setTimeout(() => setIsLoadingCourses(true), 500);
+        setTimeout(() => setIsLoadingCourses(false), 200);
       } catch (error) {
         console.error("Error fetching courses:", error);
       }
@@ -134,7 +134,7 @@ export default function Sidebar({
                     </div>
                   )}
               <div className="space-y-3">
-                {isLoadingGroups
+                {isLoadingCourses
                   ? Array.from({ length: 3 }).map((_, i) => (
                       <div
                         key={i}
@@ -189,33 +189,35 @@ export default function Sidebar({
                     </div>
                   </div>
                 ) : (
-                  <button
-                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-stone-300 bg-white p-3 text-stone-600 transition duration-200 hover:bg-stone-100 hover:text-stone-800"
-                    onClick={handleCreateGroup}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth="1.5"
-                      stroke="currentColor"
-                      className="h-5 w-5"
+                  !isLoadingCourses && (
+                    <button
+                      className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-stone-300 bg-white p-3 text-stone-600 transition duration-200 hover:bg-stone-100 hover:text-stone-800"
+                      onClick={handleCreateGroup}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M12 4.5v15m7.5-7.5h-15"
-                      />
-                    </svg>
-                    Sukurti naują grupę
-                  </button>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth="1.5"
+                        stroke="currentColor"
+                        className="h-5 w-5"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 4.5v15m7.5-7.5h-15"
+                        />
+                      </svg>
+                      Sukurti naują grupę
+                    </button>
+                  )
                 )}
               </div>
             </div>
           ) : (
             // Collapsed sidebar content
             <div className="flex flex-col items-center p-2 pt-6">
-              {!isLoadingGroups &&
+              {!isLoadingCourses &&
                 groups.map((group) => (
                   <button
                     key={group.id}
