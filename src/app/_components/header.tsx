@@ -246,7 +246,7 @@ export function Header() {
                 </button>
               ))}
 
-              {userData?.role === "admin" && (
+              {/* {userData?.role === "admin" && (
                 <button
                   className={`rounded-md px-3 py-2 font-medium transition-colors duration-200 ${
                     isScrolled
@@ -258,7 +258,7 @@ export function Header() {
                 >
                   Admin panel
                 </button>
-              )}
+              )} */}
             </nav>
 
             {/* Mobile menu button - only shown on small screens */}
