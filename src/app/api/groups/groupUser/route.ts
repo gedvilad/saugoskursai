@@ -127,7 +127,7 @@ export async function POST(req: Request) {
         userId: body.clerkId,
         message: `Gavote kvietimą į grupę: ${group.name}`,
         createdAt: new Date(),
-        url: "https://pvpwebsite.vercel.app/my-groups/",
+        url: "https://saugoskursai.vercel.app/my-groups/",
       });
 
       await db.insert(userGroups).values({
