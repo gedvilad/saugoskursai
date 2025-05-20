@@ -375,7 +375,9 @@ export function Header() {
                             }`}
                           >
                             {notif.url ? (
-                              <Link href={notif.url}>{notif.message}</Link>
+                              <Link href={notif.url} onClick={handleOpenNotif}>
+                                {notif.message}
+                              </Link>
                             ) : (
                               <p>{notif.message}</p>
                             )}

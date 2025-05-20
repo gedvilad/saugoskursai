@@ -26,7 +26,6 @@ export default function CoursesTab({
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-
   useEffect(() => {
     const fetchUsers = async () => {
       try {
