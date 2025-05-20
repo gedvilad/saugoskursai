@@ -61,7 +61,7 @@ export default function Home() {
     fetchCourses().catch((error) =>
       console.error("Error fetching courses:", error),
     );
-    setTimeout(() => setIsLoadingGroups(false), 300);
+    setTimeout(() => setIsLoadingGroups(false), 2000);
   }, [userId]);
 
   const handleGroupSelect = (group: Group) => {
