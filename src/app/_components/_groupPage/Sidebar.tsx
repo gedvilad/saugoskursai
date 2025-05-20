@@ -11,8 +11,10 @@ import { is } from "drizzle-orm";
 
 interface SidebarProps {
   groups: Group[];
+  courses: Course[];
   selectedGroup: Group | null;
   isLoadingGroups: boolean;
+  isLoadingCourses: boolean;
   userId: string | null;
   onGroupSelect: (group: Group) => void;
   onGroupsChange: () => Promise<void>;
@@ -20,8 +22,10 @@ interface SidebarProps {
 
 export default function Sidebar({
   groups,
+  courses,
   selectedGroup,
   isLoadingGroups,
+  isLoadingCourses,
   userId,
   onGroupSelect,
   onGroupsChange,
@@ -29,10 +33,8 @@ export default function Sidebar({
   const [isCreating, setIsCreating] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [isOpen, setIsOpen] = useState(true);
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [isLoadingCourses, setIsLoadingCourses] = useState(true);
 
-  useEffect(() => {
+  /*useEffect(() => {
     if (!userId) {
       return;
     }
@@ -53,7 +55,7 @@ export default function Sidebar({
     fetchUserBoughtCourses().catch((error) =>
       console.error("Error fetching courses:", error),
     );
-  }, [userId]);
+  }, [userId]);*/
 
   const handleCreateGroup = () => {
     if (courses.length === 0) {

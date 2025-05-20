@@ -314,14 +314,6 @@ export function Header() {
                       Admin panel
                     </button>
                   )} */}
-
-                  <Link
-                    href="/notifications"
-                    className="w-full rounded-md px-4 py-3 text-left font-medium text-stone-700 hover:bg-stone-100"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Visi pranešimai
-                  </Link>
                 </div>
               </div>
             )}

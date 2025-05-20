@@ -13,6 +13,7 @@ import {
 } from "../_components/_groupPage/types";
 import { useRouter } from "next/navigation";
 import { is } from "drizzle-orm";
+import { ArrowRight, BookOpen, Users } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default function Home() {
@@ -61,7 +62,7 @@ export default function Home() {
     fetchCourses().catch((error) =>
       console.error("Error fetching courses:", error),
     );
-    setTimeout(() => setIsLoadingGroups(false), 2000);
+    setTimeout(() => setIsLoadingGroups(false), 1000);
   }, [userId]);
 
   const handleGroupSelect = (group: Group) => {
@@ -98,8 +99,10 @@ export default function Home() {
     <div className="flex min-h-screen bg-white">
       <Sidebar
         groups={groups}
+        courses={courses}
         selectedGroup={selectedGroup}
         isLoadingGroups={isLoadingGroups}
+        isLoadingCourses={isLoadingGroups}
         userId={userId!}
         onGroupSelect={handleGroupSelect}
         onGroupsChange={refreshGroups}
@@ -120,6 +123,44 @@ export default function Home() {
             onGroupsChange={refreshGroups}
           />
         )
+      )}
+      {!selectedGroup && (
+        <div className="flex flex-1 flex-col items-center justify-center bg-stone-50 p-8">
+          <div className="w-full max-w-md rounded-lg border border-stone-100 bg-white p-8 shadow-sm">
+            <h1 className="mb-4 text-2xl font-bold text-stone-800">
+              Grupių peržiūra ir valdymas
+            </h1>
+            <p className="mb-6 text-stone-600">
+              Pasirinkite grupę esančiame meniu
+            </p>
+
+            <div className="space-y-4">
+              <div className="flex items-start rounded-md bg-stone-50 p-4 transition-colors">
+                <div className="mr-4 rounded-md bg-stone-200 p-2">
+                  <Users size={20} className="text-stone-700" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-stone-800">Mano grupės</h3>
+                  <p className="text-sm text-stone-500">
+                    Peržiūrėkite ir valdykite savo grupes
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start rounded-md border-b border-stone-100 bg-stone-50 p-4 transition-colors">
+                <div className="mr-4 rounded-md bg-stone-200 p-2">
+                  <BookOpen size={20} className="text-stone-700" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-stone-800">Kursai</h3>
+                  <p className="text-sm text-stone-500">
+                    Priskirite kursus grupės nariams ir matykite jų rezultatus
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
