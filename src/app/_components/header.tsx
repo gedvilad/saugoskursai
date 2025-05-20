@@ -27,7 +27,7 @@ interface ApiResponse {
 interface Notification {
   message: string;
   created_at: string;
-  status: number; // Changed to number
+  status: number;
   url: string;
 }
 
@@ -43,8 +43,11 @@ export function Header() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const mobileMenuRef = useRef<HTMLDivElement | null>(null);
+  const mobileMenuButtonRef = useRef<HTMLButtonElement | null>(null);
 
   // Navigation items with their display names and corresponding routes
   const navigationItems = [
@@ -113,6 +116,7 @@ export function Header() {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      // Handle notification popup clicks
       if (
         notifRef.current &&
         !notifRef.current.contains(event.target as Node) &&
@@ -124,16 +128,41 @@ export function Header() {
           console.error("Error marking notifications as read:", error),
         );
       }
+
+      // Handle mobile menu clicks
+      if (
+        mobileMenuOpen &&
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(event.target as Node) &&
+        mobileMenuButtonRef.current &&
+        !mobileMenuButtonRef.current.contains(event.target as Node)
+      ) {
+        setMobileMenuOpen(false);
+      }
     };
 
-    if (showNotifications) {
+    if (showNotifications || mobileMenuOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [showNotifications]);
+  }, [showNotifications, mobileMenuOpen]);
+
+  // Close mobile menu when screen size changes to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768 && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [mobileMenuOpen]);
 
   const markNotificationsAsRead = async () => {
     try {
@@ -170,7 +199,12 @@ export function Header() {
     // Only navigate if auth is loaded to prevent redirect loops
     if (isLoaded && isSignedIn) {
       router.push(route);
+      setMobileMenuOpen(false); // Close mobile menu after navigation
     }
+  };
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
   };
 
   return (
@@ -195,6 +229,7 @@ export function Header() {
 
         <div className="flex items-center space-x-6">
           <SignedIn>
+            {/* Desktop Navigation - hidden on mobile */}
             <nav className="hidden space-x-1 md:flex">
               {navigationItems.map((item) => (
                 <button
@@ -227,7 +262,11 @@ export function Header() {
             </nav>
 
             {/* Mobile menu button - only shown on small screens */}
-            <button className="text-stone-600 md:hidden">
+            <button
+              className="text-stone-600 md:hidden"
+              onClick={toggleMobileMenu}
+              ref={mobileMenuButtonRef}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-6 w-6"
@@ -239,11 +278,55 @@ export function Header() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
+                  d={
+                    mobileMenuOpen
+                      ? "M6 18L18 6M6 6l12 12"
+                      : "M4 6h16M4 12h16M4 18h16"
+                  }
                 />
               </svg>
             </button>
+
+            {/* Mobile Navigation Menu */}
+            {mobileMenuOpen && (
+              <div
+                className="absolute left-0 right-0 top-16 z-40 mt-2 bg-white shadow-lg md:hidden"
+                ref={mobileMenuRef}
+              >
+                <div className="flex flex-col space-y-2 p-4">
+                  {navigationItems.map((item) => (
+                    <button
+                      key={item.name}
+                      className="w-full rounded-md px-4 py-3 text-left font-medium text-stone-700 hover:bg-stone-100"
+                      onClick={() => handleNavigation(item.route)}
+                      disabled={!isLoaded}
+                    >
+                      {item.name}
+                    </button>
+                  ))}
+
+                  {userData?.role === "admin" && (
+                    <button
+                      className="w-full rounded-md px-4 py-3 text-left font-medium text-stone-700 hover:bg-stone-100"
+                      onClick={() => handleNavigation("/admin-panel")}
+                      disabled={!isLoaded}
+                    >
+                      Admin panel
+                    </button>
+                  )}
+
+                  <Link
+                    href="/notifications"
+                    className="w-full rounded-md px-4 py-3 text-left font-medium text-stone-700 hover:bg-stone-100"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Visi pranešimai
+                  </Link>
+                </div>
+              </div>
+            )}
           </SignedIn>
+
           <SignedIn>
             <div className="relative">
               <button
@@ -342,6 +425,7 @@ export function Header() {
               </button>
             </SignInButton>
           </SignedOut>
+
           <SignedIn>
             <UserButton afterSignOutUrl="/" showName={true} />
           </SignedIn>

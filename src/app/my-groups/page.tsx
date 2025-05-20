@@ -21,8 +21,9 @@ export default function Home() {
   const [courses, setCourses] = useState<Course[]>([]);
 
   useEffect(() => {
-    if (!userId) return;
     setIsLoadingGroups(true);
+    if (!userId) return;
+
     const fetchGroups = async () => {
       try {
         const res = await fetch(`/api/groups?userId=${userId}`);

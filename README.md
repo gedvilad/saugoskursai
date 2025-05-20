@@ -37,6 +37,8 @@ TODO:
 [ ] Visur sudet validationus backe, veikia tik padeploynus del clerk webhooko
 [ ] kurso informacija saugot db, sutvarkyt about course page
 [x] galimybe matyt atliktus kursus (nedubliuoti), tik informacijos perziurejimui
-[ ] sutvarkyti perziura atliktu ir pirktu kursu
+[x] sutvarkyti perziura atliktu ir pirktu kursu
 [x] rodyti nusipirktus kursus
-[ ] sutvarkyt dashboardo tekstus nu ir kitur jei yr
+[x] sutvarkyt dashboardo tekstus nu ir kitur jei yr
+[ ] atsaukt, matyt savo prenumeratas
+[ ] mobile format
