@@ -138,31 +138,32 @@ export default function UsersTab({ selectedGroup, userId }: UsersTabProps) {
 
   return (
     <div>
-      <div className="mb-5 flex items-center gap-3">
-        {/* Search Input */}
-        <UserSearchInput
-          allUsers={allUsers}
-          searchTerm={searchTerm}
-          onSearchChange={handleSearchChange}
-          showUserList={showUserList}
-          filteredUsers={filteredUsers}
-          onSelectUser={handleSelectUser}
-        />
+      {selectedGroup.role === "Administratorius" && (
+        <div className="mb-5 flex items-center gap-3">
+          {/* Search Input */}
+          <UserSearchInput
+            allUsers={allUsers}
+            searchTerm={searchTerm}
+            onSearchChange={handleSearchChange}
+            showUserList={showUserList}
+            filteredUsers={filteredUsers}
+            onSelectUser={handleSelectUser}
+          />
 
-        {/* Add User Button */}
-        <button
-          onClick={handleAddUser}
-          disabled={!selectedUser}
-          className={`rounded-lg px-4 py-2 text-sm font-medium transition duration-200 focus:outline-none focus:ring-2 focus:ring-stone-500 ${
-            selectedUser
-              ? "bg-stone-800 text-white hover:bg-stone-700"
-              : "cursor-not-allowed bg-stone-300 text-stone-500"
-          }`}
-        >
-          Pakviesti
-        </button>
-      </div>
-
+          {/* Add User Button */}
+          <button
+            onClick={handleAddUser}
+            disabled={!selectedUser}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition duration-200 focus:outline-none focus:ring-2 focus:ring-stone-500 ${
+              selectedUser
+                ? "bg-stone-800 text-white hover:bg-stone-700"
+                : "cursor-not-allowed bg-stone-300 text-stone-500"
+            }`}
+          >
+            Pakviesti
+          </button>
+        </div>
+      )}
       <UsersList
         users={users}
         isLoading={isLoadingUsers}
