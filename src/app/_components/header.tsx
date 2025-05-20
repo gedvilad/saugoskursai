@@ -305,7 +305,7 @@ export function Header() {
                     </button>
                   ))}
 
-                  {userData?.role === "admin" && (
+                  {/* {userData?.role === "admin" && (
                     <button
                       className="w-full rounded-md px-4 py-3 text-left font-medium text-stone-700 hover:bg-stone-100"
                       onClick={() => handleNavigation("/admin-panel")}
@@ -313,7 +313,7 @@ export function Header() {
                     >
                       Admin panel
                     </button>
-                  )}
+                  )} */}
 
                   <Link
                     href="/notifications"
