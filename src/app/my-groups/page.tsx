@@ -11,15 +11,22 @@ import {
   type Course,
   type ApiResponseCourses,
 } from "../_components/_groupPage/types";
+import { useRouter } from "next/navigation";
 export const dynamic = "force-dynamic";
 
 export default function Home() {
-  const { userId } = useAuth();
+  const { userId, isSignedIn, isLoaded } = useAuth();
   const [groups, setGroups] = useState<Group[]>([]);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [isLoadingGroups, setIsLoadingGroups] = useState(true);
   const [courses, setCourses] = useState<Course[]>([]);
-
+  const router = useRouter();
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      toast.error("Prašome prisijungti");
+      router.push("/");
+    }
+  }, [isLoaded, isSignedIn, router]);
   useEffect(() => {
     setIsLoadingGroups(true);
     if (!userId) return;
@@ -81,6 +88,16 @@ export default function Home() {
       console.error("Request failed:", error);
     }
   };
+  if (isLoadingGroups) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <div className="relative flex h-24 w-24 items-center justify-center">
+          <div className="absolute h-full w-full animate-spin rounded-full border-4 border-stone-300 border-t-stone-600"></div>
+          <div className="h-12 w-12 rounded-full bg-white"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-white">
