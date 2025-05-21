@@ -170,6 +170,7 @@ export default function CourseResultsTab({
 
     return `${hours > 0 ? `${hours}h ` : ""}${minutes > 0 ? `${minutes}m ` : ""}${remainingSeconds}s`;
   };
+
   const validScores = filteredResults
     .filter(
       (result) =>
@@ -182,9 +183,11 @@ export default function CourseResultsTab({
       ? validScores.reduce((sum, score) => sum + score, 0) / validScores.length
       : 0
   ).toFixed(2);
+
   const validResults = filteredResults.filter(
     (result) => result.status === "Atliktas",
   );
+
   const timeDifferences: number[] = validResults.map((result) => {
     const startTime = new Date(result.startTime).getTime();
     const endTime = new Date(result.endTime).getTime();
@@ -195,6 +198,7 @@ export default function CourseResultsTab({
     (sum, timeDiff) => sum + timeDiff,
     0,
   );
+
   const averageTimeMs =
     validResults.length > 0 ? totalTimeDifference / validResults.length : 0;
 
@@ -210,14 +214,14 @@ export default function CourseResultsTab({
   const formattedAverageTime = `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <h2 className="text-lg font-semibold text-stone-800">
           Narių kurso rezultatai
         </h2>
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className="flex items-center gap-1 rounded-lg border border-stone-300 px-3 py-1.5 text-sm text-stone-700 transition hover:bg-stone-50"
+          className="flex w-full items-center justify-center gap-1 rounded-lg border border-stone-300 px-3 py-1.5 text-sm text-stone-700 transition hover:bg-stone-50 md:w-auto"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -239,7 +243,7 @@ export default function CourseResultsTab({
 
       {/* Filters */}
       {showFilters && (
-        <div className="rounded-lg bg-stone-50 p-5">
+        <div className="rounded-lg bg-stone-50 p-4 md:p-5">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="text-sm font-medium text-stone-700">Filtrai</h3>
             <button
@@ -397,6 +401,64 @@ export default function CourseResultsTab({
         </svg>
       </div>
 
+      {/* Stats Summary - Mobile First! Show before table on mobile */}
+      {!isLoading && filteredResults.length > 0 && (
+        <div className="mb-4 grid grid-cols-1 gap-3 md:hidden">
+          <div className="rounded-lg border border-stone-200 bg-white p-4">
+            <h3 className="text-sm font-medium text-stone-500">
+              Vidutinis rezultatas
+            </h3>
+            <p className="mt-2 text-2xl font-semibold text-stone-800">
+              {averageScore}%
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-stone-200 bg-white p-4">
+            <h3 className="text-sm font-medium text-stone-500">
+              Išlaikymo santykis
+            </h3>
+            <p className="mt-2 text-2xl font-semibold text-stone-800">
+              {filteredResults.filter(
+                (result) =>
+                  result.score >= 70 &&
+                  result.status !== "Priskirtas" &&
+                  result.status !== "Pradėtas",
+              ).length > 0 &&
+              filteredResults.filter(
+                (result) =>
+                  result.status !== "Priskirtas" &&
+                  result.status !== "Pradėtas",
+              ).length > 0
+                ? Math.round(
+                    (filteredResults.filter(
+                      (result) =>
+                        result.score >= 70 &&
+                        result.status !== "Priskirtas" &&
+                        result.status !== "Pradėtas",
+                    ).length /
+                      filteredResults.filter(
+                        (result) =>
+                          result.status !== "Priskirtas" &&
+                          result.status !== "Pradėtas",
+                      ).length) *
+                      100,
+                  )
+                : 0.0}
+              %
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-stone-200 bg-white p-4">
+            <h3 className="text-sm font-medium text-stone-500">
+              Vidutinė trukmė
+            </h3>
+            <p className="mt-2 text-2xl font-semibold text-stone-800">
+              {formattedAverageTime}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Results Table */}
       <div className="rounded-lg border border-stone-200 bg-white">
         {isLoading ? (
@@ -409,30 +471,33 @@ export default function CourseResultsTab({
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full table-auto">
+            {/* Desktop Table (hidden on mobile) */}
+            <table className="hidden w-full table-auto md:table">
               <thead className="bg-stone-50 text-left text-sm font-medium text-stone-700">
                 <tr>
-                  <th className="px-6 py-3">Narys</th>
-                  <th className="px-6 py-3">Kursas</th>
-                  <th className="px-6 py-3">Atlikimo Data</th>
-                  <th className="px-6 py-3">Rezultatas</th>
-                  <th className="px-6 py-3">Trukmė</th>
-                  <th className="px-6 py-3">Statusas</th>
+                  <th className="px-4 py-3 md:px-6">Narys</th>
+                  <th className="px-4 py-3 md:px-6">Kursas</th>
+                  <th className="px-4 py-3 md:px-6">Atlikimo Data</th>
+                  <th className="px-4 py-3 md:px-6">Rezultatas</th>
+                  <th className="px-4 py-3 md:px-6">Trukmė</th>
+                  <th className="px-4 py-3 md:px-6">Statusas</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-100 text-sm text-stone-800">
                 {filteredResults.map((result) => (
                   <tr key={result.id} className="hover:bg-stone-50">
-                    <td className="px-6 py-4">{getUserName(result.userId)}</td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-4 md:px-6">
+                      {getUserName(result.userId)}
+                    </td>
+                    <td className="px-4 py-4 md:px-6">
                       {getCourseName(result.courseId)}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-4 md:px-6">
                       {result.updatedAt
                         ? format(new Date(result.endTime), "yyyy-MM-dd HH:mm")
                         : "—"}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-4 md:px-6">
                       <div className="flex items-center gap-2">
                         <span>{result.score ?? "0.00"}%</span>
                         <div className="h-2 w-20 rounded-full bg-stone-200">
@@ -449,13 +514,13 @@ export default function CourseResultsTab({
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-4 md:px-6">
                       {(() => {
                         if (
                           result.status === "Pradėtas" ||
                           result.status === "Priskirtas"
                         ) {
-                          return "--:--:--"; // Updated placeholder to match HH:MM:SS format
+                          return "--:--:--";
                         }
 
                         const startTime = new Date(result.startTime).getTime();
@@ -485,7 +550,7 @@ export default function CourseResultsTab({
                       })()}
                     </td>
 
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-4 md:px-6">
                       <span
                         className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
                           result.status === "Pradėtas" || result.score == null
@@ -508,13 +573,123 @@ export default function CourseResultsTab({
                 ))}
               </tbody>
             </table>
+
+            {/* Mobile Cards (visible only on mobile) */}
+            <div className="divide-y divide-stone-100 md:hidden">
+              {filteredResults.map((result) => (
+                <div key={result.id} className="p-4">
+                  <div className="mb-2 flex justify-between">
+                    <h4 className="font-medium">
+                      {getUserName(result.userId)}
+                    </h4>
+                    <span
+                      className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
+                        result.status === "Pradėtas" || result.score == null
+                          ? "bg-gray-100 text-gray-800"
+                          : result.score >= 70
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {result.status === "Pradėtas"
+                        ? "Pradėtas"
+                        : result.score == null
+                          ? "Neatlikta"
+                          : result.score >= 70
+                            ? "Išlaikyta"
+                            : "Neišlaikyta"}
+                    </span>
+                  </div>
+
+                  <div className="text-sm text-stone-500">
+                    <div className="mb-1.5 flex justify-between">
+                      <span>Kursas:</span>
+                      <span className="text-stone-800">
+                        {getCourseName(result.courseId)}
+                      </span>
+                    </div>
+
+                    <div className="mb-1.5 flex justify-between">
+                      <span>Data:</span>
+                      <span className="text-stone-800">
+                        {result.updatedAt
+                          ? format(new Date(result.endTime), "yyyy-MM-dd HH:mm")
+                          : "—"}
+                      </span>
+                    </div>
+
+                    <div className="mb-1.5 flex justify-between">
+                      <span>Rezultatas:</span>
+                      <div className="flex items-center gap-2 text-stone-800">
+                        <span>{result.score ?? "0.00"}%</span>
+                        <div className="h-2 w-16 rounded-full bg-stone-200">
+                          <div
+                            className={`h-2 rounded-full ${
+                              result.score >= 70
+                                ? "bg-green-500"
+                                : result.score >= 40
+                                  ? "bg-yellow-500"
+                                  : "bg-red-500"
+                            }`}
+                            style={{ width: `${result.score ?? 0.0}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between">
+                      <span>Trukmė:</span>
+                      <span className="text-stone-800">
+                        {(() => {
+                          if (
+                            result.status === "Pradėtas" ||
+                            result.status === "Priskirtas"
+                          ) {
+                            return "--:--:--";
+                          }
+
+                          const startTime = new Date(
+                            result.startTime,
+                          ).getTime();
+                          const endTime = new Date(result.endTime).getTime();
+                          const timeDiffMs = endTime - startTime;
+
+                          if (isNaN(timeDiffMs)) {
+                            return "Invalid Date";
+                          }
+
+                          const totalSeconds = Math.floor(timeDiffMs / 1000);
+                          const hours = Math.floor(totalSeconds / 3600);
+                          const minutes = Math.floor(
+                            (totalSeconds % 3600) / 60,
+                          );
+                          const seconds = totalSeconds % 60;
+
+                          const formattedHours = String(hours).padStart(2, "0");
+                          const formattedMinutes = String(minutes).padStart(
+                            2,
+                            "0",
+                          );
+                          const formattedSeconds = String(seconds).padStart(
+                            2,
+                            "0",
+                          );
+
+                          return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+                        })()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
 
-      {/* Stats Summary */}
+      {/* Stats Summary - Desktop (hidden on mobile) */}
       {!isLoading && filteredResults.length > 0 && (
-        <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="mt-6 hidden grid-cols-3 gap-4 md:grid">
           <div className="rounded-lg border border-stone-200 bg-white p-4">
             <h3 className="text-sm font-medium text-stone-500">
               Vidutinis rezultatas

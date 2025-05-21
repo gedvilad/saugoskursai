@@ -98,13 +98,12 @@ export default function CoursesTab({
     setSelectedUsers([]);
     toast.success("Kursai sėkmingai priskirti.");
   };
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 py-6 md:px-0 md:py-0">
       <h2 className="text-lg font-semibold text-stone-800">Priskirti kursus</h2>
 
       {/* Step 1: Select Course */}
-      <div className="rounded-lg bg-stone-50 p-5">
+      <div className="rounded-lg bg-stone-50 p-4 md:p-5">
         <label
           htmlFor="course-select"
           className="block text-sm font-medium text-stone-700"
@@ -113,7 +112,7 @@ export default function CoursesTab({
         </label>
         <select
           id="course-select"
-          className="mt-2 w-full rounded-lg border border-stone-300 p-2 text-stone-800 shadow-sm focus:border-stone-500 focus:ring-1 focus:ring-stone-500"
+          className="mt-2 w-full rounded-lg border border-stone-300 p-2 text-stone-800 shadow-sm focus:border-stone-500 focus:ring-1 focus:ring-stone-500 md:max-w-md"
           value={selectedCourseId ?? ""}
           onChange={(e) => handleCourseSelect(Number(e.target.value))}
         >
@@ -127,8 +126,8 @@ export default function CoursesTab({
       </div>
 
       {selectedCourseId && (
-        <div className="rounded-lg border border-stone-200 bg-white p-5">
-          <div className="mb-4 flex items-center justify-between">
+        <div className="rounded-lg border border-stone-200 bg-white p-4 md:p-5">
+          <div className="mb-4 flex flex-col space-y-3 md:flex-row md:items-center md:justify-between md:space-y-0">
             <h3 className="text-md font-semibold text-stone-800">
               Pasirinkite narius, kuriems priskirti kursą:
             </h3>
@@ -136,7 +135,7 @@ export default function CoursesTab({
             <button
               onClick={handleAssignSelectedUsers}
               disabled={selectedUsers.length === 0}
-              className="rounded-lg bg-stone-800 px-4 py-2 text-sm text-white transition duration-200 hover:bg-stone-700 disabled:opacity-50"
+              className="w-full rounded-lg bg-stone-800 px-4 py-2 text-sm text-white transition duration-200 hover:bg-stone-700 disabled:opacity-50 md:w-auto"
             >
               Priskirti pasirinktus ({selectedUsers.length})
             </button>
@@ -149,7 +148,7 @@ export default function CoursesTab({
             </div>
           ) : (
             <>
-              <div className="mb-3 flex items-center border-b border-stone-100 pb-3">
+              <div className="mb-3 flex flex-col space-y-3 border-b border-stone-100 pb-3 md:flex-row md:items-center md:space-y-0">
                 <div className="flex items-center">
                   <input
                     type="checkbox"
@@ -167,30 +166,6 @@ export default function CoursesTab({
                   >
                     Pasirinkti visus
                   </label>
-                </div>
-
-                <div className="relative ml-auto">
-                  <input
-                    type="text"
-                    placeholder="Filtruoti..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-64 rounded-lg border border-stone-300 py-1 pl-8 pr-2 text-sm"
-                  />
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth="1.5"
-                    stroke="currentColor"
-                    className="absolute left-2 top-1.5 h-4 w-4 text-stone-400"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-                    />
-                  </svg>
                 </div>
               </div>
 
