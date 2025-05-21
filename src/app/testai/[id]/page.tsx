@@ -325,12 +325,6 @@ export default function TestPage() {
           <div className="text-stone-800">
             Klausimas {currentQuestionIndex + 1}/{questions.length}
           </div>
-          {timeRemaining !== null && !submitted && (
-            <div className="flex items-center text-stone-700">
-              <Clock size={16} className="mr-1" />
-              <span>{formatTime(timeRemaining)}</span>
-            </div>
-          )}
         </div>
 
         <div className="rounded-lg bg-white p-6 shadow-sm">
@@ -401,7 +395,7 @@ export default function TestPage() {
                                 1,
                               )
                             }
-                            className={`w-full rounded-md border px-4 py-3 text-left transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:ring-offset-1 ${
+                            className={`w-full rounded-md border px-4 py-3 text-left transition-colors duration-200 ${
                               (
                                 selectedAnswers[
                                   currentQuestion.id
@@ -438,7 +432,7 @@ export default function TestPage() {
                                   2,
                                 )
                               }
-                              className={`flex w-full items-center rounded-md border px-4 py-3 text-left transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-stone-500 focus:ring-offset-1 ${
+                              className={`flex w-full items-center rounded-md border px-4 py-3 text-left transition-colors duration-200 ${
                                 isSelected
                                   ? "border-stone-800 bg-stone-100"
                                   : "border-stone-200 hover:bg-stone-50"
