@@ -470,12 +470,13 @@ export default function CourseDetail() {
 
               {/* Image illustrating concepts */}
               <div className="mb-8 overflow-hidden rounded-lg bg-gray-50 shadow-md">
-                <div className="relative h-[600px] w-full">
+                <div className="relative mx-auto aspect-[4/3] w-full max-w-[800px]">
                   <Image
                     src="/images/pazeistas-stropas.png"
                     alt="Stropų pažeidimai"
                     fill
-                    className="object-fill"
+                    className="object-contain object-center"
+                    sizes="(max-width: 640px) 100vw, 800px"
                   />
                 </div>
                 <div className="p-4">
@@ -646,14 +647,14 @@ export default function CourseDetail() {
                 </div>
               </div>
 
-              {/* Image related to emergency procedures */}
               <div className="mb-8 overflow-hidden rounded-lg bg-gray-50 shadow-md">
-                <div className="relative ml-auto mr-auto flex h-[350px] w-[1000px]">
+                <div className="relative mx-auto aspect-[1000/350] w-full max-w-[1000px]">
                   <Image
                     src="/images/avarine-situacija.png"
                     alt="Avarinė situacija"
                     fill
-                    className="object-fill object-center"
+                    className="object-contain object-center"
+                    sizes="(max-width: 640px) 100vw, 1000px"
                   />
                 </div>
                 <div className="p-4">

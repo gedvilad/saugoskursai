@@ -102,10 +102,11 @@ export default function SingleChoiceQuiz({
           >
             <div className="flex items-center">
               <div
-                className={`mr-3 flex h-6 w-6 items-center justify-center rounded-full ${getOptionStyle(option.id)} text-gray-700`}
+                className={`mr-2 flex h-8 w-8 items-center justify-center rounded-full sm:mr-3 sm:h-6 sm:w-6 ${getOptionStyle(option.id)} text-sm text-gray-700 sm:text-xs`}
               >
                 {option.id}
               </div>
+
               <span>{option.text}</span>
             </div>
           </div>
