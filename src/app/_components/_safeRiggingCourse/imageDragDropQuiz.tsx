@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 // Define types for our component props and state
 interface ImageItem {
@@ -87,11 +87,17 @@ export default function ImageDragDropQuiz({
 }: ImageDragDropQuizProps) {
   const [placedImages, setPlacedImages] = useState<PlacedImagesMap>({});
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [results, setResults] = useState<QuizResults | null>(null);
   const [shuffledImages, setShuffledImages] = useState<ImageItem[]>([]);
 
-  // Shuffle images ONLY on initial load
+  // Track touch interactions
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  // Detect touch device on mount
   useEffect(() => {
+    setIsTouchDevice("ontouchstart" in window || navigator.maxTouchPoints > 0);
+
     // Create a stable shuffle that doesn't change on re-renders
     const shuffled = [...imageItems].sort(() => Math.random() - 0.5);
     setShuffledImages(shuffled);
@@ -99,6 +105,7 @@ export default function ImageDragDropQuiz({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // DESKTOP: Drag and drop handlers
   const handleDragStart = (imageId: string): void => {
     setDraggedItem(imageId);
   };
@@ -131,6 +138,37 @@ export default function ImageDragDropQuiz({
     }
   };
 
+  // MOBILE: Tap to select and place handlers
+  const handleSelectImage = (imageId: string): void => {
+    if (isTouchDevice) {
+      setSelectedImage(imageId);
+    }
+  };
+
+  const handlePlaceImage = (zoneId: string): void => {
+    if (!isTouchDevice || !selectedImage) return;
+
+    // Update the placed images
+    const newPlacedImages = { ...placedImages };
+
+    // If there's already an image in this zone, remove it
+    Object.keys(newPlacedImages).forEach((key) => {
+      if (newPlacedImages[key] === zoneId) {
+        delete newPlacedImages[key];
+      }
+    });
+
+    // Place the new image
+    newPlacedImages[selectedImage] = zoneId;
+    setPlacedImages(newPlacedImages);
+    setSelectedImage(null);
+
+    // Check if all images are placed
+    if (Object.keys(newPlacedImages).length === imageItems.length) {
+      checkAnswers(newPlacedImages);
+    }
+  };
+
   const handleRemoveImage = (imageId: string): void => {
     const newPlacedImages = { ...placedImages };
     delete newPlacedImages[imageId];
@@ -152,6 +190,8 @@ export default function ImageDragDropQuiz({
 
   const resetExercise = (): void => {
     setPlacedImages({});
+    setDraggedItem(null);
+    setSelectedImage(null);
     setResults(null);
 
     // Create a new shuffle only when explicitly requested
@@ -182,7 +222,7 @@ export default function ImageDragDropQuiz({
       <p className="mb-4 text-gray-600">{instructionsText}</p>
 
       <div className="flex flex-col space-y-8">
-        {/* Images to drag */}
+        {/* Images to select */}
         <div>
           <h4 className="mb-2 text-lg font-medium text-gray-700">
             {imagesLabel}
@@ -191,15 +231,26 @@ export default function ImageDragDropQuiz({
             {displayImages.map((item) => (
               <div
                 key={item.id}
-                className={`relative ${isImagePlaced(item.id) ? "opacity-40" : "cursor-grab"}`}
+                className={`relative ${
+                  isImagePlaced(item.id)
+                    ? "opacity-40"
+                    : isTouchDevice && selectedImage === item.id
+                      ? "ring-4 ring-blue-500"
+                      : isTouchDevice
+                        ? "cursor-pointer hover:ring-2 hover:ring-stone-300"
+                        : "cursor-grab"
+                }`}
+                onClick={() =>
+                  !isImagePlaced(item.id) && handleSelectImage(item.id)
+                }
+                draggable={!isTouchDevice && !isImagePlaced(item.id)}
+                onDragStart={() =>
+                  !isImagePlaced(item.id) && handleDragStart(item.id)
+                }
               >
                 <img
                   src={item.src}
                   alt={item.alt}
-                  draggable={!isImagePlaced(item.id)}
-                  onDragStart={() =>
-                    !isImagePlaced(item.id) && handleDragStart(item.id)
-                  }
                   className={`h-24 w-24 rounded-md border-2 ${
                     isImagePlaced(item.id)
                       ? "border-gray-200"
@@ -214,6 +265,13 @@ export default function ImageDragDropQuiz({
           </div>
         </div>
 
+        {isTouchDevice && selectedImage && (
+          <div className="rounded-md bg-blue-100 p-2 text-blue-700">
+            Pasirinkta nuotrauka. Dabar paspauskite ant norimos vietos, kad ją
+            padėtumėte.
+          </div>
+        )}
+
         {/* Drop zones */}
         <div>
           <h4 className="mb-2 text-lg font-medium text-gray-700">
@@ -225,12 +283,15 @@ export default function ImageDragDropQuiz({
               return (
                 <div
                   key={zone.id}
+                  onClick={() => handlePlaceImage(zone.id)}
                   onDragOver={handleDragOver}
                   onDrop={() => handleDrop(zone.id)}
                   className={`flex flex-col rounded-lg border-2 ${
                     imageInZone
                       ? "border-stone-400"
-                      : "border-dashed border-gray-300"
+                      : isTouchDevice && selectedImage
+                        ? "border-blue-300 bg-blue-50"
+                        : "border-dashed border-gray-300"
                   } p-4 transition-colors`}
                 >
                   <div className="mb-2 font-medium">{zone.label}</div>
@@ -238,7 +299,11 @@ export default function ImageDragDropQuiz({
 
                   <div
                     className={`mt-4 flex h-28 min-h-28 items-center justify-center rounded-md ${
-                      imageInZone ? "bg-stone-50" : "bg-gray-50"
+                      imageInZone
+                        ? "bg-stone-50"
+                        : isTouchDevice && selectedImage
+                          ? "bg-blue-50"
+                          : "bg-gray-50"
                     }`}
                   >
                     {imageInZone ? (
@@ -249,7 +314,10 @@ export default function ImageDragDropQuiz({
                           className="h-24 w-24 rounded-md object-cover"
                         />
                         <button
-                          onClick={() => handleRemoveImage(imageInZone.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveImage(imageInZone.id);
+                          }}
                           className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white"
                           title="Remove"
                         >
@@ -258,7 +326,11 @@ export default function ImageDragDropQuiz({
                       </div>
                     ) : (
                       <p className="text-sm text-gray-400">
-                        Įtempkite nuotrauką čia
+                        {isTouchDevice
+                          ? selectedImage
+                            ? "Paspauskite čia, kad padėtumėte pasirinktą nuotrauką"
+                            : "Pirmiausia pasirinkite nuotrauką"
+                          : "Įtempkite nuotrauką čia"}
                       </p>
                     )}
                   </div>
@@ -292,6 +364,17 @@ export default function ImageDragDropQuiz({
           </button>
         </div>
       </div>
+
+      {/* Instructions for mobile users */}
+      {isTouchDevice && (
+        <div className="mt-4 rounded-md bg-blue-50 p-3 text-sm text-blue-700">
+          <p className="font-medium">Mobiliame įrenginyje:</p>
+          <ol className="list-decimal pl-5 pt-1">
+            <li>Pasirinkite nuotrauką paspausdami ant jos</li>
+            <li>Paspauskite ant atitinkamos vietos, kur norite ją padėti</li>
+          </ol>
+        </div>
+      )}
     </div>
   );
 }
