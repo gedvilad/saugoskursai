@@ -115,14 +115,66 @@ export default function Sidebar({
     <div className="relative flex min-h-full">
       {/* Main sidebar */}
       <div
-        className={`transition-all duration-300 ${isOpen ? "w-96" : "w-12"}`}
+        className={`transition-all duration-300 ${
+          isOpen ? "w-full md:w-96" : "w-12"
+        } fixed z-30 h-full bg-stone-50 md:relative`}
       >
         <aside className="h-full border-r border-stone-200 bg-stone-50">
           <div className="h-4 bg-gradient-to-b from-stone-100 to-stone-50"></div>
 
+          {/* Toggle button - Inside sidebar on mobile, outside on desktop */}
+          {/* Toggle button position changes based on sidebar state */}
+          {isOpen ? (
+            <div className="relative md:hidden">
+              <button
+                onClick={toggleSidebar}
+                className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-lg bg-stone-800 text-white transition-all duration-300 hover:bg-stone-700"
+                aria-label="Close sidebar"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                  stroke="currentColor"
+                  className="h-4 w-4"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+              </button>
+            </div>
+          ) : (
+            <div className="mb-4 mt-2 flex justify-center md:hidden">
+              <button
+                onClick={toggleSidebar}
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-stone-800 text-white transition-all duration-300 hover:bg-stone-700"
+                aria-label="Open sidebar"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                  stroke="currentColor"
+                  className="h-4 w-4"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </button>
+            </div>
+          )}
+
           {isOpen ? (
             // Expanded sidebar content
-            <div className="p-6">
+            <div className="p-6 pt-12 md:pt-6">
               <h2 className="mb-5 text-lg font-semibold text-stone-800">
                 Jūsų grupės
               </h2>
@@ -262,10 +314,10 @@ export default function Sidebar({
         </aside>
       </div>
 
-      {/* Toggle button - always visible, outside sidebar */}
+      {/* Toggle button - outside sidebar only on desktop */}
       <button
         onClick={toggleSidebar}
-        className="absolute -right-8 z-20 flex h-8 w-8 items-center justify-center rounded-r-lg bg-stone-800 text-white transition-all duration-300 hover:bg-stone-700"
+        className="absolute -right-8 z-20 hidden h-8 w-8 items-center justify-center rounded-r-lg bg-stone-800 text-white transition-all duration-300 hover:bg-stone-700 md:flex"
         aria-label={isOpen ? "Close sidebar" : "Open sidebar"}
       >
         <svg
