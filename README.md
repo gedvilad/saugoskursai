@@ -41,4 +41,4 @@ TODO:
 [x] rodyti nusipirktus kursus
 [x] sutvarkyt dashboardo tekstus nu ir kitur jei yr
 [ ] atsaukt, matyt savo prenumeratas
-[ ] mobile format
+[x] mobile format
