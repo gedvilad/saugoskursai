@@ -19,7 +19,7 @@ export async function syncStripeDataToKV(customerId: string) {
 
   const subscriptions = await stripe.subscriptions.list({
     customer: customerId,
-    limit: 3,
+    limit: 1,
     status: "active",
     expand: ["data.default_payment_method"],
   });
@@ -53,7 +53,7 @@ export async function syncStripeDataToKV(customerId: string) {
             }
           : null,
     }));
-
+  console.log("[STRIPE][subDataArray]", subDataArray);
   const cacheData: STRIPE_SUB_CACHE = { subscriptions: subDataArray };
   await STRIPE_CACHE_KV.set(customerId, cacheData);
   await updateUserBoughtCourses(customerId, subDataArray);
@@ -80,48 +80,57 @@ async function updateUserBoughtCourses(
   if (!userId) {
     throw new Error(`No user ID found for customer ID: ${customerId}`);
   }
+  const productIds = [...new Set(subscriptions.map((sub) => sub.productId))];
+  console.log("[STRIPE][productIds]", productIds);
 
-  const productIds = subscriptions.map((sub) => sub.productId);
+  //DELETE ALL BOUGHT COURSES
+  const deletedOldBoughtCourses = await db
+    .delete(user_bought_courses)
+    .where(eq(user_bought_courses.userId, userId));
+  console.log("[STRIPE][deletedOldBoughtCourses]", deletedOldBoughtCourses);
 
-  // Fetch relevant courses by productId
   const matchedCourses = await db
     .select()
     .from(courses)
     .where(inArray(courses.productId, productIds));
-
+  console.log("[STRIPE][matchedCourses]", matchedCourses);
   const newCourseIds = matchedCourses.map((course) => course.id);
-
-  // Get user's current bought courses
+  console.log("[STRIPE][newCourseIds]", newCourseIds);
   const currentCourses = await db
     .select({ courseId: user_bought_courses.courseId })
     .from(user_bought_courses)
     .where(eq(user_bought_courses.userId, userId));
-
+  console.log("[STRIPE][currentCourses]", currentCourses);
   const currentCourseIds = new Set(currentCourses.map((c) => c.courseId));
-
+  console.log("[STRIPE][currentCourseIds]", currentCourseIds);
   // Determine which to insert (new purchases)
   const coursesToInsert = newCourseIds.filter(
     (id) => !currentCourseIds.has(id),
   );
-
+  console.log("[STRIPE][coursesToInsert]", coursesToInsert);
   // Determine which to delete (no longer subscribed)
   const newCourseIdSet = new Set(newCourseIds);
+  console.log("[STRIPE][newCourseIdSet]", newCourseIdSet);
   const coursesToDelete = [...currentCourseIds].filter(
     (id) => !newCourseIdSet.has(id),
   );
-
+  console.log("[STRIPE][coursesToDelete]", coursesToDelete);
   // Insert only new courses
   if (coursesToInsert.length > 0) {
-    const insertValues = coursesToInsert.map((courseId) => ({
+    const uniqueCourseIds = [...new Set(coursesToInsert)];
+    const insertValues = uniqueCourseIds.map((courseId) => ({
       userId,
       courseId,
     }));
-    await db.insert(user_bought_courses).values(insertValues);
+    const insertedCourses = await db
+      .insert(user_bought_courses)
+      .values(insertValues);
+    console.log("[STRIPE][insertedCourses]", insertedCourses);
   }
 
   // Delete only outdated courses
   if (coursesToDelete.length > 0) {
-    await db
+    const deletedCourses = await db
       .delete(user_bought_courses)
       .where(
         and(
@@ -129,5 +138,6 @@ async function updateUserBoughtCourses(
           inArray(user_bought_courses.courseId, coursesToDelete),
         ),
       );
+    console.log("[STRIPE][deletedCourses]", deletedCourses);
   }
 }
