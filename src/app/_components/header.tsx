@@ -164,6 +164,46 @@ export function Header() {
     };
   }, [mobileMenuOpen]);
 
+  // Add this new effect for proper mobile notification positioning
+  useEffect(() => {
+    const updateNotificationPosition = () => {
+      if (notifRef.current) {
+        const screenWidth = window.innerWidth;
+
+        if (screenWidth < 768) {
+          // Mobile styles
+          notifRef.current.style.position = "fixed";
+          notifRef.current.style.top = "50px";
+          notifRef.current.style.left = "0";
+          notifRef.current.style.width = "100vw";
+          notifRef.current.style.transform = "none";
+          notifRef.current.style.right = "auto";
+          notifRef.current.style.maxWidth = "none";
+          notifRef.current.style.boxSizing = "border-box";
+        } else {
+          // Desktop styles
+          notifRef.current.style.position = "absolute"; // or your default desktop position
+          notifRef.current.style.top = "auto"; // reset top
+          notifRef.current.style.left = "auto";
+          notifRef.current.style.right = "0";
+          notifRef.current.style.width = "320px";
+          notifRef.current.style.transform = "none";
+          notifRef.current.style.maxWidth = "none";
+          notifRef.current.style.boxSizing = "content-box"; // reset boxSizing if needed
+        }
+      }
+    };
+
+    if (showNotifications) {
+      updateNotificationPosition();
+      window.addEventListener("resize", updateNotificationPosition);
+    }
+
+    return () => {
+      window.removeEventListener("resize", updateNotificationPosition);
+    };
+  }, [showNotifications]);
+
   const markNotificationsAsRead = async () => {
     try {
       const res = await fetch("/api/header?userId=" + userId, {
@@ -221,7 +261,7 @@ export function Header() {
           <span
             className={`text-xl font-bold ${
               isScrolled ? "text-stone-800" : "text-gray-800"
-            }`}
+            } hidden md:inline`}
           >
             Saugos Kursai
           </span>
@@ -354,7 +394,7 @@ export function Header() {
 
               {showNotifications && (
                 <div
-                  className="absolute right-0 mt-2 w-80 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                  className="absolute mt-2 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
                   ref={notifRef}
                 >
                   <div className="border-b border-stone-100 px-4 py-3">

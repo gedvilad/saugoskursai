@@ -125,7 +125,7 @@ export default function Home() {
         )
       )}
       {!selectedGroup && (
-        <div className="flex flex-1 flex-col items-center justify-center bg-stone-50 p-8">
+        <div className="flex flex-1 flex-col items-center bg-stone-50 p-8">
           <div className="w-full max-w-md rounded-lg border border-stone-100 bg-white p-8 shadow-sm">
             <h1 className="mb-4 text-2xl font-bold text-stone-800">
               Grupių peržiūra ir valdymas
