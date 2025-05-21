@@ -117,7 +117,7 @@ export default function Sidebar({
       <div
         className={`transition-all duration-300 ${
           isOpen ? "w-full md:w-96" : "w-12"
-        } fixed z-30 h-full bg-stone-50 md:relative`}
+        } md:relative ${isOpen ? "fixed" : "absolute"} z-30 h-full bg-stone-50`}
       >
         <aside className="h-full border-r border-stone-200 bg-stone-50">
           <div className="h-4 bg-gradient-to-b from-stone-100 to-stone-50"></div>
