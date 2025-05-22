@@ -2,8 +2,10 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
-
+import { useParams, useRouter } from "next/navigation";
+import { url } from "inspector";
+import { param } from "drizzle-orm";
+import { toDataURL } from "qrcode";
 interface Course {
   id: number;
   assignedId: number;
@@ -34,6 +36,8 @@ interface ErrorResponse {
 }
 
 export default function MyCourses() {
+  const params = useParams();
+  const url = "https://saugoskursai.vercel.app/my-courses";
   const [assignedCourses, setAssignedCourses] = useState<Course[]>([]);
   const [boughtCourses, setBoughtCourses] = useState<BoughtCourse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,6 +49,12 @@ export default function MyCourses() {
   const [activeTab, setActiveTab] = useState("assigned"); // "assigned", "completed", "purchased"
   const { userId, isLoaded, isSignedIn } = useAuth();
   const router = useRouter();
+  const [qrCode, setQrCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!url) return;
+    toDataURL(String(url)).then(setQrCode).catch(console.error);
+  }, [url]);
 
   useEffect(() => {
     const fetchUserCourses = async () => {
@@ -208,13 +218,23 @@ export default function MyCourses() {
     <div className="flex min-h-screen flex-col bg-gray-100">
       <main className="flex-grow pt-24">
         <div className="container mx-auto px-4 py-8">
-          <div className="mb-8">
+          <div className="mb-4">
             <h1 className="text-3xl font-bold text-gray-800">Mano kursai</h1>
             <p className="mt-2 text-gray-600">
               Žemiau pateikti visi jūsų kursai.
             </p>
           </div>
-
+          {qrCode && (
+            <div className="mb-4">
+              <a
+                href={qrCode}
+                download="qrcode.png"
+                className="items-center justify-center rounded-md border-2 border-stone-200 bg-white px-4 py-2 text-gray-700 transition-all duration-300 hover:border-stone-500 hover:bg-stone-50 hover:text-stone-600 hover:shadow-md"
+              >
+                Atsisiųsti QR kodą
+              </a>
+            </div>
+          )}
           {/* Tabs */}
           <div className="mb-6 flex flex-wrap border-b border-gray-200">
             <button
