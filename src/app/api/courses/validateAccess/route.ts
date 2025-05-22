@@ -5,12 +5,54 @@ import { db } from "~/server/db";
 import { user_assigned_courses, user_bought_courses } from "~/server/db/schema";
 import { getUserByClerkId } from "~/server/user-queries";
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const userId = url.searchParams.get("userId");
   const requestedCourseId = url.searchParams.get("requestedCourseId");
   const requestType = url.searchParams.get("requestType");
+  const courseId = url.searchParams.get("courseId");
+
+  if (!courseId) {
+    return new Response(JSON.stringify({ message: "Nepateiktas kurso ID" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+  if (!userId && !requestedCourseId && !requestType) {
+    const user = await auth();
+    if (!user) {
+      return new Response(JSON.stringify({ message: "Neturite prieigos" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    if (!user.userId) {
+      return new Response(JSON.stringify({ message: "Neturite prieigos" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    const assignedCourses = await db
+      .select()
+      .from(user_assigned_courses)
+      .where(eq(user_assigned_courses.userId, user.userId))
+      .limit(1);
+    if (assignedCourses.length === 0) {
+      return new Response(JSON.stringify({ message: "Neturite prieigos" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    if (assignedCourses[0]?.status === "Atliktas") {
+      return NextResponse.json({ accessStatus: assignedCourses[0]?.status });
+    }
+    return new Response(JSON.stringify({ message: "Neturite prieigos" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
   if (!userId || !requestedCourseId || !requestType) {
     return new Response(JSON.stringify({ message: "Trūksta duomenų" }), {

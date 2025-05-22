@@ -48,7 +48,7 @@ export default function CourseDetail() {
     const validateAccess = async () => {
       try {
         const res = await fetch(
-          `/api/courses/validateAccess?userId=${userId}&requestedCourseId=${assignedCourseId}&requestType=${requestType}`,
+          `/api/courses/validateAccess?courseId=${courseId}&userId=${userId}&requestedCourseId=${assignedCourseId}&requestType=${requestType}`,
         );
         const data = (await res.json()) as ApiResponseValidateAccess;
 
@@ -82,11 +82,11 @@ export default function CourseDetail() {
     };
 
     if (!userId) return;
-    if (!requestType) {
-      toast.error("Neturite prieigos prie kurso medžiagos");
-      router.push("/");
-      return;
-    }
+    // if (!requestType) {
+    //   toast.error("Neturite prieigos prie kurso medžiagos");
+    //   router.push("/");
+    //   return;
+    // }
     validateAccess().catch((error) =>
       console.error("Error validating access:", error),
     );
