@@ -90,12 +90,9 @@ export default function Home() {
               <div className="flex flex-col justify-center gap-4 sm:flex-row">
                 <button
                   onClick={scrollToCourses}
-                  className="rounded-md bg-stone-600 px-8 py-3 font-bold text-white transition duration-300 hover:bg-stone-700"
+                  className="rounded-md bg-white px-8 py-3 font-bold text-stone-600 transition duration-300 hover:bg-stone-100"
                 >
                   Apžvelgti kursus
-                </button>
-                <button className="rounded-md bg-white px-8 py-3 font-bold text-stone-600 transition duration-300 hover:bg-stone-100">
-                  Sužinoti daugiau
                 </button>
               </div>
             </div>
