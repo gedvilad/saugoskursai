@@ -1,31 +1,36 @@
 import { useState } from "react";
 
-type OptionKey = "check1" | "check2" | "check3" | "check4";
+type QuizOption = {
+  id: string;
+  text: string;
+};
 
-type OptionState = Record<OptionKey, boolean>;
+type MultiCheckQuizProps = {
+  title: string;
+  description: string;
+  options: QuizOption[];
+  correctAnswers: Record<string, boolean>;
+  explanations: Record<string, string>;
+};
 
-export default function RiskQuiz() {
+export default function MultiCheckQuiz({
+  title,
+  description,
+  options,
+  correctAnswers,
+  explanations,
+}: MultiCheckQuizProps) {
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [selectedOptions, setSelectedOptions] = useState<OptionState>({
-    check1: false,
-    check2: false,
-    check3: false,
-    check4: false,
-  });
+  const [selectedOptions, setSelectedOptions] = useState<
+    Record<string, boolean>
+  >(Object.fromEntries(options.map((o) => [o.id, false])));
 
-  const correctAnswers: OptionState = {
-    check1: false,
-    check2: true,
-    check3: false,
-    check4: true,
-  };
-
-  const handleOptionChange = (id: OptionKey) => {
+  const handleOptionChange = (id: string) => {
     if (!isSubmitted) {
-      setSelectedOptions({
-        ...selectedOptions,
-        [id]: !selectedOptions[id],
-      });
+      setSelectedOptions((prev) => ({
+        ...prev,
+        [id]: !prev[id],
+      }));
     }
   };
 
@@ -33,7 +38,7 @@ export default function RiskQuiz() {
     setIsSubmitted(true);
   };
 
-  const getOptionStyle = (id: OptionKey) => {
+  const getOptionStyle = (id: string) => {
     if (!isSubmitted) return "";
 
     if (selectedOptions[id] === correctAnswers[id]) {
@@ -47,7 +52,7 @@ export default function RiskQuiz() {
     }
   };
 
-  const getCheckboxStyle = (id: OptionKey) => {
+  const getCheckboxStyle = (id: string) => {
     if (!isSubmitted) return "border-gray-300";
 
     if (correctAnswers[id]) {
@@ -60,46 +65,17 @@ export default function RiskQuiz() {
   };
 
   const calculateScore = () => {
-    let correctCount = 0;
-    Object.keys(correctAnswers).forEach((key) => {
-      const typedKey = key as OptionKey;
-      if (selectedOptions[typedKey] === correctAnswers[typedKey]) {
-        correctCount++;
-      }
-    });
-    return correctCount;
+    return options.reduce((score, option) => {
+      return selectedOptions[option.id] === correctAnswers[option.id]
+        ? score + 1
+        : score;
+    }, 0);
   };
-
-  const totalQuestions = Object.keys(correctAnswers).length;
-
-  const options: { id: OptionKey; text: string }[] = [
-    {
-      id: "check1",
-      text: "Jei konteinerio tikslus svoris nežinomas, galima remtis panašių konteinerių svoriu ir pradėti kėlimą.",
-    },
-    {
-      id: "check2",
-      text: "Prieš keliant reikia patikrinti, ar konteinerio turinys yra tolygiai paskirstytas ir saugiai pritvirtintas viduje.",
-    },
-    {
-      id: "check3",
-      text: "Jei vėjo greitis viršija nustatytą ribą, kėlimo operaciją galima tęsti, bet reikia būti atsargesniems.",
-    },
-    {
-      id: "check4",
-      text: "Stropos turi būti tvirtinamos prie specialiai tam skirtų kėlimo taškų arba taip, kad būtų užtikrintas tolygus svorio pasiskirstymas.",
-    },
-  ];
 
   return (
     <div className="rounded-lg border border-gray-200 p-6">
-      <h3 className="mb-4 text-xl font-medium text-gray-800">
-        Praktinė užduotis: Rizikos vertinimas
-      </h3>
-      <p className="mb-4 text-gray-700">
-        Įsivaizduokite, kad ruošiatės kelti metalinį konteinerį. Patikrinkite,
-        kurie teiginiai yra teisingi:
-      </p>
+      <h3 className="mb-4 text-xl font-medium text-gray-800">{title}</h3>
+      <p className="mb-4 text-gray-700">{description}</p>
 
       <div className="space-y-3">
         {options.map((option) => (
@@ -119,9 +95,7 @@ export default function RiskQuiz() {
             />
             <label
               htmlFor={option.id}
-              className={`ml-2 text-gray-700 ${
-                !isSubmitted && "cursor-pointer"
-              }`}
+              className={`ml-2 text-gray-700 ${!isSubmitted && "cursor-pointer"}`}
               onClick={() => !isSubmitted && handleOptionChange(option.id)}
             >
               {option.text}
@@ -133,30 +107,25 @@ export default function RiskQuiz() {
       {isSubmitted && (
         <div className="mt-4 rounded-md border border-gray-200 p-4">
           <p className="font-medium text-gray-800">
-            Jūsų rezultatas: {calculateScore()} iš {totalQuestions}
+            Jūsų rezultatas: {calculateScore()} iš {options.length}
           </p>
           <div className="mt-2 text-gray-700">
             <p className="mb-2 font-medium">Paaiškinimai:</p>
             <ul className="list-disc space-y-1 pl-5">
-              <li className="text-red-600">
-                1 teiginys - NETEISINGAS. Niekada nepradėkite kėlimo operacijos
-                nežinodami tikslaus svorio. Tai yra pavojinga.
-              </li>
-              <li className="text-green-600">
-                2 teiginys - TEISINGAS. Svarbu patikrinti, ar krovinys tinkamai
-                paskirstytas, kad išvengtumėte netolygaus svorio ir galimo
-                apsivertimo.
-              </li>
-              <li className="text-red-600">
-                3 teiginys - NETEISINGAS. Jei vėjo greitis viršija nustatytą
-                ribą, kėlimo operacija turi būti sustabdyta, ne tik vykdoma
-                atsargiau.
-              </li>
-              <li className="text-green-600">
-                4 teiginys - TEISINGAS. Stropos turi būti tvirtinamos tik prie
-                specialiai tam skirtų taškų, kad būtų užtikrintas saugus
-                kėlimas.
-              </li>
+              {options.map((option, index) => (
+                <li
+                  key={option.id}
+                  className={
+                    correctAnswers[option.id]
+                      ? "text-green-600"
+                      : "text-red-600"
+                  }
+                >
+                  {index + 1} teiginys –{" "}
+                  {correctAnswers[option.id] ? "TEISINGAS" : "NETEISINGAS"}.{" "}
+                  {explanations[option.id]}
+                </li>
+              ))}
             </ul>
           </div>
         </div>

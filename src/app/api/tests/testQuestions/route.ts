@@ -254,6 +254,18 @@ export async function PUT(req: Request) {
     }
 
     const overallScore = (totalScore / totalQuestions) * 100;
+    if (overallScore < 70) {
+      return new Response(
+        JSON.stringify({
+          message: "Testas neišlaikytas!",
+          score: overallScore,
+        }),
+        {
+          status: 202,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
 
     const course = await db
       .select({ id: courses.id })

@@ -13,14 +13,14 @@ export async function getUserByClerkId(id: string) {
 export async function createUser(
   email: string,
   first_name: string,
-  last_name: string,
+  last_name: string | undefined,
   id: string,
 ) {
   await db.insert(users).values({
     clerk_id: id,
     email,
     first_name,
-    last_name,
+    last_name: last_name ?? "",
     createdAt: new Date(),
   });
 }

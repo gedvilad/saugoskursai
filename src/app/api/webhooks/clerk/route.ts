@@ -71,7 +71,7 @@ export async function POST(req: Request) {
       email_addresses: { email_address: string }[];
       id: string;
       first_name: string;
-      last_name: string;
+      last_name: string | undefined;
     };
 
   const email = email_addresses?.[0]?.email_address ?? "";

@@ -9,6 +9,7 @@ import RiskQuiz from "~/app/_components/_safeRiggingCourse/RiskQuiz";
 import SingleChoiceQuiz from "~/app/_components/_safeRiggingCourse/SingleChoiceQuiz";
 import DragDropQuiz from "~/app/_components/_safeRiggingCourse/dragDropQuiz";
 import ImageDragDropQuiz from "~/app/_components/_safeRiggingCourse/imageDragDropQuiz";
+import MultiCheckQuiz from "~/app/_components/_safeRiggingCourse/RiskQuiz";
 
 interface Test {
   id: number;
@@ -26,9 +27,9 @@ interface ApiResponseValidateAccess {
 export default function CourseDetail() {
   const { userId } = useAuth();
   const router = useRouter();
-  const params = useParams();
-  const id = Number(params.id);
-  const courseId = id;
+  //const params = useParams();
+  //const id = Number(params.id);
+  const courseId = 3;
   const searchParams = useSearchParams();
   const assignedCourseId = Number(searchParams.get("assignedId"));
   console.log("assignedCourseId", assignedCourseId);
@@ -124,7 +125,9 @@ export default function CourseDetail() {
       //toast.error("Nepavyko rasti testo ID");
       return;
     }
-    router.push(`/testai/${test?.id}?assignedId=${assignedCourseId}`);
+    router.push(
+      `/testai/${test?.id}?assignedId=${assignedCourseId}&courseId=${courseId}`,
+    );
   };
   const emergencyQuizData = {
     title: "Avarinis scenarijus: Ką daryti?",
@@ -586,7 +589,44 @@ export default function CourseDetail() {
               </div> */}
 
               {/* Simple interactive task */}
-              <RiskQuiz />
+              <MultiCheckQuiz
+                title="Praktinė užduotis: Rizikos vertinimas"
+                description="Įsivaizduokite, kad ruošiatės kelti metalinį konteinerį. Patikrinkite, kurie teiginiai yra teisingi:"
+                options={[
+                  {
+                    id: "check1",
+                    text: "Jei konteinerio tikslus svoris nežinomas, galima remtis panašių konteinerių svoriu ir pradėti kėlimą.",
+                  },
+                  {
+                    id: "check2",
+                    text: "Prieš keliant reikia patikrinti, ar konteinerio turinys yra tolygiai paskirstytas ir saugiai pritvirtintas viduje.",
+                  },
+                  {
+                    id: "check3",
+                    text: "Jei vėjo greitis viršija nustatytą ribą, kėlimo operaciją galima tęsti, bet reikia būti atsargesniems.",
+                  },
+                  {
+                    id: "check4",
+                    text: "Stropos turi būti tvirtinamos prie specialiai tam skirtų kėlimo taškų arba taip, kad būtų užtikrintas tolygus svorio pasiskirstymas.",
+                  },
+                ]}
+                correctAnswers={{
+                  check1: false,
+                  check2: true,
+                  check3: false,
+                  check4: true,
+                }}
+                explanations={{
+                  check1:
+                    "Niekada nepradėkite kėlimo operacijos nežinodami tikslaus svorio. Tai yra pavojinga.",
+                  check2:
+                    "Svarbu patikrinti, ar krovinys tinkamai paskirstytas, kad išvengtumėte netolygaus svorio ir galimo apsivertimo.",
+                  check3:
+                    "Jei vėjo greitis viršija nustatytą ribą, kėlimo operacija turi būti sustabdyta, ne tik vykdoma atsargiau.",
+                  check4:
+                    "Stropos turi būti tvirtinamos tik prie specialiai tam skirtų taškų, kad būtų užtikrintas saugus kėlimas.",
+                }}
+              />
             </div>
 
             <div className="mb-6 h-px bg-gray-200"></div>

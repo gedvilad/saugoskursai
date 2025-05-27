@@ -1,6 +1,6 @@
 "use client";
 import { useAuth } from "@clerk/nextjs";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import {
@@ -9,6 +9,7 @@ import {
   ChevronRight,
   ChevronLeft,
   Clock,
+  Router,
 } from "lucide-react";
 
 interface Question {
@@ -41,10 +42,12 @@ interface ApiTestSubmitResponse {
 }
 
 export default function TestPage() {
+  const router = useRouter();
   const params = useParams();
   const id = Number(params.id);
   const searchParams = useSearchParams();
   const assignedCourseId = Number(searchParams.get("assignedId"));
+  const courseId = Number(searchParams.get("courseId"));
   const { userId } = useAuth();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -228,6 +231,12 @@ export default function TestPage() {
       });
 
       const data = (await response.json()) as ApiTestSubmitResponse;
+      // If didnt pass show message that didnt and give button that redirects back to course
+      if (data.score < 70) {
+        setScore(data.score);
+        setSubmitted(true);
+        return;
+      }
 
       if (!response.ok) {
         console.error("Failed to submit test:", response.statusText);
@@ -359,9 +368,21 @@ export default function TestPage() {
                       Testas išlaikytas !
                     </div>
                   ) : (
-                    <div className="flex items-center text-red-600">
-                      <XCircle className="mr-2" />
-                      Reiktų pasikartoti kurso medžiagą.
+                    <div className="flex flex-col items-center space-y-4 text-center">
+                      <div className="flex items-center text-red-600">
+                        <XCircle className="mr-2" />
+                        Reiktų pasikartoti kurso medžiagą.
+                      </div>
+                      <button
+                        onClick={() => {
+                          router.push(
+                            `/my-courses/${courseId}?assignedId=${assignedCourseId}&request=assigned`,
+                          );
+                        }}
+                        className="rounded-md bg-stone-800 px-4 py-2 font-medium text-white transition hover:bg-stone-700"
+                      >
+                        Grįžti į kurso teoriją
+                      </button>
                     </div>
                   )}
                 </div>

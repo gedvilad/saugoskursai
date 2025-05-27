@@ -266,6 +266,9 @@ export const user_assigned_courses = createTable(
       .references(() => groups.id),
     status: varchar("status", { length: 50 }).default("Priskirtas").notNull(),
     assignedById: varchar("assigned_by_id", { length: 256 }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
   },
   (user_assigned_courses) => ({
     nameIndex: index("user_assigned_course_idx").on(user_assigned_courses.id),
