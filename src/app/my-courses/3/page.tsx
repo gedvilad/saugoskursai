@@ -4,8 +4,6 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { useAuth } from "@clerk/nextjs";
-import EmergencyScenarioQuiz from "~/app/_components/_safeRiggingCourse/SingleChoiceQuiz";
-import RiskQuiz from "~/app/_components/_safeRiggingCourse/RiskQuiz";
 import SingleChoiceQuiz from "~/app/_components/_safeRiggingCourse/SingleChoiceQuiz";
 import DragDropQuiz from "~/app/_components/_safeRiggingCourse/dragDropQuiz";
 import ImageDragDropQuiz from "~/app/_components/_safeRiggingCourse/imageDragDropQuiz";
