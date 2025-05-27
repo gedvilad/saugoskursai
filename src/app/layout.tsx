@@ -8,6 +8,7 @@ import { Header } from "./_components/header";
 import Footer from "./_components/footer";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "react-hot-toast";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Saugos Mokymai",
@@ -40,7 +41,9 @@ export default async function RootLayout({
           <Toaster position="top-center" />
           <Header />
           <div className="min-h-screen pt-[70px]">
-            <TRPCReactProvider>{children}</TRPCReactProvider>
+            <Suspense>
+              <TRPCReactProvider>{children}</TRPCReactProvider>
+            </Suspense>
           </div>
           <Footer
             companyName="Your Company Name"
