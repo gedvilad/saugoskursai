@@ -28,14 +28,14 @@ export async function updateUser(
   id: string,
   email: string,
   first_name: string,
-  last_name: string,
+  last_name: string | undefined,
 ) {
   await db
     .update(users)
     .set({
       email,
       first_name,
-      last_name,
+      last_name: last_name ?? "",
       updatedAt: new Date(),
     })
     .where(eq(users.clerk_id, id));
