@@ -142,14 +142,8 @@ export default function MyCourses() {
         toast.error(error.message);
         return;
       }
-      let courseName;
-      if (selectedCourseId === 3) {
-        courseName = "crane";
-      } else if (selectedCourseId === 4) {
-        courseName = "forklift";
-      } else return;
       router.push(
-        `/my-courses/${courseName}?courseId=${selectedCourseId}&assignedId=${selectedAssignedId}&request=assigned`,
+        `/my-courses/${selectedCourseId}?assignedId=${selectedAssignedId}&request=assigned`,
       );
     }
     setShowConfirmation(false);

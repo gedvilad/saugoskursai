@@ -25,7 +25,7 @@ interface ApiResponseValidateAccess {
   accessStatus: string;
   message: string;
 }
-export default function ForkLiftCourseDetail() {
+export default function CourseDetail() {
   const { userId } = useAuth();
   const router = useRouter();
   //const params = useParams();
