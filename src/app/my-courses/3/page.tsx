@@ -25,11 +25,13 @@ interface ApiResponseValidateAccess {
 export default function CourseDetail() {
   const { userId } = useAuth();
   const router = useRouter();
-  //const params = useParams();
-  //const id = Number(params.id);
   const courseId = 3;
   const searchParams = useSearchParams();
-  const assignedCourseId = Number(searchParams.get("assignedId"));
+  const assignedCourseIdRaw = searchParams.get("assignedId");
+  const assignedCourseId = assignedCourseIdRaw
+    ? Number(assignedCourseIdRaw)
+    : null;
+
   console.log("assignedCourseId", assignedCourseId);
   const requestType = searchParams.get("request");
   // State for interactive elements
@@ -90,7 +92,7 @@ export default function CourseDetail() {
       console.error("Error validating access:", error),
     );
     fetchTest().catch((error) => console.error("Error fetching test:", error));
-  }, [courseId, userId, requestType]);
+  }, [courseId, userId, requestType, assignedCourseId]);
 
   // Handle quiz answer selection
   const handleOptionSelect = (option: string) => {
