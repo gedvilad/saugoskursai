@@ -42,6 +42,23 @@ export default function CourseDetail() {
   const [completedItems, setCompletedItems] = useState<string[]>([]);
   const [test, setTest] = useState<Test | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [canTakeTest, setCanTakeTest] = useState(false);
+  const [countdown, setCountdown] = useState(10);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          setCanTakeTest(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const validateAccess = async () => {
@@ -119,10 +136,15 @@ export default function CourseDetail() {
 
   // Navigate to test
   const handleTakeTest = () => {
-    if (test === null) {
-      //toast.error("Nepavyko rasti testo ID");
+    if (!canTakeTest) {
+      toast.error(
+        "Prieš pradedant testą, prašome atidžiai perskaityti medžiagą",
+      );
       return;
     }
+
+    if (test === null) return;
+
     router.push(
       `/testai/${test?.id}?assignedId=${assignedCourseId}&courseId=${courseId}`,
     );
