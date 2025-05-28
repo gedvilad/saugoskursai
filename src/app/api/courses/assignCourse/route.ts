@@ -1,5 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, or } from "drizzle-orm";
 import { User } from "lucide-react";
 import { db } from "~/server/db";
 import {
@@ -50,7 +50,10 @@ export async function POST(req: Request) {
         .where(
           and(
             eq(user_assigned_courses.userId, element),
-            eq(user_assigned_courses.status, "Priskirtas"),
+            or(
+              eq(user_assigned_courses.status, "Priskirtas"),
+              eq(user_assigned_courses.status, "Pradėtas"),
+            ),
             eq(user_assigned_courses.courseId, body.courseId),
           ),
         );

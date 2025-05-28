@@ -56,6 +56,7 @@ export default function CoursesTab({
   }, [selectedGroup.id, searchTerm]);
 
   const handleCourseSelect = (courseId: number) => {
+    console.log(courseId);
     setSelectedCourseId(courseId);
   };
 
@@ -78,6 +79,10 @@ export default function CoursesTab({
   };
 
   const handleAssignSelectedUsers = async () => {
+    console.log(selectedCourseId);
+    console.log(selectedUsers);
+    console.log(selectedGroup.id);
+    console.log(userId);
     const response = await fetch("/api/courses/assignCourse", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

@@ -19,7 +19,7 @@ export async function syncStripeDataToKV(customerId: string) {
 
   const subscriptions = await stripe.subscriptions.list({
     customer: customerId,
-    limit: 1,
+    limit: 2,
     status: "active",
     expand: ["data.default_payment_method"],
   });
