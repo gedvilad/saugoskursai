@@ -11,20 +11,20 @@ export const dynamic = "force-dynamic";
 // Hardcoded rigging course data
 const riggingCourse = {
   id: 1,
-  name: "Saugus darbas keliant krovinius su kranu",
+  name: "Saugus darbas su šakiniu krautuvu",
   productId: "prod_SLYpvsVP2ZnjOE",
   description:
-    "Išsamus kursas apie saugų darbą su kėlimo įranga ir krovinių tvirtinimą",
+    "Išsamus kursas apie saugų darbą su šakiniu krautuvu ir krovinių transportavimu",
   fullDescription:
-    "Šis kursas apie saugų darbą su kėlimo įranga yra skirtas visiems, kurie dirba su krovinių kėlimu, perkėlimu ir tvirtinimu. Kursas apima visus saugos aspektus, reikalavimus ir technikas, kurios padės jums užtikrinti saugų darbą su kėlimo įranga. Kursas parengtas pagal naujausius reikalavimus ir geriausias pramonės praktikas. Baigę šį kursą jūs turėsite visas reikalingas žinias, kad galėtumėte saugiai ir efektyviai dirbti su kėlimo įranga.",
+    "Šis kursas apie saugų darbą su šakiniu krautuvu yra skirtas šakinio krautuvo vairuotojams. Kursas apima visus saugos aspektus, reikalavimus ir technikas, kurios padės jums užtikrinti saugų darbą su šakiniu krautuvu. Kursas parengtas pagal naujausius reikalavimus ir geriausias pramonės praktikas. Baigę šį kursą jūs turėsite visas reikalingas žinias, kad galėtumėte saugiai ir efektyviai dirbti su šakiniu krautuvu.",
   features: [
-    "Kėlimo įrangos tipai ir jų saugus naudojimas",
-    "Krovinių tvirtinimo technikos ir metodai",
-    "Kėlimo operacijų planavimas ir rizikos vertinimas",
-    "Komunikacijos protokolai kėlimo operacijose",
-    "Kėlimo įrangos patikra ir priežiūra",
-    "Darbo saugos taisyklės ir reglamentai",
-    "Kritinių situacijų valdymas ir prevencija",
+    "Šakinio krautuvo tipai ir jų saugus naudojimas",
+    "Krovinių paėmimo, padėjimo ir transportavimo metodai",
+    "Važiavimo, manevravimo ir kėlimo operacijų planavimas",
+    "Komunikacijos ir signalizacijos priemonės krautuvo darbo metu",
+    "Krautuvo techninė patikra prieš darbą ir reguliari priežiūra",
+    "Darbo saugos reikalavimai, kelio taisyklės ir vidaus eismo organizavimas",
+    "Pavojingų situacijų prevencija ir reagavimas avarijų atveju",
   ],
   benefits: [
     "Nuolatinė prieiga prie mokymosi medžiagos",
