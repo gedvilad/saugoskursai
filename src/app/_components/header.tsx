@@ -8,7 +8,7 @@ import {
   UserButton,
 } from "@clerk/nextjs";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 interface User {
@@ -463,6 +463,7 @@ export function Header() {
           <SignedIn>
             <UserButton afterSignOutUrl="/" showName={true} />
           </SignedIn>
+          <LanguageSwitcher />
         </div>
       </div>
     </div>
@@ -470,3 +471,96 @@ export function Header() {
 }
 
 export default Header;
+
+const locales = {
+  lt: {
+    flag: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAACuCAMAAAClZfCTAAAAFVBMVEX9uRPBJy0AakT/vgwAY0cAbkbKHysqUHmaAAAA+klEQVR4nO3QNwGAAAAEsaf6l4yEWxgTCdkAAAAAAAAAAAAAAAAAAAAA/nMRdhN2EhQlRUlRUpQUJUVJUVKUFCVFSVFSlBQlRUlRUpQUJUVJUVKUFCVFSVFSlBQlRUlRUpQUJUVJUVKUFCVFSVFSlBQlRUlRUpQUJUVJUVKUFCVFSVFSlBQlRUlRUpQUJUVJUdpD2EvYQVCUFCVFSVFSlBQlRUlRUpQUJUVJUVKUFCVFSVFSlBQlRUlRUpQUJUVJUVKUFCVFSVFSlBQlRUlRUpQUJUVJUVKUFCVFSVFSlBQlRUlRUpQUJUVJUVKUFCVFSVFSlBQlRUlR+gCB9tPXlKkzPwAAAABJRU5ErkJggg==", // Add your Lithuanian flag image path here
+    alt: "LT",
+  },
+  en: {
+    flag: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Flag_of_the_United_Kingdom_%281-2%29.svg/1200px-Flag_of_the_United_Kingdom_%281-2%29.svg.png", // Add your British flag image path here
+    alt: "EN",
+  },
+};
+
+export const LanguageSwitcher = () => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const [locale, setLocale] = useState<string | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const pathLocale = pathname.split("/")[1];
+    if (Object.keys(locales).includes(pathLocale!)) {
+      setLocale(pathLocale!);
+    } else {
+      setLocale("lt"); // default to Lithuanian if not specified
+    }
+  }, [pathname]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  if (!locale) return null;
+
+  const basePath = pathname.replace(`/${locale}`, "");
+
+  const handleLocaleChange = (newLocale: string) => {
+    const newPath = newLocale === "lt" ? `/` : `/${newLocale}${basePath}`;
+    router.push(newPath);
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex h-6 w-8 cursor-pointer items-center justify-center rounded bg-transparent transition-opacity hover:opacity-80"
+        aria-label="Select language"
+      >
+        <img
+          src={locales[locale as keyof typeof locales].flag}
+          alt={locales[locale as keyof typeof locales].alt}
+          width={32}
+          height={24}
+          className="rounded border border-gray-200 object-cover"
+        />
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 top-full z-50 mt-1 rounded-md border border-gray-200 bg-white shadow-lg">
+          {Object.entries(locales).map(([code, { flag, alt }]) => (
+            <button
+              key={code}
+              onClick={() => handleLocaleChange(code)}
+              className={`flex w-full items-center justify-center p-0.5 transition-colors first:rounded-t-md last:rounded-b-md hover:bg-gray-100 ${
+                code === locale ? "bg-gray-50" : ""
+              }`}
+            >
+              <img
+                src={flag}
+                alt={alt}
+                width={32}
+                height={24}
+                className="border-gray-200 object-cover"
+              />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
