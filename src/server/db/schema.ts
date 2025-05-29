@@ -178,6 +178,7 @@ export const user_test_responses = createTable(
     assignedCourse: integer("assigned_course")
       .notNull()
       .references(() => user_assigned_courses.id),
+    submitCount: integer("submit_count").default(0).notNull(),
   },
   (table) => ({
     userTestResponseIndex: index("user_test_response_index").on(table.id),

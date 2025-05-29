@@ -1,5 +1,5 @@
 import { db } from "~/server/db";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import {
   courses,
   test_question_choices,
@@ -255,6 +255,13 @@ export async function PUT(req: Request) {
 
     const overallScore = (totalScore / totalQuestions) * 100;
     if (overallScore < 70) {
+      await db
+        .update(user_test_responses)
+        .set({
+          submitCount: sql`${user_test_responses.submitCount} + 1`,
+        })
+        .where(eq(user_test_responses.assignedCourse, body.assignedCourseId));
+
       return new Response(
         JSON.stringify({
           message: "Testas neišlaikytas!",
@@ -284,6 +291,7 @@ export async function PUT(req: Request) {
       .set({
         score: overallScore.toFixed(2),
         endTime: new Date(),
+        submitCount: sql`${user_test_responses.submitCount} + 1`,
       })
       .where(eq(user_test_responses.assignedCourse, body.assignedCourseId))
       .returning();

@@ -59,8 +59,38 @@ export default function TestPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
+  const [isValid, setIsValid] = useState(false);
 
   useEffect(() => {
+    if (!userId) return;
+    const validateAccess = async () => {
+      try {
+        const response = await fetch(
+          `/api/tests/validateAccess?testId=${id}&userId=${userId}&assignedCourseId=${assignedCourseId}&courseId=${courseId}`,
+        );
+
+        if (!response.ok) {
+          router.push("/");
+          toast.error("Neturite prieigos.");
+          return;
+        }
+
+        const data = (await response.json()) as { accessStatus: string };
+
+        setIsValid(true);
+      } catch (error) {
+        console.error("Error validating access:", error);
+      }
+    };
+    validateAccess().catch((error) =>
+      console.error("Error validating access:", error),
+    );
+  }, [userId]);
+
+  useEffect(() => {
+    if (!isValid) {
+      return;
+    }
     const fetchQuestions = async () => {
       try {
         setLoading(true);
@@ -94,7 +124,7 @@ export default function TestPage() {
     fetchQuestions().catch((error) =>
       console.error("Error fetching questions:", error),
     );
-  }, [id]);
+  }, [id, isValid]);
 
   // Timer effect
   useEffect(() => {
@@ -363,7 +393,7 @@ export default function TestPage() {
                       Jūs išlaikėte puikiai !
                     </div>
                   ) : score >= 70 ? (
-                    <div className="flex items-center text-stone-600">
+                    <div className="flex items-center text-green-600">
                       <CheckCircle className="mr-2" />
                       Testas išlaikytas !
                     </div>
@@ -371,7 +401,8 @@ export default function TestPage() {
                     <div className="flex flex-col items-center space-y-4 text-center">
                       <div className="flex items-center text-red-600">
                         <XCircle className="mr-2" />
-                        Reiktų pasikartoti kurso medžiagą.
+                        Testas neišlaikytas, perskaitykite kurso medžiagą ir
+                        bandykite dar kartą.
                       </div>
                       <button
                         onClick={() => {

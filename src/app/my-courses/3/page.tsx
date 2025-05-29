@@ -46,7 +46,7 @@ export default function CourseDetail() {
   const [isLoading, setIsLoading] = useState(true);
 
   const [canTakeTest, setCanTakeTest] = useState(false);
-  const [countdown, setCountdown] = useState(10);
+  const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
     const timer = setInterval(() => {
