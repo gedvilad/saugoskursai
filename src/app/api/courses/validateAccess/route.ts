@@ -1,6 +1,6 @@
 // pages/api/courses/validate-access.ts
 
-import { and, eq } from "drizzle-orm";
+import { and, eq, or } from "drizzle-orm";
 import { db } from "~/server/db";
 import { user_assigned_courses, user_bought_courses } from "~/server/db/schema";
 import { getUserByClerkId } from "~/server/user-queries";
@@ -20,7 +20,7 @@ export async function GET(req: Request) {
       headers: { "Content-Type": "application/json" },
     });
   }
-  if (!userId && !requestedCourseId && !requestType) {
+  /*if (!userId && !requestedCourseId && !requestType) {
     const user = await auth();
     if (!user) {
       return new Response(JSON.stringify({ message: "Neturite prieigos" }), {
@@ -37,7 +37,12 @@ export async function GET(req: Request) {
     const assignedCourses = await db
       .select()
       .from(user_assigned_courses)
-      .where(eq(user_assigned_courses.userId, user.userId))
+      .where(
+        and(
+          eq(user_assigned_courses.userId, user.userId),
+          eq(user_assigned_courses.courseId, Number(courseId))
+        )
+      )
       .limit(1);
     if (assignedCourses.length === 0) {
       return new Response(JSON.stringify({ message: "Neturite prieigos" }), {
@@ -52,7 +57,7 @@ export async function GET(req: Request) {
       status: 400,
       headers: { "Content-Type": "application/json" },
     });
-  }
+  }*/
 
   if (!userId || !requestedCourseId || !requestType) {
     return new Response(JSON.stringify({ message: "Trūksta duomenų" }), {
@@ -70,7 +75,7 @@ export async function GET(req: Request) {
   }
 
   try {
-    if (requestType === "assigned" || requestType === "done") {
+    if (requestType === "assigned") {
       const course = await db
         .select()
         .from(user_assigned_courses)
@@ -78,6 +83,32 @@ export async function GET(req: Request) {
           and(
             eq(user_assigned_courses.userId, userId),
             eq(user_assigned_courses.id, Number(requestedCourseId)),
+            eq(user_assigned_courses.courseId, Number(courseId)),
+            or(
+              eq(user_assigned_courses.status, "Priskirtas"),
+              eq(user_assigned_courses.status, "Pradėtas"),
+            ),
+          ),
+        )
+        .limit(1);
+      if (course.length === 0) {
+        return new Response(JSON.stringify({ message: "Neturite prieigos" }), {
+          status: 402,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      return NextResponse.json({ accessStatus: course[0]?.status });
+    } else if (requestType === "done") {
+      const course = await db
+        .select()
+        .from(user_assigned_courses)
+        .where(
+          and(
+            eq(user_assigned_courses.userId, userId),
+            eq(user_assigned_courses.id, Number(requestedCourseId)),
+            eq(user_assigned_courses.courseId, Number(courseId)),
+            eq(user_assigned_courses.status, "Atliktas"),
           ),
         )
         .limit(1);
