@@ -480,7 +480,7 @@ export default function CourseResultsTab({
                   <th className="px-4 py-3 md:px-6">Atlikimo Data</th>
                   <th className="px-4 py-3 md:px-6">Rezultatas</th>
                   <th className="px-4 py-3 md:px-6">Trukmė</th>
-                  <th className="px-4 py-3 md:px-6">Statusas</th>
+                  <th className="px-4 py-3 md:px-6">Bandymų sk.</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-100 text-sm text-stone-800">
@@ -556,17 +556,11 @@ export default function CourseResultsTab({
                           result.status === "Pradėtas" || result.score == null
                             ? "bg-gray-100 text-gray-800"
                             : result.score >= 70
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
+                              ? "bg-gray-100 text-gray-800"
+                              : "bg-gray-100 text-gray-800"
                         }`}
                       >
-                        {result.status === "Pradėtas"
-                          ? "Pradėtas"
-                          : result.score == null
-                            ? "Neatlikta"
-                            : result.score >= 70
-                              ? "Išlaikyta"
-                              : "Neišlaikyta"}
+                        {result.count}
                       </span>
                     </td>
                   </tr>

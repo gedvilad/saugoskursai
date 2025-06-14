@@ -51,6 +51,7 @@ export async function GET(req: Request) {
         endTime: user_test_responses.endTime,
         score: user_test_responses.score,
         updatedAt: user_test_responses.createdAt,
+        count: user_test_responses.submitCount,
       })
       .from(user_assigned_courses)
       .innerJoin(courses, eq(user_assigned_courses.courseId, courses.id))
