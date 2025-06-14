@@ -10,7 +10,7 @@ import { eq, and, inArray, sql } from "drizzle-orm";
 import { courses, user_bought_courses } from "~/server/db/schema";
 
 export async function updateBoughtCourses(userId: string) {
-  console.log("Updating bought courses for user", userId);
+  /*console.log("Updating bought courses for user", userId);
   const user = await db.query.users.findFirst({
     where: (users, { eq }) => eq(users.clerk_id, userId),
   });
@@ -67,5 +67,5 @@ export async function updateBoughtCourses(userId: string) {
     }
   } catch (error) {
     console.error("Error deleting courses:", error); // Added try-catch for delete
-  }
+  }*/
 }
