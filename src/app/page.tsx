@@ -210,7 +210,7 @@ export default function Home() {
               Siūlomi kursai
             </h2>
 
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
               {courses && courses.length > 0 ? (
                 courses.map((course) => (
                   <div

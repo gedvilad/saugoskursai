@@ -46,9 +46,9 @@ export default async function RootLayout({
             </Suspense>
           </div>
           <Footer
-            companyName="Your Company Name"
+            companyName="Saugos Kursai"
             year={new Date().getFullYear()}
-            contactEmail="contact@example.com"
+            contactEmail="saugoskursai@gmail.com"
           />
         </body>
       </html>
