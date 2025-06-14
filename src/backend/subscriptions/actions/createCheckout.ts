@@ -15,7 +15,10 @@ export async function createCheckoutSession(productID: string, userId: string) {
   if (!userId) {
     redirect("/");
   }*/
-
+  const user = await getUserByClerkId(userId);
+  if (user?.email === "") {
+    return "Norint nusipirkti prenumeratą reikalingas el. pašto adresas. Pridėkite tai į savo profilį.";
+  }
   const existingSub = await getStripeSubByUserId(userId);
   if (existingSub) {
     if ("subscriptions" in existingSub) {
@@ -31,7 +34,6 @@ export async function createCheckoutSession(productID: string, userId: string) {
   }
 
   let stripeCustomerId = (await STRIPE_CUSTOMER_ID_KV.get(userId)) ?? undefined;
-  const user = await getUserByClerkId(userId);
   if (!stripeCustomerId) {
     const newCustomer = await stripe.customers.create({
       email: user?.email,
