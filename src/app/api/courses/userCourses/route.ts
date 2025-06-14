@@ -98,6 +98,8 @@ export async function GET(req: Request) {
       name: courses.name,
       testId: courses.courseTest,
       purchaseDate: user_bought_courses.createdAt,
+      endTime: user_bought_courses.endTime,
+      status: user_bought_courses.status,
     })
     .from(courses)
     .innerJoin(

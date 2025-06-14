@@ -244,6 +244,11 @@ export const user_bought_courses = createTable(
     courseId: integer("course_id")
       .notNull()
       .references(() => courses.id),
+    status: varchar("status", { length: 50 }).default("Active").notNull(),
+    endTime: timestamp("end_time", { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    subId: varchar("sub_id", { length: 256 }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),

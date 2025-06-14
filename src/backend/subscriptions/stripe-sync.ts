@@ -80,6 +80,7 @@ async function updateUserBoughtCourses(
   if (!userId) {
     throw new Error(`No user ID found for customer ID: ${customerId}`);
   }
+
   const productIds = [...new Set(subscriptions.map((sub) => sub.productId))];
   console.log("[STRIPE][productIds]", productIds);
 
@@ -89,7 +90,26 @@ async function updateUserBoughtCourses(
     .where(eq(user_bought_courses.userId, userId));
   console.log("[STRIPE][deletedOldBoughtCourses]", deletedOldBoughtCourses);
 
-  const matchedCourses = await db
+  for (const sub of subscriptions) {
+    const stat = sub.cancelAtPeriodEnd ? "Cancelled" : "Active";
+    const course = await db
+      .select()
+      .from(courses)
+      .where(eq(courses.productId, sub.productId))
+      .limit(1);
+    if (!course[0]) {
+      continue;
+    }
+    await db.insert(user_bought_courses).values({
+      userId,
+      courseId: course[0].id,
+      status: stat,
+      endTime: new Date(sub.currentPeriodEnd * 1000),
+      subId: sub.subscriptionId,
+    });
+  }
+
+  /*const matchedCourses = await db
     .select()
     .from(courses)
     .where(inArray(courses.productId, productIds));
@@ -139,5 +159,5 @@ async function updateUserBoughtCourses(
         ),
       );
     console.log("[STRIPE][deletedCourses]", deletedCourses);
-  }
+  }*/
 }

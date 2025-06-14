@@ -3,9 +3,8 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import toast from "react-hot-toast";
 import { useParams, useRouter } from "next/navigation";
-import { url } from "inspector";
-import { param } from "drizzle-orm";
 import { toDataURL } from "qrcode";
+import { cancelSub } from "~/backend/subscriptions/actions/cancelSub";
 interface Course {
   id: number;
   assignedId: number;
@@ -23,6 +22,8 @@ interface BoughtCourse {
   name: string;
   purchaseDate: string;
   testId: number;
+  endTime: string;
+  status: string;
 }
 
 interface ApiResponseCourses {
@@ -50,7 +51,37 @@ export default function MyCourses() {
   const { userId, isLoaded, isSignedIn } = useAuth();
   const router = useRouter();
   const [qrCode, setQrCode] = useState<string | null>(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [courseToCancel, setCourseToCancel] = useState<BoughtCourse | null>(
+    null,
+  );
 
+  // Add this handler function
+  const handleCancelSubscription = (course: BoughtCourse) => {
+    setCourseToCancel(course);
+    console.log(course);
+    setShowCancelModal(true);
+  };
+
+  const confirmCancelSubscription = async () => {
+    if (courseToCancel?.id === undefined) {
+      setShowCancelModal(false);
+      setCourseToCancel(null);
+      toast.error("Įvyko klaida. Perkraukite puslapį ir bandykite dar kartą.");
+      return;
+    }
+    const result = await cancelSub(courseToCancel?.id, userId!);
+    if (typeof result === "string") {
+      toast.error(result);
+    } else {
+      toast.success(
+        "Prenumerata atšaukta. Premumerata dar galios iki " +
+          result.toLocaleDateString("lt-LT"),
+      );
+    }
+    setShowCancelModal(false);
+    setCourseToCancel(null);
+  };
   useEffect(() => {
     if (!url) return;
     toDataURL(String(url)).then(setQrCode).catch(console.error);
@@ -288,26 +319,84 @@ export default function MyCourses() {
                         <h2 className="line-clamp-2 text-xl font-semibold text-gray-800 transition-colors duration-300">
                           {course.name}
                         </h2>
-                        <div className="mt-3 flex items-center text-sm text-gray-600">
-                          <svg
-                            className="mr-2 h-4 w-4 text-gray-500"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                            />
-                          </svg>
-                          <span>
-                            Pirkimo data:{" "}
-                            {new Date(course.purchaseDate).toLocaleDateString(
-                              "lt-LT",
-                            )}
-                          </span>
+                        <div className="mt-3 space-y-2">
+                          <div className="flex items-center text-sm text-gray-600">
+                            <svg
+                              className="mr-2 h-4 w-4 text-gray-500"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                              />
+                            </svg>
+                            <span>
+                              Pirkimo data:{" "}
+                              {new Date(course.purchaseDate).toLocaleDateString(
+                                "lt-LT",
+                              )}
+                            </span>
+                          </div>
+                          <div className="flex items-center text-sm text-gray-600">
+                            <svg
+                              className="mr-2 h-4 w-4 text-gray-500"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              {course.status === "Active" ? (
+                                // Checkmark icon for active status
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                              ) : (
+                                // X circle icon for cancelled status
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                              )}
+                            </svg>
+                            <span>
+                              Statusas:{" "}
+                              {course.status === "Active"
+                                ? "Aktyvus"
+                                : "Atšauktas"}
+                            </span>
+                          </div>
+
+                          {course.endTime && (
+                            <div className="flex items-center text-sm text-gray-600">
+                              <svg
+                                className="mr-2 h-4 w-4 text-gray-500"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
+                              </svg>
+                              <span>
+                                Galioja iki:{" "}
+                                {new Date(course.endTime).toLocaleDateString(
+                                  "lt-LT",
+                                )}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
 
@@ -341,10 +430,78 @@ export default function MyCourses() {
                           </svg>
                           Peržiūrėti kursą
                         </button>
+                        {course.status === "Active" && (
+                          <button
+                            onClick={() => handleCancelSubscription(course)}
+                            className="mt-2 flex w-full items-center justify-center rounded-md border-2 border-red-500 bg-red-50 px-4 py-2 text-red-600 transition-all duration-300 hover:bg-red-100 hover:shadow-md"
+                          >
+                            <svg
+                              className="mr-2 h-5 w-5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                            Atšaukti prenumeratą
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
                 ))}
+                {/* Confirmation Modal */}
+                {showCancelModal && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="mx-4 max-w-md rounded-lg bg-white p-6 shadow-xl">
+                      <div className="mb-4">
+                        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                          <svg
+                            className="h-6 w-6 text-red-600"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <h3 className="mb-2 text-lg font-semibold text-gray-900">
+                          Prenumeratos atšaukimas
+                        </h3>
+                        <p className="mb-6 text-sm text-gray-500">
+                          Ar tikrai norite atšaukti prenumeratą kursui &ldquo;
+                          {courseToCancel?.name}&ldquo; ?
+                        </p>
+                        <div className="flex space-x-3">
+                          <button
+                            onClick={() => setShowCancelModal(false)}
+                            className="flex-1 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                          >
+                            Atšaukti
+                          </button>
+                          <button
+                            onClick={confirmCancelSubscription}
+                            className="flex-1 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                          >
+                            Patvirtinti
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="flex h-64 flex-col items-center justify-center rounded-lg bg-white p-6 shadow-md">
