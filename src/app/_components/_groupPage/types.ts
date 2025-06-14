@@ -49,6 +49,7 @@ export interface CourseResult {
   endTime: string;
   score: number;
   updatedAt: Date;
+  count: number;
 }
 
 export interface ApiResponseCourseResults {
