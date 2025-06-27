@@ -9,6 +9,8 @@ import Footer from "./_components/footer";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "react-hot-toast";
 import { Suspense } from "react";
+import Maintenance from "./maintenance/page";
+import { is } from "drizzle-orm";
 
 export const metadata: Metadata = {
   title: "Saugos Kursai",
@@ -34,22 +36,33 @@ const localization = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const isMaintenance = process.env.NEXT_PUBLIC_MAINTENANCE === "true";
+
   return (
-    <ClerkProvider localization={localization}>
+    <ClerkProvider>
       <html lang="en" className={`${GeistSans.variable}`}>
         <body>
           <Toaster position="top-center" />
-          <Header />
-          <div className="min-h-screen pt-[70px]">
-            <Suspense>
-              <TRPCReactProvider>{children}</TRPCReactProvider>
-            </Suspense>
-          </div>
-          <Footer
-            companyName="Saugos Kursai"
-            year={new Date().getFullYear()}
-            contactEmail="saugoskursai@gmail.com"
-          />
+          {!isMaintenance && <Header />}
+          {isMaintenance ? (
+            <div className="min-h-screen">
+              <Maintenance />
+            </div>
+          ) : (
+            <div className="min-h-screen pt-[70px]">
+              <Suspense>
+                <TRPCReactProvider>{children}</TRPCReactProvider>
+              </Suspense>
+            </div>
+          )}
+
+          {!isMaintenance && (
+            <Footer
+              companyName="Saugos Kursai"
+              year={new Date().getFullYear()}
+              contactEmail="saugoskursai@gmail.com"
+            />
+          )}
         </body>
       </html>
     </ClerkProvider>
