@@ -2,8 +2,8 @@
 export default function Maintenance() {
   return (
     <div style={{ textAlign: "center", marginTop: "20vh" }}>
-      <h1>🚧 Site Under Maintenance</h1>
-      <p>We'll be back soon. Thanks for your patience!</p>
+      <h1>🚧 Svetainė yra tvarkoma</h1>
+      <p></p>
     </div>
   );
 }
